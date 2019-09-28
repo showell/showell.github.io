@@ -803,6 +803,197 @@ var _List_sortWith = F2(function(f, xs)
 
 
 
+// TASKS
+
+function _Scheduler_succeed(value)
+{
+	return {
+		$: 0,
+		a: value
+	};
+}
+
+function _Scheduler_fail(error)
+{
+	return {
+		$: 1,
+		a: error
+	};
+}
+
+function _Scheduler_binding(callback)
+{
+	return {
+		$: 2,
+		b: callback,
+		c: null
+	};
+}
+
+var _Scheduler_andThen = F2(function(callback, task)
+{
+	return {
+		$: 3,
+		b: callback,
+		d: task
+	};
+});
+
+var _Scheduler_onError = F2(function(callback, task)
+{
+	return {
+		$: 4,
+		b: callback,
+		d: task
+	};
+});
+
+function _Scheduler_receive(callback)
+{
+	return {
+		$: 5,
+		b: callback
+	};
+}
+
+
+// PROCESSES
+
+var _Scheduler_guid = 0;
+
+function _Scheduler_rawSpawn(task)
+{
+	var proc = {
+		$: 0,
+		e: _Scheduler_guid++,
+		f: task,
+		g: null,
+		h: []
+	};
+
+	_Scheduler_enqueue(proc);
+
+	return proc;
+}
+
+function _Scheduler_spawn(task)
+{
+	return _Scheduler_binding(function(callback) {
+		callback(_Scheduler_succeed(_Scheduler_rawSpawn(task)));
+	});
+}
+
+function _Scheduler_rawSend(proc, msg)
+{
+	proc.h.push(msg);
+	_Scheduler_enqueue(proc);
+}
+
+var _Scheduler_send = F2(function(proc, msg)
+{
+	return _Scheduler_binding(function(callback) {
+		_Scheduler_rawSend(proc, msg);
+		callback(_Scheduler_succeed(_Utils_Tuple0));
+	});
+});
+
+function _Scheduler_kill(proc)
+{
+	return _Scheduler_binding(function(callback) {
+		var task = proc.f;
+		if (task.$ === 2 && task.c)
+		{
+			task.c();
+		}
+
+		proc.f = null;
+
+		callback(_Scheduler_succeed(_Utils_Tuple0));
+	});
+}
+
+
+/* STEP PROCESSES
+
+type alias Process =
+  { $ : tag
+  , id : unique_id
+  , root : Task
+  , stack : null | { $: SUCCEED | FAIL, a: callback, b: stack }
+  , mailbox : [msg]
+  }
+
+*/
+
+
+var _Scheduler_working = false;
+var _Scheduler_queue = [];
+
+
+function _Scheduler_enqueue(proc)
+{
+	_Scheduler_queue.push(proc);
+	if (_Scheduler_working)
+	{
+		return;
+	}
+	_Scheduler_working = true;
+	while (proc = _Scheduler_queue.shift())
+	{
+		_Scheduler_step(proc);
+	}
+	_Scheduler_working = false;
+}
+
+
+function _Scheduler_step(proc)
+{
+	while (proc.f)
+	{
+		var rootTag = proc.f.$;
+		if (rootTag === 0 || rootTag === 1)
+		{
+			while (proc.g && proc.g.$ !== rootTag)
+			{
+				proc.g = proc.g.i;
+			}
+			if (!proc.g)
+			{
+				return;
+			}
+			proc.f = proc.g.b(proc.f.a);
+			proc.g = proc.g.i;
+		}
+		else if (rootTag === 2)
+		{
+			proc.f.c = proc.f.b(function(newRoot) {
+				proc.f = newRoot;
+				_Scheduler_enqueue(proc);
+			});
+			return;
+		}
+		else if (rootTag === 5)
+		{
+			if (proc.h.length === 0)
+			{
+				return;
+			}
+			proc.f = proc.f.b(proc.h.shift());
+		}
+		else // if (rootTag === 3 || rootTag === 4)
+		{
+			proc.g = {
+				$: rootTag === 3 ? 0 : 1,
+				b: proc.f.b,
+				i: proc.g
+			};
+			proc.f = proc.f.d;
+		}
+	}
+}
+
+
+
 // MATH
 
 var _Basics_add = F2(function(a, b) { return a + b; });
@@ -1651,197 +1842,6 @@ function _Json_addEntry(func)
 }
 
 var _Json_encodeNull = _Json_wrap(null);
-
-
-
-// TASKS
-
-function _Scheduler_succeed(value)
-{
-	return {
-		$: 0,
-		a: value
-	};
-}
-
-function _Scheduler_fail(error)
-{
-	return {
-		$: 1,
-		a: error
-	};
-}
-
-function _Scheduler_binding(callback)
-{
-	return {
-		$: 2,
-		b: callback,
-		c: null
-	};
-}
-
-var _Scheduler_andThen = F2(function(callback, task)
-{
-	return {
-		$: 3,
-		b: callback,
-		d: task
-	};
-});
-
-var _Scheduler_onError = F2(function(callback, task)
-{
-	return {
-		$: 4,
-		b: callback,
-		d: task
-	};
-});
-
-function _Scheduler_receive(callback)
-{
-	return {
-		$: 5,
-		b: callback
-	};
-}
-
-
-// PROCESSES
-
-var _Scheduler_guid = 0;
-
-function _Scheduler_rawSpawn(task)
-{
-	var proc = {
-		$: 0,
-		e: _Scheduler_guid++,
-		f: task,
-		g: null,
-		h: []
-	};
-
-	_Scheduler_enqueue(proc);
-
-	return proc;
-}
-
-function _Scheduler_spawn(task)
-{
-	return _Scheduler_binding(function(callback) {
-		callback(_Scheduler_succeed(_Scheduler_rawSpawn(task)));
-	});
-}
-
-function _Scheduler_rawSend(proc, msg)
-{
-	proc.h.push(msg);
-	_Scheduler_enqueue(proc);
-}
-
-var _Scheduler_send = F2(function(proc, msg)
-{
-	return _Scheduler_binding(function(callback) {
-		_Scheduler_rawSend(proc, msg);
-		callback(_Scheduler_succeed(_Utils_Tuple0));
-	});
-});
-
-function _Scheduler_kill(proc)
-{
-	return _Scheduler_binding(function(callback) {
-		var task = proc.f;
-		if (task.$ === 2 && task.c)
-		{
-			task.c();
-		}
-
-		proc.f = null;
-
-		callback(_Scheduler_succeed(_Utils_Tuple0));
-	});
-}
-
-
-/* STEP PROCESSES
-
-type alias Process =
-  { $ : tag
-  , id : unique_id
-  , root : Task
-  , stack : null | { $: SUCCEED | FAIL, a: callback, b: stack }
-  , mailbox : [msg]
-  }
-
-*/
-
-
-var _Scheduler_working = false;
-var _Scheduler_queue = [];
-
-
-function _Scheduler_enqueue(proc)
-{
-	_Scheduler_queue.push(proc);
-	if (_Scheduler_working)
-	{
-		return;
-	}
-	_Scheduler_working = true;
-	while (proc = _Scheduler_queue.shift())
-	{
-		_Scheduler_step(proc);
-	}
-	_Scheduler_working = false;
-}
-
-
-function _Scheduler_step(proc)
-{
-	while (proc.f)
-	{
-		var rootTag = proc.f.$;
-		if (rootTag === 0 || rootTag === 1)
-		{
-			while (proc.g && proc.g.$ !== rootTag)
-			{
-				proc.g = proc.g.i;
-			}
-			if (!proc.g)
-			{
-				return;
-			}
-			proc.f = proc.g.b(proc.f.a);
-			proc.g = proc.g.i;
-		}
-		else if (rootTag === 2)
-		{
-			proc.f.c = proc.f.b(function(newRoot) {
-				proc.f = newRoot;
-				_Scheduler_enqueue(proc);
-			});
-			return;
-		}
-		else if (rootTag === 5)
-		{
-			if (proc.h.length === 0)
-			{
-				return;
-			}
-			proc.f = proc.f.b(proc.h.shift());
-		}
-		else // if (rootTag === 3 || rootTag === 4)
-		{
-			proc.g = {
-				$: rootTag === 3 ? 0 : 1,
-				b: proc.f.b,
-				i: proc.g
-			};
-			proc.f = proc.f.d;
-		}
-	}
-}
 
 
 
@@ -4517,6 +4517,9 @@ var author$project$Main$get_active_color = function (zone_colors) {
 		'bogus',
 		elm$core$List$head(zone_colors));
 };
+var author$project$Msg$LoadGame = function (a) {
+	return {$: 'LoadGame', a: a};
+};
 var author$project$Config$holding_pen_squares = _List_fromArray(
 	['HP1', 'HP2', 'HP3', 'HP4']);
 var elm$core$Dict$Black = {$: 'Black'};
@@ -4685,6 +4688,122 @@ var author$project$Player$config_players = F2(
 		};
 		return A3(elm$core$List$foldl, config_one, dct, zone_colors);
 	});
+var author$project$Type$Loading = {$: 'Loading'};
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
+var elm$core$Task$Perform = function (a) {
+	return {$: 'Perform', a: a};
+};
+var elm$core$Task$succeed = _Scheduler_succeed;
+var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
+var elm$core$Basics$add = _Basics_add;
+var elm$core$Basics$gt = _Utils_gt;
+var elm$core$List$reverse = function (list) {
+	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
+};
+var elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							elm$core$List$foldl,
+							fn,
+							acc,
+							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var elm$core$Task$andThen = _Scheduler_andThen;
+var elm$core$Task$map = F2(
+	function (func, taskA) {
+		return A2(
+			elm$core$Task$andThen,
+			function (a) {
+				return elm$core$Task$succeed(
+					func(a));
+			},
+			taskA);
+	});
+var elm$core$Task$map2 = F3(
+	function (func, taskA, taskB) {
+		return A2(
+			elm$core$Task$andThen,
+			function (a) {
+				return A2(
+					elm$core$Task$andThen,
+					function (b) {
+						return elm$core$Task$succeed(
+							A2(func, a, b));
+					},
+					taskB);
+			},
+			taskA);
+	});
+var elm$core$Task$sequence = function (tasks) {
+	return A3(
+		elm$core$List$foldr,
+		elm$core$Task$map2(elm$core$List$cons),
+		elm$core$Task$succeed(_List_Nil),
+		tasks);
+};
 var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
@@ -4717,9 +4836,6 @@ var elm$core$Array$SubTree = function (a) {
 	return {$: 'SubTree', a: a};
 };
 var elm$core$Elm$JsArray$initializeFromList = _JsArray_initializeFromList;
-var elm$core$List$reverse = function (list) {
-	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
-};
 var elm$core$Array$compressNodes = F2(
 	function (nodes, acc) {
 		compressNodes:
@@ -4762,13 +4878,11 @@ var elm$core$Array$treeFromBuilder = F2(
 			}
 		}
 	});
-var elm$core$Basics$add = _Basics_add;
 var elm$core$Basics$apL = F2(
 	function (f, x) {
 		return f(x);
 	});
 var elm$core$Basics$floor = _Basics_floor;
-var elm$core$Basics$gt = _Utils_gt;
 var elm$core$Basics$max = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) > 0) ? x : y;
@@ -5052,17 +5166,95 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 			}
 		}
 	});
-var elm$core$Platform$Cmd$batch = _Platform_batch;
-var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var elm$core$Platform$sendToApp = _Platform_sendToApp;
+var elm$core$Task$spawnCmd = F2(
+	function (router, _n0) {
+		var task = _n0.a;
+		return _Scheduler_spawn(
+			A2(
+				elm$core$Task$andThen,
+				elm$core$Platform$sendToApp(router),
+				task));
+	});
+var elm$core$Task$onEffects = F3(
+	function (router, commands, state) {
+		return A2(
+			elm$core$Task$map,
+			function (_n0) {
+				return _Utils_Tuple0;
+			},
+			elm$core$Task$sequence(
+				A2(
+					elm$core$List$map,
+					elm$core$Task$spawnCmd(router),
+					commands)));
+	});
+var elm$core$Task$onSelfMsg = F3(
+	function (_n0, _n1, _n2) {
+		return elm$core$Task$succeed(_Utils_Tuple0);
+	});
+var elm$core$Task$cmdMap = F2(
+	function (tagger, _n0) {
+		var task = _n0.a;
+		return elm$core$Task$Perform(
+			A2(elm$core$Task$map, tagger, task));
+	});
+_Platform_effectManagers['Task'] = _Platform_createManager(elm$core$Task$init, elm$core$Task$onEffects, elm$core$Task$onSelfMsg, elm$core$Task$cmdMap);
+var elm$core$Task$command = _Platform_leaf('Task');
+var elm$core$Task$perform = F2(
+	function (toMessage, task) {
+		return elm$core$Task$command(
+			elm$core$Task$Perform(
+				A2(elm$core$Task$map, toMessage, task)));
+	});
+var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var elm$random$Random$Seed = F2(
+	function (a, b) {
+		return {$: 'Seed', a: a, b: b};
+	});
+var elm$random$Random$next = function (_n0) {
+	var state0 = _n0.a;
+	var incr = _n0.b;
+	return A2(elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
+};
+var elm$random$Random$initialSeed = function (x) {
+	var _n0 = elm$random$Random$next(
+		A2(elm$random$Random$Seed, 0, 1013904223));
+	var state1 = _n0.a;
+	var incr = _n0.b;
+	var state2 = (state1 + x) >>> 0;
+	return elm$random$Random$next(
+		A2(elm$random$Random$Seed, state2, incr));
+};
+var elm$time$Time$Name = function (a) {
+	return {$: 'Name', a: a};
+};
+var elm$time$Time$Offset = function (a) {
+	return {$: 'Offset', a: a};
+};
+var elm$time$Time$Zone = F2(
+	function (a, b) {
+		return {$: 'Zone', a: a, b: b};
+	});
+var elm$time$Time$customZone = elm$time$Time$Zone;
+var elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var elm$time$Time$millisToPosix = elm$time$Time$Posix;
+var elm$time$Time$now = _Time_now(elm$time$Time$millisToPosix);
 var author$project$Main$init = function (flags) {
 	var zone_colors = author$project$Config$orig_zone_colors;
 	var active_color = author$project$Main$get_active_color(zone_colors);
 	var model = {
 		piece_map: author$project$Piece$config_pieces(zone_colors),
 		players: A2(author$project$Player$config_players, active_color, zone_colors),
+		seed: elm$random$Random$initialSeed(42),
+		state: author$project$Type$Loading,
 		zone_colors: zone_colors
 	};
-	return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+	return _Utils_Tuple2(
+		model,
+		A2(elm$core$Task$perform, author$project$Msg$LoadGame, elm$time$Time$now));
 };
 var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
@@ -5944,66 +6136,19 @@ var author$project$Main$handle_square_click = F2(
 			return A3(author$project$Move$perform_move, model, move, update_player);
 		}
 	});
-var elm_community$list_extra$List$Extra$getAt = F2(
-	function (idx, xs) {
-		return (idx < 0) ? elm$core$Maybe$Nothing : elm$core$List$head(
-			A2(elm$core$List$drop, idx, xs));
-	});
-var elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
-		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							elm$core$List$foldl,
-							fn,
-							acc,
-							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
-		}
-	});
-var elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
-	});
+var author$project$Msg$NewSeed = function (a) {
+	return {$: 'NewSeed', a: a};
+};
+var author$project$Main$randomize = A2(elm$core$Task$perform, author$project$Msg$NewSeed, elm$time$Time$now);
+var author$project$Player$maybe_replenish = function (deck) {
+	var _n0 = elm$core$List$length(deck);
+	if (!_n0) {
+		return author$project$Deck$full_deck;
+	} else {
+		var other = _n0;
+		return deck;
+	}
+};
 var elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -6011,6 +6156,11 @@ var elm$core$List$append = F2(
 		} else {
 			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
 		}
+	});
+var elm_community$list_extra$List$Extra$getAt = F2(
+	function (idx, xs) {
+		return (idx < 0) ? elm$core$Maybe$Nothing : elm$core$List$head(
+			A2(elm$core$List$drop, idx, xs));
 	});
 var elm$core$List$tail = function (list) {
 	if (list.b) {
@@ -6037,28 +6187,6 @@ var elm_community$list_extra$List$Extra$removeAt = F2(
 			}
 		}
 	});
-var author$project$Player$activate_card = F2(
-	function (idx, player) {
-		var new_hand = A2(elm_community$list_extra$List$Extra$removeAt, idx, player.hand);
-		var active_card = A2(
-			elm$core$Maybe$withDefault,
-			'bogus',
-			A2(elm_community$list_extra$List$Extra$getAt, idx, player.hand));
-		var turn = author$project$Type$TurnCard(
-			{active_card: active_card, active_square: elm$core$Maybe$Nothing, move_error: elm$core$Maybe$Nothing});
-		return _Utils_update(
-			player,
-			{hand: new_hand, turn: turn});
-	});
-var author$project$Player$maybe_replenish = function (deck) {
-	var _n0 = elm$core$List$length(deck);
-	if (!_n0) {
-		return author$project$Deck$full_deck;
-	} else {
-		var other = _n0;
-		return deck;
-	}
-};
 var author$project$Player$draw_card = F2(
 	function (idx, player) {
 		var deck = A2(elm_community$list_extra$List$Extra$removeAt, idx, player.deck);
@@ -6083,124 +6211,10 @@ var author$project$Player$draw_card = F2(
 				hand: hand
 			});
 	});
-var author$project$Msg$DrawCardResult = F2(
-	function (a, b) {
-		return {$: 'DrawCardResult', a: a, b: b};
-	});
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
-var elm$random$Random$Generate = function (a) {
-	return {$: 'Generate', a: a};
-};
-var elm$core$Task$andThen = _Scheduler_andThen;
-var elm$core$Task$succeed = _Scheduler_succeed;
-var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
-var elm$random$Random$Seed = F2(
-	function (a, b) {
-		return {$: 'Seed', a: a, b: b};
-	});
-var elm$random$Random$next = function (_n0) {
-	var state0 = _n0.a;
-	var incr = _n0.b;
-	return A2(elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
-};
-var elm$random$Random$initialSeed = function (x) {
-	var _n0 = elm$random$Random$next(
-		A2(elm$random$Random$Seed, 0, 1013904223));
-	var state1 = _n0.a;
-	var incr = _n0.b;
-	var state2 = (state1 + x) >>> 0;
-	return elm$random$Random$next(
-		A2(elm$random$Random$Seed, state2, incr));
-};
-var elm$time$Time$Name = function (a) {
-	return {$: 'Name', a: a};
-};
-var elm$time$Time$Offset = function (a) {
-	return {$: 'Offset', a: a};
-};
-var elm$time$Time$Zone = F2(
-	function (a, b) {
-		return {$: 'Zone', a: a, b: b};
-	});
-var elm$time$Time$customZone = elm$time$Time$Zone;
-var elm$time$Time$Posix = function (a) {
-	return {$: 'Posix', a: a};
-};
-var elm$time$Time$millisToPosix = elm$time$Time$Posix;
-var elm$time$Time$now = _Time_now(elm$time$Time$millisToPosix);
-var elm$time$Time$posixToMillis = function (_n0) {
-	var millis = _n0.a;
-	return millis;
-};
-var elm$random$Random$init = A2(
-	elm$core$Task$andThen,
-	function (time) {
-		return elm$core$Task$succeed(
-			elm$random$Random$initialSeed(
-				elm$time$Time$posixToMillis(time)));
-	},
-	elm$time$Time$now);
-var elm$core$Platform$sendToApp = _Platform_sendToApp;
-var elm$random$Random$step = F2(
-	function (_n0, seed) {
-		var generator = _n0.a;
-		return generator(seed);
-	});
-var elm$random$Random$onEffects = F3(
-	function (router, commands, seed) {
-		if (!commands.b) {
-			return elm$core$Task$succeed(seed);
-		} else {
-			var generator = commands.a.a;
-			var rest = commands.b;
-			var _n1 = A2(elm$random$Random$step, generator, seed);
-			var value = _n1.a;
-			var newSeed = _n1.b;
-			return A2(
-				elm$core$Task$andThen,
-				function (_n2) {
-					return A3(elm$random$Random$onEffects, router, rest, newSeed);
-				},
-				A2(elm$core$Platform$sendToApp, router, value));
-		}
-	});
-var elm$random$Random$onSelfMsg = F3(
-	function (_n0, _n1, seed) {
-		return elm$core$Task$succeed(seed);
-	});
+var elm$core$Bitwise$and = _Bitwise_and;
 var elm$random$Random$Generator = function (a) {
 	return {$: 'Generator', a: a};
 };
-var elm$random$Random$map = F2(
-	function (func, _n0) {
-		var genA = _n0.a;
-		return elm$random$Random$Generator(
-			function (seed0) {
-				var _n1 = genA(seed0);
-				var a = _n1.a;
-				var seed1 = _n1.b;
-				return _Utils_Tuple2(
-					func(a),
-					seed1);
-			});
-	});
-var elm$random$Random$cmdMap = F2(
-	function (func, _n0) {
-		var generator = _n0.a;
-		return elm$random$Random$Generate(
-			A2(elm$random$Random$map, func, generator));
-	});
-_Platform_effectManagers['Random'] = _Platform_createManager(elm$random$Random$init, elm$random$Random$onEffects, elm$random$Random$onSelfMsg, elm$random$Random$cmdMap);
-var elm$random$Random$command = _Platform_leaf('Random');
-var elm$random$Random$generate = F2(
-	function (tagger, generator) {
-		return elm$random$Random$command(
-			elm$random$Random$Generate(
-				A2(elm$random$Random$map, tagger, generator)));
-	});
-var elm$core$Bitwise$and = _Bitwise_and;
 var elm$core$Bitwise$xor = _Bitwise_xor;
 var elm$random$Random$peel = function (_n0) {
 	var state = _n0.a;
@@ -6239,15 +6253,72 @@ var elm$random$Random$int = F2(
 				}
 			});
 	});
-var author$project$Player$draw_card_cmd = F2(
-	function (players, color) {
-		var player = A2(author$project$Player$get_player, players, color);
+var elm$random$Random$step = F2(
+	function (_n0, seed) {
+		var generator = _n0.a;
+		return generator(seed);
+	});
+var author$project$Player$get_card_idx = F2(
+	function (player, seed) {
 		var deckCount = elm$core$List$length(player.deck);
 		var max = deckCount - 1;
 		return A2(
-			elm$random$Random$generate,
-			author$project$Msg$DrawCardResult(color),
-			A2(elm$random$Random$int, 0, max));
+			elm$random$Random$step,
+			A2(elm$random$Random$int, 0, max),
+			seed);
+	});
+var author$project$Player$replenish_hand = F2(
+	function (active_color, model) {
+		replenish_hand:
+		while (true) {
+			var players = model.players;
+			var active_player = A2(author$project$Player$get_player, model.players, active_color);
+			if (elm$core$List$length(active_player.hand) === 5) {
+				return model;
+			} else {
+				var _n0 = A2(author$project$Player$get_card_idx, active_player, model.seed);
+				var idx = _n0.a;
+				var seed = _n0.b;
+				var players_ = A3(
+					author$project$Player$update_player,
+					players,
+					active_color,
+					author$project$Player$draw_card(idx));
+				var model_ = _Utils_update(
+					model,
+					{players: players_, seed: seed});
+				var $temp$active_color = active_color,
+					$temp$model = model_;
+				active_color = $temp$active_color;
+				model = $temp$model;
+				continue replenish_hand;
+			}
+		}
+	});
+var author$project$Main$replenish_active_hand = function (model) {
+	var active_color = author$project$Main$get_active_color(model.zone_colors);
+	return A2(author$project$Player$replenish_hand, active_color, model);
+};
+var elm$time$Time$posixToMillis = function (_n0) {
+	var millis = _n0.a;
+	return millis;
+};
+var author$project$Main$seed_from_time = function (time) {
+	return elm$random$Random$initialSeed(
+		elm$time$Time$posixToMillis(time));
+};
+var author$project$Player$activate_card = F2(
+	function (idx, player) {
+		var new_hand = A2(elm_community$list_extra$List$Extra$removeAt, idx, player.hand);
+		var active_card = A2(
+			elm$core$Maybe$withDefault,
+			'bogus',
+			A2(elm_community$list_extra$List$Extra$getAt, idx, player.hand));
+		var turn = author$project$Type$TurnCard(
+			{active_card: active_card, active_square: elm$core$Maybe$Nothing, move_error: elm$core$Maybe$Nothing});
+		return _Utils_update(
+			player,
+			{hand: new_hand, turn: turn});
 	});
 var author$project$Player$finish_card = function (player) {
 	return _Utils_update(
@@ -6266,25 +6337,33 @@ var author$project$Player$set_turn = F3(
 					{turn: turn});
 			});
 	});
+var author$project$Type$Ready = {$: 'Ready'};
+var elm$core$Platform$Cmd$batch = _Platform_batch;
+var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
+			case 'LoadGame':
+				var time = msg.a;
+				var seed = author$project$Main$seed_from_time(time);
+				var model_ = author$project$Main$replenish_active_hand(
+					_Utils_update(
+						model,
+						{seed: seed, state: author$project$Type$Ready}));
+				return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
+			case 'NewSeed':
+				var time = msg.a;
+				var seed = author$project$Main$seed_from_time(time);
+				var model_ = _Utils_update(
+					model,
+					{seed: seed});
+				return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
 			case 'ClickSquare':
 				var clicked_square = msg.a;
 				var model_ = A2(author$project$Main$handle_square_click, model, clicked_square);
 				return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
-			case 'DrawCard':
-				var player_color = msg.a;
-				return _Utils_Tuple2(
-					model,
-					A2(author$project$Player$draw_card_cmd, model.players, player_color));
-			case 'DrawCardResult':
-				var player_color = msg.a;
-				var idx = msg.b;
-				var model_ = A2(
-					author$project$Main$update_active_player,
-					model,
-					author$project$Player$draw_card(idx));
+			case 'ReplenishHand':
+				var model_ = author$project$Main$replenish_active_hand(model);
 				return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
 			case 'ActivateCard':
 				var player_color = msg.a;
@@ -6293,7 +6372,7 @@ var author$project$Main$update = F2(
 					author$project$Main$update_active_player,
 					model,
 					author$project$Player$activate_card(idx));
-				return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(model_, author$project$Main$randomize);
 			case 'FinishCard':
 				var player_color = msg.a;
 				var model_ = A2(author$project$Main$update_active_player, model, author$project$Player$finish_card);
@@ -6307,9 +6386,10 @@ var author$project$Main$update = F2(
 					new_player_color,
 					author$project$Type$TurnInProgress,
 					A3(author$project$Player$set_turn, old_player_color, author$project$Type$TurnIdle, model.players));
-				var model_ = _Utils_update(
-					model,
-					{players: players, zone_colors: new_zone_colors});
+				var model_ = author$project$Main$replenish_active_hand(
+					_Utils_update(
+						model,
+						{players: players, zone_colors: new_zone_colors}));
 				return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
 		}
 	});
@@ -6398,20 +6478,6 @@ var author$project$Square$is_active_square = F2(
 var elm$core$List$concat = function (lists) {
 	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
 };
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
 var elm$core$Dict$member = F2(
 	function (key, dict) {
 		var _n0 = A2(elm$core$Dict$get, key, dict);
@@ -6681,9 +6747,7 @@ var author$project$Player$active_card_view = F2(
 					]));
 		}
 	});
-var author$project$Msg$DrawCard = function (a) {
-	return {$: 'DrawCard', a: a};
-};
+var author$project$Msg$ReplenishHand = {$: 'ReplenishHand'};
 var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
 var author$project$Player$card_css = function (color) {
@@ -6724,8 +6788,7 @@ var author$project$Player$deck_view = F2(
 		var css = author$project$Player$card_css(color);
 		var attrs = ((handCount < 5) && _Utils_eq(player.turn, author$project$Type$TurnInProgress)) ? _List_fromArray(
 			[
-				elm$html$Html$Events$onClick(
-				author$project$Msg$DrawCard(color))
+				elm$html$Html$Events$onClick(author$project$Msg$ReplenishHand)
 			]) : _List_fromArray(
 			[
 				elm$html$Html$Attributes$disabled(true)
@@ -6815,7 +6878,7 @@ var author$project$Player$player_view = F2(
 						[deck, hand]))
 				]));
 	});
-var author$project$Main$view = function (model) {
+var author$project$Main$normal_view = function (model) {
 	var active_color = author$project$Main$get_active_color(model.zone_colors);
 	var board = A2(
 		elm$html$Html$div,
@@ -6828,6 +6891,20 @@ var author$project$Main$view = function (model) {
 	var body = _List_fromArray(
 		[board, cards, author$project$Board$board_rotate_button]);
 	return {body: body, title: 'Fast Track'};
+};
+var author$project$Main$view = function (model) {
+	var _n0 = model.state;
+	if (_n0.$ === 'Loading') {
+		return {
+			body: _List_fromArray(
+				[
+					elm$html$Html$text('loading...')
+				]),
+			title: 'Fast Track'
+		};
+	} else {
+		return author$project$Main$normal_view(model);
+	}
 };
 var elm$browser$Browser$External = function (a) {
 	return {$: 'External', a: a};
@@ -6847,82 +6924,6 @@ var elm$core$Basics$never = function (_n0) {
 		continue never;
 	}
 };
-var elm$core$Task$Perform = function (a) {
-	return {$: 'Perform', a: a};
-};
-var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
-var elm$core$Task$map = F2(
-	function (func, taskA) {
-		return A2(
-			elm$core$Task$andThen,
-			function (a) {
-				return elm$core$Task$succeed(
-					func(a));
-			},
-			taskA);
-	});
-var elm$core$Task$map2 = F3(
-	function (func, taskA, taskB) {
-		return A2(
-			elm$core$Task$andThen,
-			function (a) {
-				return A2(
-					elm$core$Task$andThen,
-					function (b) {
-						return elm$core$Task$succeed(
-							A2(func, a, b));
-					},
-					taskB);
-			},
-			taskA);
-	});
-var elm$core$Task$sequence = function (tasks) {
-	return A3(
-		elm$core$List$foldr,
-		elm$core$Task$map2(elm$core$List$cons),
-		elm$core$Task$succeed(_List_Nil),
-		tasks);
-};
-var elm$core$Task$spawnCmd = F2(
-	function (router, _n0) {
-		var task = _n0.a;
-		return _Scheduler_spawn(
-			A2(
-				elm$core$Task$andThen,
-				elm$core$Platform$sendToApp(router),
-				task));
-	});
-var elm$core$Task$onEffects = F3(
-	function (router, commands, state) {
-		return A2(
-			elm$core$Task$map,
-			function (_n0) {
-				return _Utils_Tuple0;
-			},
-			elm$core$Task$sequence(
-				A2(
-					elm$core$List$map,
-					elm$core$Task$spawnCmd(router),
-					commands)));
-	});
-var elm$core$Task$onSelfMsg = F3(
-	function (_n0, _n1, _n2) {
-		return elm$core$Task$succeed(_Utils_Tuple0);
-	});
-var elm$core$Task$cmdMap = F2(
-	function (tagger, _n0) {
-		var task = _n0.a;
-		return elm$core$Task$Perform(
-			A2(elm$core$Task$map, tagger, task));
-	});
-_Platform_effectManagers['Task'] = _Platform_createManager(elm$core$Task$init, elm$core$Task$onEffects, elm$core$Task$onSelfMsg, elm$core$Task$cmdMap);
-var elm$core$Task$command = _Platform_leaf('Task');
-var elm$core$Task$perform = F2(
-	function (toMessage, task) {
-		return elm$core$Task$command(
-			elm$core$Task$Perform(
-				A2(elm$core$Task$map, toMessage, task)));
-	});
 var elm$core$String$length = _String_length;
 var elm$core$String$slice = _String_slice;
 var elm$core$String$dropLeft = F2(
