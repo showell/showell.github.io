@@ -5998,17 +5998,62 @@ var elm$core$Dict$remove = F2(
 var author$project$Piece$unassign_piece = function (piece_loc) {
 	return elm$core$Dict$remove(piece_loc);
 };
+var elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var author$project$Player$is_move_again_card = function (card) {
+	return A2(
+		elm$core$List$member,
+		card,
+		_List_fromArray(
+			['A', 'K', 'Q', 'J', 'joker', '6']));
+};
+var author$project$Type$TurnDone = {$: 'TurnDone'};
+var author$project$Player$maybe_finish_turn = function (info) {
+	return author$project$Player$is_move_again_card(info.active_card) ? author$project$Type$TurnInProgress : author$project$Type$TurnDone;
+};
 var author$project$Type$TurnCard = function (a) {
 	return {$: 'TurnCard', a: a};
 };
-var author$project$Player$clear_active_square = function (player) {
+var author$project$Player$maybe_finish_card = function (info) {
+	var max_moves = (info.active_card === '7') ? 2 : 1;
+	return _Utils_eq(info.num_moves, max_moves) ? author$project$Player$maybe_finish_turn(info) : author$project$Type$TurnCard(info);
+};
+var author$project$Player$finish_move = function (player) {
 	var _n0 = player.turn;
 	if (_n0.$ === 'TurnCard') {
 		var info = _n0.a;
-		var turn = author$project$Type$TurnCard(
+		var turn = author$project$Player$maybe_finish_card(
 			_Utils_update(
 				info,
-				{active_square: elm$core$Maybe$Nothing, move_error: elm$core$Maybe$Nothing}));
+				{active_square: elm$core$Maybe$Nothing, move_error: elm$core$Maybe$Nothing, num_moves: info.num_moves + 1}));
 		return _Utils_update(
 			player,
 			{turn: turn});
@@ -6017,130 +6062,7 @@ var author$project$Player$clear_active_square = function (player) {
 		return player;
 	}
 };
-var author$project$Player$set_move_error = F2(
-	function (error, player) {
-		var _n0 = player.turn;
-		if (_n0.$ === 'TurnCard') {
-			var info = _n0.a;
-			var turn = author$project$Type$TurnCard(
-				_Utils_update(
-					info,
-					{
-						active_square: elm$core$Maybe$Nothing,
-						move_error: elm$core$Maybe$Just(error)
-					}));
-			return _Utils_update(
-				player,
-				{turn: turn});
-		} else {
-			var other = _n0;
-			return player;
-		}
-	});
-var author$project$Move$perform_move = F3(
-	function (model, move, update_active_player) {
-		var prev_loc = move.prev;
-		var piece_map = model.piece_map;
-		var piece_color = A2(author$project$Piece$get_piece, piece_map, prev_loc);
-		var next_loc = move.next;
-		if (piece_color.$ === 'Nothing') {
-			return model;
-		} else {
-			var piece_color_ = piece_color.a;
-			var _n1 = A2(author$project$Move$validate_move, piece_map, move);
-			if (_n1.$ === 'Err') {
-				var status = _n1.a;
-				return update_active_player(
-					author$project$Player$set_move_error(status));
-			} else {
-				var new_map = A3(
-					author$project$Piece$assign_piece,
-					next_loc,
-					piece_color_,
-					A2(
-						author$project$Piece$unassign_piece,
-						prev_loc,
-						A2(author$project$Piece$maybe_send_piece_to_pen, next_loc, piece_map)));
-				var model_ = update_active_player(author$project$Player$clear_active_square);
-				return _Utils_update(
-					model_,
-					{piece_map: new_map});
-			}
-		}
-	});
-var author$project$Player$can_player_start_move_here = F4(
-	function (player, player_color, piece_map, square_loc) {
-		var piece_color = A2(author$project$Piece$get_piece, piece_map, square_loc);
-		if (piece_color.$ === 'Nothing') {
-			return false;
-		} else {
-			var piece_color_ = piece_color.a;
-			if (_Utils_eq(piece_color_, player_color)) {
-				var _n1 = player.turn;
-				if (_n1.$ === 'TurnCard') {
-					return true;
-				} else {
-					var other = _n1;
-					return false;
-				}
-			} else {
-				return false;
-			}
-		}
-	});
-var author$project$Player$get_active_square = function (player) {
-	var _n0 = player.turn;
-	if (_n0.$ === 'TurnCard') {
-		var info = _n0.a;
-		return info.active_square;
-	} else {
-		var other = _n0;
-		return elm$core$Maybe$Nothing;
-	}
-};
-var author$project$Player$set_active_square = F2(
-	function (square, player) {
-		var _n0 = player.turn;
-		if (_n0.$ === 'TurnCard') {
-			var info = _n0.a;
-			var turn = author$project$Type$TurnCard(
-				_Utils_update(
-					info,
-					{
-						active_square: elm$core$Maybe$Just(square),
-						move_error: elm$core$Maybe$Nothing
-					}));
-			return _Utils_update(
-				player,
-				{turn: turn});
-		} else {
-			var other = _n0;
-			return player;
-		}
-	});
-var author$project$Main$handle_square_click = F2(
-	function (model, square_loc) {
-		var update_player = author$project$Main$update_active_player(model);
-		var players = model.players;
-		var active_color = author$project$Main$get_active_color(model.zone_colors);
-		var active_player = A2(author$project$Player$get_player, players, active_color);
-		var active_square = author$project$Player$get_active_square(active_player);
-		if (active_square.$ === 'Nothing') {
-			var piece_map = model.piece_map;
-			var can_move = A4(author$project$Player$can_player_start_move_here, active_player, active_color, piece_map, square_loc);
-			return can_move ? update_player(
-				author$project$Player$set_active_square(square_loc)) : model;
-		} else {
-			var prev = active_square.a;
-			var move = {next: square_loc, prev: prev};
-			return A3(author$project$Move$perform_move, model, move, update_player);
-		}
-	});
-var author$project$Msg$NewSeed = function (a) {
-	return {$: 'NewSeed', a: a};
-};
-var author$project$Main$randomize = A2(elm$core$Task$perform, author$project$Msg$NewSeed, elm$time$Time$now);
-var author$project$Player$maybe_replenish = function (deck) {
+var author$project$Player$maybe_replenish_deck = function (deck) {
 	var _n0 = elm$core$List$length(deck);
 	if (!_n0) {
 		return author$project$Deck$full_deck;
@@ -6207,7 +6129,7 @@ var author$project$Player$draw_card = F2(
 		return _Utils_update(
 			player,
 			{
-				deck: author$project$Player$maybe_replenish(deck),
+				deck: author$project$Player$maybe_replenish_deck(deck),
 				hand: hand
 			});
 	});
@@ -6295,6 +6217,137 @@ var author$project$Player$replenish_hand = F2(
 			}
 		}
 	});
+var author$project$Player$maybe_replenish_hand = F2(
+	function (active_color, model) {
+		var player = A2(author$project$Player$get_player, model.players, active_color);
+		return (elm$core$List$length(player.hand) > 0) ? model : A2(author$project$Player$replenish_hand, active_color, model);
+	});
+var author$project$Player$set_move_error = F2(
+	function (error, player) {
+		var _n0 = player.turn;
+		if (_n0.$ === 'TurnCard') {
+			var info = _n0.a;
+			var turn = author$project$Type$TurnCard(
+				_Utils_update(
+					info,
+					{
+						active_square: elm$core$Maybe$Nothing,
+						move_error: elm$core$Maybe$Just(error)
+					}));
+			return _Utils_update(
+				player,
+				{turn: turn});
+		} else {
+			var other = _n0;
+			return player;
+		}
+	});
+var author$project$Move$perform_move = F4(
+	function (model, move, active_color, update_active_player) {
+		var prev_loc = move.prev;
+		var piece_map = model.piece_map;
+		var piece_color = A2(author$project$Piece$get_piece, piece_map, prev_loc);
+		var next_loc = move.next;
+		if (piece_color.$ === 'Nothing') {
+			return model;
+		} else {
+			var piece_color_ = piece_color.a;
+			var _n1 = A2(author$project$Move$validate_move, piece_map, move);
+			if (_n1.$ === 'Err') {
+				var status = _n1.a;
+				return update_active_player(
+					author$project$Player$set_move_error(status));
+			} else {
+				var new_map = A3(
+					author$project$Piece$assign_piece,
+					next_loc,
+					piece_color_,
+					A2(
+						author$project$Piece$unassign_piece,
+						prev_loc,
+						A2(author$project$Piece$maybe_send_piece_to_pen, next_loc, piece_map)));
+				var model_ = A2(
+					author$project$Player$maybe_replenish_hand,
+					active_color,
+					update_active_player(author$project$Player$finish_move));
+				return _Utils_update(
+					model_,
+					{piece_map: new_map});
+			}
+		}
+	});
+var author$project$Player$can_player_start_move_here = F4(
+	function (player, player_color, piece_map, square_loc) {
+		var piece_color = A2(author$project$Piece$get_piece, piece_map, square_loc);
+		if (piece_color.$ === 'Nothing') {
+			return false;
+		} else {
+			var piece_color_ = piece_color.a;
+			if (_Utils_eq(piece_color_, player_color)) {
+				var _n1 = player.turn;
+				if (_n1.$ === 'TurnCard') {
+					return true;
+				} else {
+					var other = _n1;
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+	});
+var author$project$Player$get_active_square = function (player) {
+	var _n0 = player.turn;
+	if (_n0.$ === 'TurnCard') {
+		var info = _n0.a;
+		return info.active_square;
+	} else {
+		var other = _n0;
+		return elm$core$Maybe$Nothing;
+	}
+};
+var author$project$Player$set_active_square = F2(
+	function (square, player) {
+		var _n0 = player.turn;
+		if (_n0.$ === 'TurnCard') {
+			var info = _n0.a;
+			var turn = author$project$Type$TurnCard(
+				_Utils_update(
+					info,
+					{
+						active_square: elm$core$Maybe$Just(square),
+						move_error: elm$core$Maybe$Nothing
+					}));
+			return _Utils_update(
+				player,
+				{turn: turn});
+		} else {
+			var other = _n0;
+			return player;
+		}
+	});
+var author$project$Main$handle_square_click = F2(
+	function (model, square_loc) {
+		var update_player = author$project$Main$update_active_player(model);
+		var players = model.players;
+		var active_color = author$project$Main$get_active_color(model.zone_colors);
+		var active_player = A2(author$project$Player$get_player, players, active_color);
+		var active_square = author$project$Player$get_active_square(active_player);
+		if (active_square.$ === 'Nothing') {
+			var piece_map = model.piece_map;
+			var can_move = A4(author$project$Player$can_player_start_move_here, active_player, active_color, piece_map, square_loc);
+			return can_move ? update_player(
+				author$project$Player$set_active_square(square_loc)) : model;
+		} else {
+			var prev = active_square.a;
+			var move = {next: square_loc, prev: prev};
+			return A4(author$project$Move$perform_move, model, move, active_color, update_player);
+		}
+	});
+var author$project$Msg$NewSeed = function (a) {
+	return {$: 'NewSeed', a: a};
+};
+var author$project$Main$randomize = A2(elm$core$Task$perform, author$project$Msg$NewSeed, elm$time$Time$now);
 var author$project$Main$replenish_active_hand = function (model) {
 	var active_color = author$project$Main$get_active_color(model.zone_colors);
 	return A2(author$project$Player$replenish_hand, active_color, model);
@@ -6315,16 +6368,37 @@ var author$project$Player$activate_card = F2(
 			'bogus',
 			A2(elm_community$list_extra$List$Extra$getAt, idx, player.hand));
 		var turn = author$project$Type$TurnCard(
-			{active_card: active_card, active_square: elm$core$Maybe$Nothing, move_error: elm$core$Maybe$Nothing});
+			{active_card: active_card, active_square: elm$core$Maybe$Nothing, move_error: elm$core$Maybe$Nothing, num_moves: 0});
 		return _Utils_update(
 			player,
 			{hand: new_hand, turn: turn});
 	});
-var author$project$Player$finish_card = function (player) {
-	return _Utils_update(
-		player,
-		{turn: author$project$Type$TurnInProgress});
-};
+var author$project$Player$finish_card = F2(
+	function (active_color, model) {
+		var players = A3(
+			author$project$Player$update_player,
+			model.players,
+			active_color,
+			function (player) {
+				var turn = function () {
+					var _n0 = player.turn;
+					if (_n0.$ === 'TurnCard') {
+						var info = _n0.a;
+						return author$project$Player$maybe_finish_turn(info);
+					} else {
+						var other = _n0;
+						return other;
+					}
+				}();
+				return _Utils_update(
+					player,
+					{turn: turn});
+			});
+		var model_ = _Utils_update(
+			model,
+			{players: players});
+		return A2(author$project$Player$maybe_replenish_hand, active_color, model_);
+	});
 var author$project$Player$set_turn = F3(
 	function (color, turn, players) {
 		return A3(
@@ -6375,7 +6449,8 @@ var author$project$Main$update = F2(
 				return _Utils_Tuple2(model_, author$project$Main$randomize);
 			case 'FinishCard':
 				var player_color = msg.a;
-				var model_ = A2(author$project$Main$update_active_player, model, author$project$Player$finish_card);
+				var model_ = A2(author$project$Player$finish_card, player_color, model);
+				var active_color = author$project$Main$get_active_color(model.zone_colors);
 				return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
 			default:
 				var old_player_color = author$project$Main$get_active_color(model.zone_colors);
@@ -6393,61 +6468,6 @@ var author$project$Main$update = F2(
 				return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
 		}
 	});
-var author$project$Msg$RotateBoard = {$: 'RotateBoard'};
-var elm$json$Json$Decode$map = _Json_map1;
-var elm$json$Json$Decode$map2 = _Json_map2;
-var elm$json$Json$Decode$succeed = _Json_succeed;
-var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
-	switch (handler.$) {
-		case 'Normal':
-			return 0;
-		case 'MayStopPropagation':
-			return 1;
-		case 'MayPreventDefault':
-			return 2;
-		default:
-			return 3;
-	}
-};
-var elm$html$Html$button = _VirtualDom_node('button');
-var elm$html$Html$div = _VirtualDom_node('div');
-var elm$html$Html$hr = _VirtualDom_node('hr');
-var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
-var elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			elm$virtual_dom$VirtualDom$on,
-			event,
-			elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		elm$html$Html$Events$on,
-		'click',
-		elm$json$Json$Decode$succeed(msg));
-};
-var author$project$Board$board_rotate_button = A2(
-	elm$html$Html$div,
-	_List_Nil,
-	_List_fromArray(
-		[
-			A2(elm$html$Html$hr, _List_Nil, _List_Nil),
-			A2(
-			elm$html$Html$button,
-			_List_fromArray(
-				[
-					elm$html$Html$Events$onClick(author$project$Msg$RotateBoard)
-				]),
-			_List_fromArray(
-				[
-					elm$html$Html$text('Finish Turn')
-				]))
-		]));
 var author$project$Config$square_size = 26.0;
 var elm$core$String$fromFloat = _String_fromNumber;
 var author$project$Board$board_size = elm$core$String$fromFloat(author$project$Config$square_size * 16);
@@ -6492,6 +6512,21 @@ var elm$core$Set$member = F2(
 		var dict = _n0.a;
 		return A2(elm$core$Dict$member, key, dict);
 	});
+var elm$json$Json$Decode$map = _Json_map1;
+var elm$json$Json$Decode$map2 = _Json_map2;
+var elm$json$Json$Decode$succeed = _Json_succeed;
+var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
+	switch (handler.$) {
+		case 'Normal':
+			return 0;
+		case 'MayStopPropagation':
+			return 1;
+		case 'MayPreventDefault':
+			return 2;
+		default:
+			return 3;
+	}
+};
 var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var elm$svg$Svg$circle = elm$svg$Svg$trustedNode('circle');
 var elm$svg$Svg$g = elm$svg$Svg$trustedNode('g');
@@ -6505,6 +6540,17 @@ var elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
 var elm$svg$Svg$Events$onClick = function (msg) {
 	return A2(
 		elm$html$Html$Events$on,
@@ -6678,24 +6724,51 @@ var author$project$Board$board_view = F4(
 var author$project$Msg$FinishCard = function (a) {
 	return {$: 'FinishCard', a: a};
 };
-var author$project$Player$active_card_view = F2(
+var elm$html$Html$b = _VirtualDom_node('b');
+var elm$html$Html$button = _VirtualDom_node('button');
+var elm$html$Html$div = _VirtualDom_node('div');
+var elm$html$Html$span = _VirtualDom_node('span');
+var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
+var elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'click',
+		elm$json$Json$Decode$succeed(msg));
+};
+var author$project$Player$console_view = F2(
 	function (turn_info, color) {
+		var css = _List_fromArray(
+			[
+				A2(elm$html$Html$Attributes$style, 'color', color),
+				A2(elm$html$Html$Attributes$style, 'padding', '4px'),
+				A2(elm$html$Html$Attributes$style, 'margin', '5px'),
+				A2(elm$html$Html$Attributes$style, 'font-size', '110%')
+			]);
+		var active_card_view = A2(
+			elm$html$Html$b,
+			css,
+			_List_fromArray(
+				[
+					elm$html$Html$text(turn_info.active_card)
+				]));
 		var _n0 = turn_info.active_square;
 		if (_n0.$ === 'Just') {
 			return A2(
-				elm$html$Html$div,
+				elm$html$Html$span,
 				_List_Nil,
 				_List_fromArray(
 					[
-						elm$html$Html$text('play now: ' + turn_info.active_card),
+						active_card_view,
 						A2(
 						elm$html$Html$div,
 						_List_Nil,
 						_List_fromArray(
 							[
 								elm$html$Html$text('Click a square to end move.')
-							])),
-						A2(elm$html$Html$hr, _List_Nil, _List_Nil)
+							]))
 					]));
 		} else {
 			var move_error = function () {
@@ -6713,6 +6786,7 @@ var author$project$Player$active_card_view = F2(
 					return A2(elm$html$Html$div, _List_Nil, _List_Nil);
 				}
 			}();
+			var instructions = 'Click a piece to start move';
 			var finish_button = A2(
 				elm$html$Html$button,
 				_List_fromArray(
@@ -6729,27 +6803,24 @@ var author$project$Player$active_card_view = F2(
 				_List_Nil,
 				_List_fromArray(
 					[
-						elm$html$Html$text('play now: ' + turn_info.active_card),
 						A2(
-						elm$html$Html$div,
+						elm$html$Html$span,
 						_List_Nil,
 						_List_fromArray(
 							[
-								elm$html$Html$text('Click a piece to start move.')
+								active_card_view,
+								elm$html$Html$text(instructions)
 							])),
 						A2(
 						elm$html$Html$div,
 						_List_Nil,
 						_List_fromArray(
 							[finish_button])),
-						move_error,
-						A2(elm$html$Html$hr, _List_Nil, _List_Nil)
+						move_error
 					]));
 		}
 	});
 var author$project$Msg$ReplenishHand = {$: 'ReplenishHand'};
-var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
 var author$project$Player$card_css = function (color) {
 	return _List_fromArray(
 		[
@@ -6762,6 +6833,47 @@ var author$project$Player$card_css = function (color) {
 			A2(elm$html$Html$Attributes$style, 'min-width', '30px')
 		]);
 };
+var author$project$Player$deck_view = F2(
+	function (player, color) {
+		var handCount = elm$core$List$length(player.hand);
+		if (_Utils_eq(player.turn, author$project$Type$TurnDone) && (handCount < 5)) {
+			var css = author$project$Player$card_css(color);
+			var attrs = _List_fromArray(
+				[
+					elm$html$Html$Events$onClick(author$project$Msg$ReplenishHand)
+				]);
+			return A2(
+				elm$html$Html$button,
+				_Utils_ap(attrs, css),
+				_List_fromArray(
+					[
+						elm$html$Html$text('Deck')
+					]));
+		} else {
+			return A2(elm$html$Html$span, _List_Nil, _List_Nil);
+		}
+	});
+var author$project$Msg$RotateBoard = {$: 'RotateBoard'};
+var author$project$Player$rotate_button = A2(
+	elm$html$Html$div,
+	_List_Nil,
+	_List_fromArray(
+		[
+			A2(
+			elm$html$Html$button,
+			_List_fromArray(
+				[
+					elm$html$Html$Events$onClick(author$project$Msg$RotateBoard)
+				]),
+			_List_fromArray(
+				[
+					elm$html$Html$text('Finish Turn')
+				]))
+		]));
+var author$project$Msg$ActivateCard = F2(
+	function (a, b) {
+		return {$: 'ActivateCard', a: a, b: b};
+	});
 var elm$json$Json$Encode$bool = _Json_wrap;
 var elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
@@ -6771,47 +6883,6 @@ var elm$html$Html$Attributes$boolProperty = F2(
 			elm$json$Json$Encode$bool(bool));
 	});
 var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
-var elm$json$Json$Encode$string = _Json_wrap;
-var elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$string(string));
-	});
-var elm$html$Html$Attributes$title = elm$html$Html$Attributes$stringProperty('title');
-var author$project$Player$deck_view = F2(
-	function (player, color) {
-		var handCount = elm$core$List$length(player.hand);
-		var deckCount = elm$core$List$length(player.deck);
-		var title_ = elm$core$String$fromInt(deckCount) + ' cards left';
-		var css = author$project$Player$card_css(color);
-		var attrs = ((handCount < 5) && _Utils_eq(player.turn, author$project$Type$TurnInProgress)) ? _List_fromArray(
-			[
-				elm$html$Html$Events$onClick(author$project$Msg$ReplenishHand)
-			]) : _List_fromArray(
-			[
-				elm$html$Html$Attributes$disabled(true)
-			]);
-		return A2(
-			elm$html$Html$button,
-			_Utils_ap(
-				attrs,
-				_Utils_ap(
-					css,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$title(title_)
-						]))),
-			_List_fromArray(
-				[
-					elm$html$Html$text('Deck')
-				]));
-	});
-var author$project$Msg$ActivateCard = F2(
-	function (a, b) {
-		return {$: 'ActivateCard', a: a, b: b};
-	});
 var author$project$Player$view_hand_card = F4(
 	function (color, player, idx, card) {
 		var css = author$project$Player$card_css(color);
@@ -6839,7 +6910,6 @@ var author$project$Player$view_hand_card = F4(
 					elm$html$Html$text(card)
 				]));
 	});
-var elm$html$Html$span = _VirtualDom_node('span');
 var author$project$Player$player_view = F2(
 	function (players, color) {
 		var player = A2(author$project$Player$get_player, players, color);
@@ -6849,20 +6919,32 @@ var author$project$Player$player_view = F2(
 			player.hand);
 		var hand = A2(elm$html$Html$span, _List_Nil, hand_cards);
 		var deck = A2(author$project$Player$deck_view, player, color);
-		var active_card = function () {
+		var console = function () {
 			var _n0 = player.turn;
-			if (_n0.$ === 'TurnCard') {
-				var turn_info = _n0.a;
-				return A2(author$project$Player$active_card_view, turn_info, color);
-			} else {
-				var other = _n0;
-				return A2(
-					elm$html$Html$div,
-					_List_Nil,
-					_List_fromArray(
-						[
-							elm$html$Html$text('click a card below')
-						]));
+			switch (_n0.$) {
+				case 'TurnCard':
+					var turn_info = _n0.a;
+					return A2(author$project$Player$console_view, turn_info, color);
+				case 'TurnInProgress':
+					return A2(
+						elm$html$Html$div,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('click a card above')
+							]));
+				case 'TurnDone':
+					return A2(
+						elm$html$Html$div,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('ok, now finish your turn'),
+								author$project$Player$rotate_button
+							]));
+				default:
+					var other = _n0;
+					return A2(elm$html$Html$div, _List_Nil, _List_Nil);
 			}
 		}();
 		return A2(
@@ -6870,14 +6952,15 @@ var author$project$Player$player_view = F2(
 			_List_Nil,
 			_List_fromArray(
 				[
-					active_card,
 					A2(
 					elm$html$Html$span,
 					_List_Nil,
 					_List_fromArray(
-						[deck, hand]))
+						[deck, hand])),
+					console
 				]));
 	});
+var elm$html$Html$hr = _VirtualDom_node('hr');
 var author$project$Main$normal_view = function (model) {
 	var active_color = author$project$Main$get_active_color(model.zone_colors);
 	var board = A2(
@@ -6889,7 +6972,11 @@ var author$project$Main$normal_view = function (model) {
 			]));
 	var cards = A2(author$project$Player$player_view, model.players, active_color);
 	var body = _List_fromArray(
-		[board, cards, author$project$Board$board_rotate_button]);
+		[
+			board,
+			A2(elm$html$Html$hr, _List_Nil, _List_Nil),
+			cards
+		]);
 	return {body: body, title: 'Fast Track'};
 };
 var author$project$Main$view = function (model) {
