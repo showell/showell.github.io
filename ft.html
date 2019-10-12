@@ -4674,8 +4674,12 @@ var author$project$Main$get_active_color = function (zone_colors) {
 		'bogus',
 		elm$core$List$head(zone_colors));
 };
+var elm$core$Basics$False = {$: 'False'};
+var author$project$Config$dev_hack = false;
 var author$project$Config$holding_pen_locations = _List_fromArray(
 	['HP1', 'HP2', 'HP3', 'HP4']);
+var author$project$Config$starting_locations = author$project$Config$dev_hack ? _List_fromArray(
+	['HP1', 'HP2', 'B1', 'R0']) : author$project$Config$holding_pen_locations;
 var elm$core$Dict$Black = {$: 'Black'};
 var elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -4794,7 +4798,7 @@ var author$project$Piece$config_zone_pieces = F2(
 				_Utils_Tuple2(color, id),
 				color);
 		};
-		return A3(elm$core$List$foldl, assign, piece_map, author$project$Config$holding_pen_locations);
+		return A3(elm$core$List$foldl, assign, piece_map, author$project$Config$starting_locations);
 	});
 var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
 var author$project$Piece$config_pieces = function (zone_colors) {
@@ -4803,9 +4807,11 @@ var author$project$Piece$config_pieces = function (zone_colors) {
 };
 var author$project$Config$full_deck = _List_fromArray(
 	['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', 'joker', 'joker']);
+var author$project$Config$starting_hand = author$project$Config$dev_hack ? _List_fromArray(
+	['7', '8', '10', 'J', 'J']) : _List_Nil;
 var author$project$Type$TurnBegin = {$: 'TurnBegin'};
 var author$project$Player$config_player = function () {
-	var original_setup = {deck: author$project$Config$full_deck, discard_pile: _List_Nil, hand: _List_Nil, turn: author$project$Type$TurnBegin};
+	var original_setup = {deck: author$project$Config$full_deck, discard_pile: _List_Nil, hand: author$project$Config$starting_hand, turn: author$project$Type$TurnBegin};
 	return original_setup;
 }();
 var author$project$Player$config_players = function (zone_colors) {
@@ -4929,7 +4935,6 @@ var elm$core$Task$sequence = function (tasks) {
 		elm$core$Task$succeed(_List_Nil),
 		tasks);
 };
-var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
 	if (result.$ === 'Ok') {
@@ -5577,13 +5582,14 @@ var author$project$Player$update_player = F3(
 		var new_player = f(player);
 		return A3(elm$core$Dict$insert, color, new_player, players);
 	});
+var elm$core$Basics$ge = _Utils_ge;
 var author$project$Player$replenish_hand = F2(
 	function (active_color, model) {
 		replenish_hand:
 		while (true) {
 			var players = model.players;
 			var active_player = A2(author$project$Player$get_player, model.players, active_color);
-			if (elm$core$List$length(active_player.hand) === 5) {
+			if (elm$core$List$length(active_player.hand) >= 5) {
 				return model;
 			} else {
 				var _n0 = A2(author$project$Player$get_card_idx, active_player, model.seed);
@@ -5604,6 +5610,18 @@ var author$project$Player$replenish_hand = F2(
 				continue replenish_hand;
 			}
 		}
+	});
+var elm$core$List$concat = function (lists) {
+	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
+};
+var author$project$Graph$get_nodes_n_edges_away = F3(
+	function (get_neighbors, n, node) {
+		return (!n) ? _List_fromArray(
+			[node]) : elm$core$List$concat(
+			A2(
+				elm$core$List$map,
+				A2(author$project$Graph$get_nodes_n_edges_away, get_neighbors, n - 1),
+				get_neighbors(node)));
 	});
 var elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
@@ -5638,41 +5656,6 @@ var author$project$Config$is_holding_pen_id = function (id) {
 		id,
 		elm$core$Set$fromList(author$project$Config$holding_pen_locations));
 };
-var author$project$Config$move_count_for_card = F2(
-	function (active_card, id) {
-		switch (active_card) {
-			case 'A':
-				return 1;
-			case '2':
-				return 2;
-			case '3':
-				return 3;
-			case '4':
-				return 4;
-			case '5':
-				return 5;
-			case '6':
-				return author$project$Config$is_holding_pen_id(id) ? 1 : 6;
-			case '7':
-				return 7;
-			case '8':
-				return 8;
-			case '9':
-				return 9;
-			case '10':
-				return 10;
-			case 'J':
-				return 1;
-			case 'Q':
-				return 1;
-			case 'K':
-				return 1;
-			case 'joker':
-				return 1;
-			default:
-				return 0;
-		}
-	});
 var author$project$Config$next_ids_in_zone = F3(
 	function (id, piece_color, zone_color) {
 		return (id === 'HH') ? _List_fromArray(
@@ -5762,54 +5745,53 @@ var elm$core$List$filter = F2(
 			_List_Nil,
 			list);
 	});
-var author$project$LegalMove$get_next_locs = function (params) {
-	var zone_colors = params.zone_colors;
-	var piece_map = params.piece_map;
-	var piece_color = params.piece_color;
-	var loc = params.loc;
-	var is_free = function (loc_) {
-		return A3(author$project$LegalMove$is_loc_free, piece_map, piece_color, loc_);
-	};
-	var filter = function (lst) {
-		return elm$core$Set$fromList(
-			A2(elm$core$List$filter, is_free, lst));
-	};
-	var can_leave_pen = params.can_leave_pen;
-	var can_fast_track = params.can_fast_track;
-	var _n0 = loc;
-	var zone_color = _n0.a;
-	var id = _n0.b;
-	var next_color = A2(author$project$LegalMove$next_zone_color, zone_color, zone_colors);
-	if (author$project$Config$is_holding_pen_id(id)) {
-		return can_leave_pen ? filter(
-			_List_fromArray(
-				[
-					_Utils_Tuple2(zone_color, 'L0')
-				])) : elm$core$Set$empty;
-	} else {
-		if (id === 'FT') {
-			return (can_fast_track && (!_Utils_eq(next_color, piece_color))) ? filter(
+var author$project$LegalMove$get_next_locs = F2(
+	function (params, loc) {
+		var zone_colors = params.zone_colors;
+		var piece_map = params.piece_map;
+		var piece_color = params.piece_color;
+		var is_free = function (loc_) {
+			return A3(author$project$LegalMove$is_loc_free, piece_map, piece_color, loc_);
+		};
+		var filter = function (lst) {
+			return A2(elm$core$List$filter, is_free, lst);
+		};
+		var can_leave_pen = params.can_leave_pen;
+		var can_fast_track = params.can_fast_track;
+		var _n0 = loc;
+		var zone_color = _n0.a;
+		var id = _n0.b;
+		var next_color = A2(author$project$LegalMove$next_zone_color, zone_color, zone_colors);
+		if (author$project$Config$is_holding_pen_id(id)) {
+			return can_leave_pen ? filter(
 				_List_fromArray(
 					[
-						_Utils_Tuple2(next_color, 'FT'),
-						_Utils_Tuple2(next_color, 'R4')
-					])) : filter(
-				_List_fromArray(
-					[
-						_Utils_Tuple2(next_color, 'R4')
-					]));
+						_Utils_Tuple2(zone_color, 'L0')
+					])) : _List_Nil;
 		} else {
-			var next_ids = A3(author$project$Config$next_ids_in_zone, id, piece_color, zone_color);
-			return filter(
-				A2(
-					elm$core$List$map,
-					function (id_) {
-						return _Utils_Tuple2(zone_color, id_);
-					},
-					next_ids));
+			if (id === 'FT') {
+				return (can_fast_track && (!_Utils_eq(next_color, piece_color))) ? filter(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(next_color, 'FT'),
+							_Utils_Tuple2(next_color, 'R4')
+						])) : filter(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(next_color, 'R4')
+						]));
+			} else {
+				var next_ids = A3(author$project$Config$next_ids_in_zone, id, piece_color, zone_color);
+				return filter(
+					A2(
+						elm$core$List$map,
+						function (id_) {
+							return _Utils_Tuple2(zone_color, id_);
+						},
+						next_ids));
+			}
 		}
-	}
-};
+	});
 var author$project$Config$base_locations = _List_fromArray(
 	['B1', 'B2', 'B3', 'B4']);
 var author$project$Config$is_base_id = function (id) {
@@ -5834,71 +5816,63 @@ var author$project$LegalMove$prev_zone_color = F2(
 			'bogus',
 			A2(elm_community$list_extra$List$Extra$getAt, next_idx, zone_colors));
 	});
-var author$project$LegalMove$get_prev_locs = function (params) {
-	var zone_colors = params.zone_colors;
-	var piece_map = params.piece_map;
-	var piece_color = params.piece_color;
-	var loc = params.loc;
-	var is_free = function (loc_) {
-		return A3(author$project$LegalMove$is_loc_free, piece_map, piece_color, loc_);
-	};
-	var filter = function (lst) {
-		return elm$core$Set$fromList(
-			A2(elm$core$List$filter, is_free, lst));
-	};
-	var _n0 = loc;
-	var zone_color = _n0.a;
-	var id = _n0.b;
-	var prev_color = A2(author$project$LegalMove$prev_zone_color, zone_color, zone_colors);
-	if (author$project$Config$is_holding_pen_id(id)) {
-		return elm$core$Set$empty;
-	} else {
-		if (author$project$Config$is_base_id(id)) {
-			return elm$core$Set$empty;
+var author$project$LegalMove$get_prev_locs = F2(
+	function (params, loc) {
+		var zone_colors = params.zone_colors;
+		var piece_map = params.piece_map;
+		var piece_color = params.piece_color;
+		var is_free = function (loc_) {
+			return A3(author$project$LegalMove$is_loc_free, piece_map, piece_color, loc_);
+		};
+		var filter = function (lst) {
+			return A2(elm$core$List$filter, is_free, lst);
+		};
+		var _n0 = loc;
+		var zone_color = _n0.a;
+		var id = _n0.b;
+		var prev_color = A2(author$project$LegalMove$prev_zone_color, zone_color, zone_colors);
+		if (author$project$Config$is_holding_pen_id(id)) {
+			return _List_Nil;
 		} else {
-			if (id === 'R4') {
-				return filter(
-					_List_fromArray(
-						[
-							_Utils_Tuple2(prev_color, 'FT')
-						]));
+			if (author$project$Config$is_base_id(id)) {
+				return _List_Nil;
 			} else {
-				var prev_id = author$project$Config$prev_id_in_zone(id);
-				return filter(
-					_List_fromArray(
-						[
-							_Utils_Tuple2(zone_color, prev_id)
-						]));
+				if (id === 'R4') {
+					return filter(
+						_List_fromArray(
+							[
+								_Utils_Tuple2(prev_color, 'FT')
+							]));
+				} else {
+					var prev_id = author$project$Config$prev_id_in_zone(id);
+					return filter(
+						_List_fromArray(
+							[
+								_Utils_Tuple2(zone_color, prev_id)
+							]));
+				}
 			}
 		}
-	}
-};
-var elm$core$List$concat = function (lists) {
-	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
-};
-var author$project$LegalMove$end_locations = function (params) {
-	var moves_left = params.moves_left;
-	if (moves_left < 1) {
-		return elm$core$Set$empty;
-	} else {
-		var locs = params.reverse_mode ? author$project$LegalMove$get_prev_locs(params) : author$project$LegalMove$get_next_locs(params);
-		if (moves_left === 1) {
-			return locs;
-		} else {
-			var recurse = function (loc_) {
-				return elm$core$Set$toList(
-					author$project$LegalMove$end_locations(
-						_Utils_update(
-							params,
-							{loc: loc_, moves_left: moves_left - 1})));
-			};
-			return elm$core$Set$fromList(
-				elm$core$List$concat(
-					A2(
-						elm$core$List$map,
-						recurse,
-						elm$core$Set$toList(locs))));
-		}
+	});
+var author$project$LegalMove$end_locations = F3(
+	function (params, start_loc, moves_left) {
+		var get_neighbors = params.reverse_mode ? author$project$LegalMove$get_prev_locs(params) : author$project$LegalMove$get_next_locs(params);
+		return A3(author$project$Graph$get_nodes_n_edges_away, get_neighbors, moves_left, start_loc);
+	});
+var author$project$LegalMove$get_card_for_move_type = function (move_type) {
+	switch (move_type.$) {
+		case 'WithCard':
+			var card = move_type.a;
+			return card;
+		case 'Reverse':
+			var card = move_type.a;
+			return card;
+		case 'StartSplit':
+			return '7';
+		case 'FinishSplit':
+			return '7';
+		default:
+			return 'J';
 	}
 };
 var elm$core$Basics$not = _Basics_not;
@@ -5934,75 +5908,62 @@ var author$project$Piece$get_the_piece = F2(
 			'bogus',
 			A2(elm$core$Dict$get, piece_loc, piece_map));
 	});
-var elm$core$Dict$foldl = F3(
-	function (func, acc, dict) {
-		foldl:
+var author$project$Type$JackTrade = {$: 'JackTrade'};
+var author$project$Type$WithCard = function (a) {
+	return {$: 'WithCard', a: a};
+};
+var author$project$LegalMove$get_moves_for_jack = F2(
+	function (params, start_loc) {
+		var piece_map = params.piece_map;
+		var piece_color = A2(author$project$Piece$get_the_piece, piece_map, start_loc);
+		var trade_moves = author$project$LegalMove$is_normal_loc(start_loc) ? A2(
+			elm$core$List$map,
+			function (end_loc) {
+				return _Utils_Tuple3(author$project$Type$JackTrade, start_loc, end_loc);
+			},
+			elm$core$Set$toList(
+				A2(author$project$LegalMove$swappable_locs, piece_map, piece_color))) : _List_Nil;
+		var moves_left = 1;
+		var forward_moves = A2(
+			elm$core$List$map,
+			function (end_loc) {
+				return _Utils_Tuple3(
+					author$project$Type$WithCard('J'),
+					start_loc,
+					end_loc);
+			},
+			A3(author$project$LegalMove$end_locations, params, start_loc, moves_left));
+		return elm$core$List$concat(
+			_List_fromArray(
+				[forward_moves, trade_moves]));
+	});
+var elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
 		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return acc;
+			if (!list.b) {
+				return false;
 			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var $temp$func = func,
-					$temp$acc = A3(
-					func,
-					key,
-					value,
-					A3(elm$core$Dict$foldl, func, acc, left)),
-					$temp$dict = right;
-				func = $temp$func;
-				acc = $temp$acc;
-				dict = $temp$dict;
-				continue foldl;
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
 			}
 		}
 	});
-var elm$core$Dict$union = F2(
-	function (t1, t2) {
-		return A3(elm$core$Dict$foldl, elm$core$Dict$insert, t2, t1);
-	});
-var elm$core$Set$union = F2(
-	function (_n0, _n1) {
-		var dict1 = _n0.a;
-		var dict2 = _n1.a;
-		return elm$core$Set$Set_elm_builtin(
-			A2(elm$core$Dict$union, dict1, dict2));
-	});
-var author$project$LegalMove$end_locations_for_jack = function (params) {
-	var start_loc = params.loc;
-	var piece_map = params.piece_map;
-	var piece_color = A2(author$project$Piece$get_the_piece, piece_map, start_loc);
-	var trade_locs = author$project$LegalMove$is_normal_loc(start_loc) ? A2(author$project$LegalMove$swappable_locs, piece_map, piece_color) : elm$core$Set$empty;
-	return A2(
-		elm$core$Set$union,
-		author$project$LegalMove$end_locations(params),
-		trade_locs);
-};
-var elm$core$Basics$ge = _Utils_ge;
-var author$project$LegalMove$can_go_n_spaces = F6(
-	function (can_fast_track, piece_color, piece_map, zone_colors, n_spaces, location) {
-		var recurse = F2(
-			function (n, loc) {
-				if (n <= 0) {
-					return false;
-				} else {
-					var params = {can_fast_track: can_fast_track, can_leave_pen: false, loc: loc, moves_left: 1, piece_color: piece_color, piece_map: piece_map, reverse_mode: false, zone_colors: zone_colors};
-					var locs = elm$core$Set$toList(
-						author$project$LegalMove$get_next_locs(params));
-					if (n === 1) {
-						return (elm$core$List$length(locs) >= 1) ? true : false;
-					} else {
-						var can_go = function (next_loc) {
-							return A2(recurse, n - 1, next_loc);
-						};
-						var all_paths = A2(elm$core$List$filter, can_go, locs);
-						return elm$core$List$length(all_paths) >= 1;
-					}
-				}
-			});
-		return A2(recurse, n_spaces, location);
+var author$project$Graph$can_travel_n_edges = F3(
+	function (get_neighbors, n, node) {
+		return (n <= 0) ? true : A2(
+			elm$core$List$any,
+			A2(author$project$Graph$can_travel_n_edges, get_neighbors, n - 1),
+			get_neighbors(node));
 	});
 var author$project$LegalMove$my_pieces = F2(
 	function (piece_map, active_color) {
@@ -6012,64 +5973,17 @@ var author$project$LegalMove$my_pieces = F2(
 				A2(author$project$LegalMove$is_color, piece_map, active_color),
 				elm$core$Dict$keys(piece_map)));
 	});
-var elm$core$Dict$filter = F2(
-	function (isGood, dict) {
-		return A3(
-			elm$core$Dict$foldl,
-			F3(
-				function (k, v, d) {
-					return A2(isGood, k, v) ? A3(elm$core$Dict$insert, k, v, d) : d;
-				}),
-			elm$core$Dict$empty,
-			dict);
-	});
-var elm$core$Set$filter = F2(
-	function (isGood, _n0) {
-		var dict = _n0.a;
-		return elm$core$Set$Set_elm_builtin(
-			A2(
-				elm$core$Dict$filter,
-				F2(
-					function (key, _n1) {
-						return isGood(key);
-					}),
-				dict));
-	});
-var elm$core$Dict$sizeHelp = F2(
-	function (n, dict) {
-		sizeHelp:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return n;
-			} else {
-				var left = dict.d;
-				var right = dict.e;
-				var $temp$n = A2(elm$core$Dict$sizeHelp, n + 1, right),
-					$temp$dict = left;
-				n = $temp$n;
-				dict = $temp$dict;
-				continue sizeHelp;
-			}
-		}
-	});
-var elm$core$Dict$size = function (dict) {
-	return A2(elm$core$Dict$sizeHelp, 0, dict);
-};
-var elm$core$Set$size = function (_n0) {
-	var dict = _n0.a;
-	return elm$core$Dict$size(dict);
-};
 var author$project$LegalMove$has_piece_on_fast_track = F2(
 	function (piece_map, active_color) {
 		var is_ft = function (_n0) {
 			var id = _n0.b;
 			return id === 'FT';
 		};
-		var locs = A2(
-			elm$core$Set$filter,
+		return A2(
+			elm$core$List$any,
 			is_ft,
-			A2(author$project$LegalMove$my_pieces, piece_map, active_color));
-		return elm$core$Set$size(locs) >= 1;
+			elm$core$Set$toList(
+				A2(author$project$LegalMove$my_pieces, piece_map, active_color)));
 	});
 var author$project$LegalMove$get_can_go_n_spaces = F4(
 	function (piece_map, loc, zone_colors, n) {
@@ -6078,7 +5992,13 @@ var author$project$LegalMove$get_can_go_n_spaces = F4(
 		var id = _n0.b;
 		var can_fast_track = id === 'FT';
 		var can_move = can_fast_track || (!A2(author$project$LegalMove$has_piece_on_fast_track, piece_map, piece_color));
-		return can_move ? A6(author$project$LegalMove$can_go_n_spaces, can_fast_track, piece_color, piece_map, zone_colors, n, loc) : false;
+		if (can_move) {
+			var params = {can_fast_track: can_fast_track, can_leave_pen: false, piece_color: piece_color, piece_map: piece_map, reverse_mode: false, zone_colors: zone_colors};
+			var get_neighbors = author$project$LegalMove$get_next_locs(params);
+			return A3(author$project$Graph$can_travel_n_edges, get_neighbors, n, loc);
+		} else {
+			return false;
+		}
 	});
 var author$project$Piece$fake_location = _Utils_Tuple2('bogus', 'bogus');
 var author$project$Piece$is_open_location = F2(
@@ -6139,7 +6059,6 @@ var author$project$Piece$open_holding_pen_location = F2(
 				},
 				A2(elm_community$list_extra$List$Extra$find, is_open, author$project$Config$holding_pen_locations)));
 	});
-var author$project$Type$JackTrade = {$: 'JackTrade'};
 var elm$core$Dict$getMin = function (dict) {
 	getMin:
 	while (true) {
@@ -6538,22 +6457,64 @@ var author$project$Piece$move_piece = F2(
 				A2(elm$core$Dict$remove, start_loc, piece_map));
 		}
 	});
-var author$project$Type$WithCard = function (a) {
-	return {$: 'WithCard', a: a};
-};
-var author$project$LegalMove$can_finish_split = F6(
-	function (zone_colors, other_locs, piece_map, count, start_loc, end_loc) {
-		var move_type = author$project$Type$WithCard('7');
-		var move = _Utils_Tuple3(move_type, start_loc, end_loc);
+var author$project$LegalMove$can_finish_split = F5(
+	function (zone_colors, other_locs, piece_map, count, move) {
 		var modified_piece_map = A2(author$project$Piece$move_piece, move, piece_map);
 		var can_go = function (other_loc) {
 			return A4(author$project$LegalMove$get_can_go_n_spaces, modified_piece_map, other_loc, zone_colors, count);
 		};
-		var other_movable_locs = A2(
-			elm$core$List$filter,
+		return A2(
+			elm$core$List$any,
 			can_go,
 			elm$core$Set$toList(other_locs));
-		return elm$core$List$length(other_movable_locs) > 0;
+	});
+var elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3(elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var elm$core$Dict$filter = F2(
+	function (isGood, dict) {
+		return A3(
+			elm$core$Dict$foldl,
+			F3(
+				function (k, v, d) {
+					return A2(isGood, k, v) ? A3(elm$core$Dict$insert, k, v, d) : d;
+				}),
+			elm$core$Dict$empty,
+			dict);
+	});
+var elm$core$Set$filter = F2(
+	function (isGood, _n0) {
+		var dict = _n0.a;
+		return elm$core$Set$Set_elm_builtin(
+			A2(
+				elm$core$Dict$filter,
+				F2(
+					function (key, _n1) {
+						return isGood(key);
+					}),
+				dict));
 	});
 var elm$core$Set$remove = F2(
 	function (key, _n0) {
@@ -6575,75 +6536,128 @@ var author$project$LegalMove$other_mobile_pieces = F3(
 				loc,
 				A2(author$project$LegalMove$my_pieces, piece_map, active_color)));
 	});
-var author$project$LegalMove$end_locations_for_seven = function (params) {
-	var zone_colors = params.zone_colors;
-	var piece_map = params.piece_map;
-	var loc = params.loc;
-	var piece_color = A2(author$project$Piece$get_the_piece, piece_map, loc);
-	var other_locs = A3(author$project$LegalMove$other_mobile_pieces, piece_map, piece_color, loc);
-	var get_locs = function (move_count) {
-		return elm$core$Set$toList(
-			author$project$LegalMove$end_locations(
-				_Utils_update(
-					params,
-					{moves_left: move_count})));
-	};
-	var full_locs = get_locs(7);
-	if (!elm$core$Set$size(other_locs)) {
-		return elm$core$Set$fromList(full_locs);
-	} else {
-		var prev_loc = loc;
-		var get_partial_locs = function (move_count) {
-			var other_count = 7 - move_count;
-			return A2(
-				elm$core$List$filter,
-				A5(author$project$LegalMove$can_finish_split, zone_colors, other_locs, piece_map, other_count, prev_loc),
-				get_locs(move_count));
-		};
-		var partial_locs = elm$core$List$concat(
-			A2(
-				elm$core$List$map,
-				get_partial_locs,
-				A2(elm$core$List$range, 1, 6)));
-		return elm$core$Set$fromList(
-			_Utils_ap(partial_locs, full_locs));
-	}
+var author$project$Type$StartSplit = function (a) {
+	return {$: 'StartSplit', a: a};
 };
-var author$project$LegalMove$get_card_for_move_type = function (move_type) {
-	switch (move_type.$) {
-		case 'WithCard':
-			var card = move_type.a;
-			return card;
-		case 'Reverse':
-			var card = move_type.a;
-			return card;
-		case 'FinishSplit':
-			return '7';
-		case 'JackTrade':
-			return 'J';
-		default:
-			return 'unknown';
-	}
-};
-var elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
+var elm$core$Dict$sizeHelp = F2(
+	function (n, dict) {
+		sizeHelp:
 		while (true) {
-			if (!list.b) {
-				return false;
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return n;
 			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$n = A2(elm$core$Dict$sizeHelp, n + 1, right),
+					$temp$dict = left;
+				n = $temp$n;
+				dict = $temp$dict;
+				continue sizeHelp;
 			}
+		}
+	});
+var elm$core$Dict$size = function (dict) {
+	return A2(elm$core$Dict$sizeHelp, 0, dict);
+};
+var elm$core$Set$size = function (_n0) {
+	var dict = _n0.a;
+	return elm$core$Dict$size(dict);
+};
+var author$project$LegalMove$get_moves_for_seven = F2(
+	function (params, start_loc) {
+		var zone_colors = params.zone_colors;
+		var piece_map = params.piece_map;
+		var piece_color = A2(author$project$Piece$get_the_piece, piece_map, start_loc);
+		var other_locs = A3(author$project$LegalMove$other_mobile_pieces, piece_map, piece_color, start_loc);
+		var get_locs = function (move_count) {
+			return A3(author$project$LegalMove$end_locations, params, start_loc, move_count);
+		};
+		var full_moves = A2(
+			elm$core$List$map,
+			function (end_loc) {
+				return _Utils_Tuple3(
+					author$project$Type$WithCard('7'),
+					start_loc,
+					end_loc);
+			},
+			get_locs(7));
+		if (!elm$core$Set$size(other_locs)) {
+			return full_moves;
+		} else {
+			var get_partial_moves = function (move_count) {
+				var other_count = 7 - move_count;
+				var move_type = author$project$Type$StartSplit(move_count);
+				var candidate_moves = A2(
+					elm$core$List$map,
+					function (end_loc) {
+						return _Utils_Tuple3(move_type, start_loc, end_loc);
+					},
+					get_locs(move_count));
+				return A2(
+					elm$core$List$filter,
+					A4(author$project$LegalMove$can_finish_split, zone_colors, other_locs, piece_map, other_count),
+					candidate_moves);
+			};
+			var partial_moves = elm$core$List$concat(
+				A2(
+					elm$core$List$map,
+					get_partial_moves,
+					A2(elm$core$List$range, 1, 6)));
+			return _Utils_ap(partial_moves, full_moves);
+		}
+	});
+var author$project$Config$move_count_for_card = F2(
+	function (active_card, id) {
+		switch (active_card) {
+			case 'A':
+				return 1;
+			case '2':
+				return 2;
+			case '3':
+				return 3;
+			case '4':
+				return 4;
+			case '5':
+				return 5;
+			case '6':
+				return author$project$Config$is_holding_pen_id(id) ? 1 : 6;
+			case '7':
+				return 7;
+			case '8':
+				return 8;
+			case '9':
+				return 9;
+			case '10':
+				return 10;
+			case 'J':
+				return 1;
+			case 'Q':
+				return 1;
+			case 'K':
+				return 1;
+			case 'joker':
+				return 1;
+			default:
+				return 0;
+		}
+	});
+var author$project$LegalMove$move_count_for_move_type = F2(
+	function (move_type, id) {
+		switch (move_type.$) {
+			case 'WithCard':
+				var card = move_type.a;
+				return A2(author$project$Config$move_count_for_card, card, id);
+			case 'Reverse':
+				var card = move_type.a;
+				return A2(author$project$Config$move_count_for_card, card, id);
+			case 'StartSplit':
+				var count = move_type.a;
+				return count;
+			case 'FinishSplit':
+				var count = move_type.a;
+				return count;
+			default:
+				return 0;
 		}
 	});
 var elm$core$List$member = F2(
@@ -6655,9 +6669,9 @@ var elm$core$List$member = F2(
 			},
 			xs);
 	});
-var author$project$LegalMove$get_end_locs = F4(
-	function (move_type, piece_map, zone_colors, loc) {
-		var piece_color = A2(author$project$Piece$get_the_piece, piece_map, loc);
+var author$project$LegalMove$get_moves_from_location = F4(
+	function (move_type, piece_map, zone_colors, start_loc) {
+		var piece_color = A2(author$project$Piece$get_the_piece, piece_map, start_loc);
 		var active_card = author$project$LegalMove$get_card_for_move_type(move_type);
 		var can_leave_pen = A2(
 			elm$core$List$member,
@@ -6671,34 +6685,26 @@ var author$project$LegalMove$get_end_locs = F4(
 				return active_card === '4';
 			}
 		}();
-		var _n0 = loc;
+		var _n0 = start_loc;
 		var id = _n0.b;
 		var can_fast_track = id === 'FT';
 		var can_move = can_fast_track || (!A2(author$project$LegalMove$has_piece_on_fast_track, piece_map, piece_color));
-		var moves_left = function () {
-			switch (move_type.$) {
-				case 'WithCard':
-					return A2(author$project$Config$move_count_for_card, active_card, id);
-				case 'Reverse':
-					return A2(author$project$Config$move_count_for_card, active_card, id);
-				case 'FinishSplit':
-					var count = move_type.a;
-					return count;
-				case 'JackTrade':
-					return 0;
-				default:
-					return 0;
-			}
-		}();
+		var moves_left = A2(author$project$LegalMove$move_count_for_move_type, move_type, id);
 		if (can_move) {
-			var params = {can_fast_track: can_fast_track, can_leave_pen: can_leave_pen, loc: loc, moves_left: moves_left, piece_color: piece_color, piece_map: piece_map, reverse_mode: reverse_mode, zone_colors: zone_colors};
+			var params = {can_fast_track: can_fast_track, can_leave_pen: can_leave_pen, piece_color: piece_color, piece_map: piece_map, reverse_mode: reverse_mode, zone_colors: zone_colors};
+			var make_move = function (end_loc) {
+				return _Utils_Tuple3(move_type, start_loc, end_loc);
+			};
 			return _Utils_eq(
 				move_type,
-				author$project$Type$WithCard('7')) ? author$project$LegalMove$end_locations_for_seven(params) : (_Utils_eq(
+				author$project$Type$WithCard('7')) ? A2(author$project$LegalMove$get_moves_for_seven, params, start_loc) : (_Utils_eq(
 				move_type,
-				author$project$Type$WithCard('J')) ? author$project$LegalMove$end_locations_for_jack(params) : author$project$LegalMove$end_locations(params));
+				author$project$Type$WithCard('J')) ? A2(author$project$LegalMove$get_moves_for_jack, params, start_loc) : A2(
+				elm$core$List$map,
+				make_move,
+				A3(author$project$LegalMove$end_locations, params, start_loc, moves_left)));
 		} else {
-			return elm$core$Set$empty;
+			return _List_Nil;
 		}
 	});
 var author$project$LegalMove$get_moves_for_move_type = F4(
@@ -6712,21 +6718,13 @@ var author$project$LegalMove$get_moves_for_move_type = F4(
 			}
 		}();
 		var get_moves = function (start_loc) {
-			var make_move = function (end_loc) {
-				return _Utils_Tuple2(start_loc, end_loc);
-			};
-			var end_locs = A4(author$project$LegalMove$get_end_locs, move_type, piece_map, zone_colors, start_loc);
-			return A2(
-				elm$core$List$map,
-				make_move,
-				elm$core$Set$toList(end_locs));
+			return A4(author$project$LegalMove$get_moves_from_location, move_type, piece_map, zone_colors, start_loc);
 		};
-		return elm$core$Set$fromList(
-			elm$core$List$concat(
-				A2(
-					elm$core$List$map,
-					get_moves,
-					elm$core$Set$toList(start_locs))));
+		return elm$core$List$concat(
+			A2(
+				elm$core$List$map,
+				get_moves,
+				elm$core$Set$toList(start_locs)));
 	});
 var author$project$Type$Reverse = function (a) {
 	return {$: 'Reverse', a: a};
@@ -6740,25 +6738,16 @@ var author$project$LegalMove$get_moves_for_cards = F4(
 			var get_moves = function (card) {
 				var move_type = make_move_type(card);
 				var moves = A4(author$project$LegalMove$get_moves_for_move_type, move_type, piece_map, zone_colors, active_color);
-				var make_tup = function (_n0) {
-					var start_loc = _n0.a;
-					var end_loc = _n0.b;
-					return _Utils_Tuple3(card, start_loc, end_loc);
-				};
-				return A2(
-					elm$core$List$map,
-					make_tup,
-					elm$core$Set$toList(moves));
+				return moves;
 			};
-			return elm$core$Set$fromList(
-				elm$core$List$concat(
-					A2(
-						elm$core$List$map,
-						get_moves,
-						elm$core$Set$toList(cards))));
+			return elm$core$List$concat(
+				A2(
+					elm$core$List$map,
+					get_moves,
+					elm$core$Set$toList(cards)));
 		};
 		var forward_moves = f(normal_move_type);
-		return (elm$core$Set$size(forward_moves) > 0) ? forward_moves : f(author$project$Type$Reverse);
+		return (elm$core$List$length(forward_moves) > 0) ? forward_moves : f(author$project$Type$Reverse);
 	});
 var author$project$Player$get_moves_for_player = F4(
 	function (player, piece_map, zone_colors, active_color) {
@@ -6768,10 +6757,11 @@ var author$project$Player$get_moves_for_player = F4(
 var author$project$Type$TurnNeedCard = function (a) {
 	return {$: 'TurnNeedCard', a: a};
 };
+var author$project$Type$TurnNeedDiscard = {$: 'TurnNeedDiscard'};
 var author$project$Player$turn_need_card = F4(
 	function (player, piece_map, zone_colors, active_color) {
 		var moves = A4(author$project$Player$get_moves_for_player, player, piece_map, zone_colors, active_color);
-		return author$project$Type$TurnNeedCard(
+		return (!elm$core$List$length(moves)) ? author$project$Type$TurnNeedDiscard : author$project$Type$TurnNeedCard(
 			{moves: moves});
 	});
 var author$project$Player$update_active_player = F2(
@@ -6807,107 +6797,33 @@ var author$project$Main$begin_active_turn = function (model) {
 	var active_color = author$project$Main$get_active_color(model.zone_colors);
 	return A2(author$project$Player$begin_turn, active_color, model);
 };
-var author$project$LegalMove$distance = F4(
-	function (zone_colors, active_color, start_loc, end_loc) {
-		var _n0 = start_loc;
-		var id = _n0.b;
-		if (author$project$Config$is_holding_pen_id(id)) {
-			return 1;
-		} else {
-			var can_fast_track = id === 'FT';
-			var next_locs = function (loc) {
-				return author$project$LegalMove$get_next_locs(
-					{can_fast_track: can_fast_track, can_leave_pen: false, loc: loc, moves_left: 99, piece_color: active_color, piece_map: elm$core$Dict$empty, reverse_mode: false, zone_colors: zone_colors});
-			};
-			var f = F2(
-				function (neighbors, cnt) {
-					f:
-					while (true) {
-						if (A2(elm$core$Set$member, end_loc, neighbors)) {
-							return cnt;
-						} else {
-							if (cnt > 10) {
-								return 99;
-							} else {
-								var next_neighbors = elm$core$Set$fromList(
-									elm$core$List$concat(
-										A2(
-											elm$core$List$map,
-											elm$core$Set$toList,
-											A2(
-												elm$core$List$map,
-												next_locs,
-												elm$core$Set$toList(neighbors)))));
-								var $temp$neighbors = next_neighbors,
-									$temp$cnt = cnt + 1;
-								neighbors = $temp$neighbors;
-								cnt = $temp$cnt;
-								continue f;
-							}
-						}
-					}
-				});
-			return A2(
-				f,
-				next_locs(start_loc),
-				1);
-		}
-	});
+var author$project$Type$FinishSeven = function (a) {
+	return {$: 'FinishSeven', a: a};
+};
 var author$project$Type$FinishSplit = F2(
 	function (a, b) {
 		return {$: 'FinishSplit', a: a, b: b};
 	});
-var author$project$Type$TurnDone = {$: 'TurnDone'};
 var author$project$Type$TurnNeedStartLoc = function (a) {
 	return {$: 'TurnNeedStartLoc', a: a};
 };
-var elm$core$Set$foldl = F3(
-	function (func, initialState, _n0) {
-		var dict = _n0.a;
-		return A3(
-			elm$core$Dict$foldl,
-			F3(
-				function (key, _n1, state) {
-					return A2(func, key, state);
-				}),
-			initialState,
-			dict);
-	});
-var elm$core$Set$map = F2(
-	function (func, set) {
-		return elm$core$Set$fromList(
-			A3(
-				elm$core$Set$foldl,
-				F2(
-					function (x, xs) {
-						return A2(
-							elm$core$List$cons,
-							func(x),
-							xs);
-					}),
-				_List_Nil,
-				set));
-	});
-var author$project$Player$maybe_finish_seven = F5(
-	function (piece_map, zone_colors, active_color, start_loc, end_loc) {
-		var distance_moved = A4(author$project$LegalMove$distance, zone_colors, active_color, start_loc, end_loc);
-		if (distance_moved < 7) {
-			var move_count = 7 - distance_moved;
-			var exclude_loc = end_loc;
-			var move_type = A2(author$project$Type$FinishSplit, move_count, exclude_loc);
-			var moves = A4(author$project$LegalMove$get_moves_for_move_type, move_type, piece_map, zone_colors, active_color);
-			var start_locs = A2(
-				elm$core$Set$map,
+var author$project$Player$finish_seven_split = F5(
+	function (piece_map, zone_colors, active_color, distance, end_loc) {
+		var move_count = 7 - distance;
+		var play_type = author$project$Type$FinishSeven(move_count);
+		var exclude_loc = end_loc;
+		var move_type = A2(author$project$Type$FinishSplit, move_count, exclude_loc);
+		var moves = A4(author$project$LegalMove$get_moves_for_move_type, move_type, piece_map, zone_colors, active_color);
+		var start_locs = elm$core$Set$fromList(
+			A2(
+				elm$core$List$map,
 				function (_n0) {
-					var start = _n0.a;
+					var start = _n0.b;
 					return start;
 				},
-				moves);
-			return author$project$Type$TurnNeedStartLoc(
-				{move_type: move_type, moves: moves, start_locs: start_locs});
-		} else {
-			return author$project$Type$TurnDone;
-		}
+				moves));
+		return author$project$Type$TurnNeedStartLoc(
+			{moves: moves, play_type: play_type, start_locs: start_locs});
 	});
 var author$project$Player$is_move_again_card = function (card) {
 	return A2(
@@ -6916,33 +6832,28 @@ var author$project$Player$is_move_again_card = function (card) {
 		_List_fromArray(
 			['A', 'K', 'Q', 'J', 'joker', '6']));
 };
+var author$project$Type$TurnDone = {$: 'TurnDone'};
 var author$project$Player$maybe_finish_turn = F5(
-	function (move_type, player, piece_map, zone_colors, active_color) {
-		var card = author$project$LegalMove$get_card_for_move_type(move_type);
+	function (card, player, piece_map, zone_colors, active_color) {
 		return author$project$Player$is_move_again_card(card) ? A4(author$project$Player$turn_need_card, player, piece_map, zone_colors, active_color) : author$project$Type$TurnDone;
 	});
 var author$project$Player$finish_move = F5(
 	function (piece_map, zone_colors, active_color, move, player) {
 		var _n0 = move;
-		var start_loc = _n0.b;
+		var move_type = _n0.a;
 		var end_loc = _n0.c;
-		var _n1 = player.turn;
-		if (_n1.$ === 'TurnNeedEndLoc') {
-			var info = _n1.a;
-			var move_type = info.move_type;
-			var turn = function () {
-				if ((move_type.$ === 'WithCard') && (move_type.a === '7')) {
-					return A5(author$project$Player$maybe_finish_seven, piece_map, zone_colors, active_color, start_loc, end_loc);
-				} else {
-					return A5(author$project$Player$maybe_finish_turn, move_type, player, piece_map, zone_colors, active_color);
-				}
-			}();
-			return _Utils_update(
-				player,
-				{turn: turn});
-		} else {
-			return player;
-		}
+		var card = author$project$LegalMove$get_card_for_move_type(move_type);
+		var turn = function () {
+			if (move_type.$ === 'StartSplit') {
+				var distance = move_type.a;
+				return A5(author$project$Player$finish_seven_split, piece_map, zone_colors, active_color, distance, end_loc);
+			} else {
+				return A5(author$project$Player$maybe_finish_turn, card, player, piece_map, zone_colors, active_color);
+			}
+		}();
+		return _Utils_update(
+			player,
+			{turn: turn});
 	});
 var author$project$Player$maybe_replenish_hand = F2(
 	function (active_color, model) {
@@ -6969,35 +6880,52 @@ var author$project$Move$perform_move = F3(
 				A2(author$project$Player$maybe_replenish_hand, active_color, model_));
 		}
 	});
-var author$project$Player$get_active_card = function (player) {
-	var _n0 = player.turn;
-	switch (_n0.$) {
-		case 'TurnNeedStartLoc':
+var author$project$Player$get_player_move_type = F2(
+	function (player, end_loc) {
+		var _n0 = player.turn;
+		if (_n0.$ === 'TurnNeedEndLoc') {
 			var info = _n0.a;
-			return elm$core$Maybe$Just(
-				author$project$LegalMove$get_card_for_move_type(info.move_type));
-		case 'TurnNeedEndLoc':
-			var info = _n0.a;
-			return elm$core$Maybe$Just(
-				author$project$LegalMove$get_card_for_move_type(info.move_type));
-		default:
+			var moves = A2(
+				elm$core$List$filter,
+				function (_n3) {
+					var end = _n3.c;
+					return _Utils_eq(end, end_loc);
+				},
+				info.moves);
+			var move_types = A2(
+				elm$core$List$map,
+				function (_n2) {
+					var move_type = _n2.a;
+					return move_type;
+				},
+				moves);
+			var the_move_type = function () {
+				var _n1 = elm$core$List$length(move_types);
+				switch (_n1) {
+					case 1:
+						return elm$core$List$head(move_types);
+					case 2:
+						return elm$core$List$head(move_types);
+					default:
+						return elm$core$Maybe$Nothing;
+				}
+			}();
+			return the_move_type;
+		} else {
 			return elm$core$Maybe$Nothing;
-	}
-};
-var author$project$Player$player_played_jack = function (player) {
-	var _n0 = author$project$Player$get_active_card(player);
-	if (_n0.$ === 'Just') {
-		var card = _n0.a;
-		return card === 'J';
-	} else {
-		return false;
-	}
-};
-var author$project$Type$Force = {$: 'Force'};
-var author$project$Player$get_player_move_type = function (player) {
-	var want_trade = author$project$Player$player_played_jack(player);
-	return want_trade ? author$project$Type$JackTrade : author$project$Type$Force;
-};
+		}
+	});
+var author$project$Move$move_to_end_loc = F5(
+	function (active_player, active_color, start_loc, end_loc, model) {
+		var move_type_ = A2(author$project$Player$get_player_move_type, active_player, end_loc);
+		if (move_type_.$ === 'Just') {
+			var move_type = move_type_.a;
+			var move = _Utils_Tuple3(move_type, start_loc, end_loc);
+			return A3(author$project$Move$perform_move, model, move, active_color);
+		} else {
+			return model;
+		}
+	});
 var author$project$Main$handle_end_loc_click = F2(
 	function (model, end_loc) {
 		var players = model.players;
@@ -7007,9 +6935,7 @@ var author$project$Main$handle_end_loc_click = F2(
 		if (_n0.$ === 'TurnNeedEndLoc') {
 			var info = _n0.a;
 			var start_loc = info.start_location;
-			var move_type = author$project$Player$get_player_move_type(active_player);
-			var move = _Utils_Tuple3(move_type, start_loc, end_loc);
-			return A3(author$project$Move$perform_move, model, move, active_color);
+			return A5(author$project$Move$move_to_end_loc, active_player, active_color, start_loc, end_loc, model);
 		} else {
 			return model;
 		}
@@ -7036,9 +6962,7 @@ var author$project$Move$maybe_auto_move = F2(
 			return model;
 		} else {
 			var end_loc = unique_end_loc.a;
-			var move_type = author$project$Player$get_player_move_type(active_player);
-			var move = _Utils_Tuple3(move_type, start_loc, end_loc);
-			return A3(author$project$Move$perform_move, model, move, active_color);
+			return A5(author$project$Move$move_to_end_loc, active_player, active_color, start_loc, end_loc, model);
 		}
 	});
 var author$project$Type$TurnNeedEndLoc = function (a) {
@@ -7049,21 +6973,24 @@ var author$project$Player$set_start_location = F2(
 		var _n0 = player.turn;
 		if (_n0.$ === 'TurnNeedStartLoc') {
 			var info = _n0.a;
-			var end_locs = A2(
-				elm$core$Set$map,
+			var play_type = info.play_type;
+			var moves = A2(
+				elm$core$List$filter,
 				function (_n2) {
-					var end = _n2.b;
-					return end;
+					var start = _n2.b;
+					return _Utils_eq(start, start_loc);
 				},
+				info.moves);
+			var end_locs = elm$core$Set$fromList(
 				A2(
-					elm$core$Set$filter,
+					elm$core$List$map,
 					function (_n1) {
-						var start = _n1.a;
-						return _Utils_eq(start, start_loc);
+						var end = _n1.c;
+						return end;
 					},
-					info.moves));
+					moves));
 			var turn = author$project$Type$TurnNeedEndLoc(
-				{end_locs: end_locs, move_type: info.move_type, start_location: start_loc});
+				{end_locs: end_locs, moves: moves, play_type: play_type, start_location: start_loc});
 			return _Utils_update(
 				player,
 				{turn: turn});
@@ -7089,10 +7016,6 @@ var author$project$Main$handle_start_loc_click = F2(
 			return model;
 		}
 	});
-var author$project$Type$NewSeed = function (a) {
-	return {$: 'NewSeed', a: a};
-};
-var author$project$Main$randomize = A2(elm$core$Task$perform, author$project$Type$NewSeed, elm$time$Time$now);
 var author$project$Main$replenish_active_hand = function (model) {
 	var active_color = author$project$Main$get_active_color(model.zone_colors);
 	return A2(author$project$Player$replenish_hand, active_color, model);
@@ -7110,6 +7033,9 @@ var author$project$Main$seed_from_time = function (time) {
 	return elm$random$Random$initialSeed(
 		elm$time$Time$posixToMillis(time));
 };
+var author$project$Type$PlayCard = function (a) {
+	return {$: 'PlayCard', a: a};
+};
 var author$project$Player$activate_card = F2(
 	function (idx, player) {
 		var _n0 = A2(elm_community$list_extra$List$Extra$getAt, idx, player.hand);
@@ -7121,31 +7047,26 @@ var author$project$Player$activate_card = F2(
 			if (_n1.$ === 'TurnNeedCard') {
 				var info = _n1.a;
 				var new_hand = A2(elm_community$list_extra$List$Extra$removeAt, idx, player.hand);
-				var moves = A2(
-					elm$core$Set$map,
-					function (_n4) {
-						var start = _n4.b;
-						var end = _n4.c;
-						return _Utils_Tuple2(start, end);
-					},
+				var good_move = function (move) {
+					var _n3 = move;
+					var move_type = _n3.a;
+					return _Utils_eq(
+						author$project$LegalMove$get_card_for_move_type(move_type),
+						active_card);
+				};
+				var moves = A2(elm$core$List$filter, good_move, info.moves);
+				var start_locs = elm$core$Set$fromList(
 					A2(
-						elm$core$Set$filter,
-						function (_n3) {
-							var card = _n3.a;
-							return _Utils_eq(card, active_card);
+						elm$core$List$map,
+						function (_n2) {
+							var start = _n2.b;
+							return start;
 						},
-						info.moves));
-				var start_locs = A2(
-					elm$core$Set$map,
-					function (_n2) {
-						var start = _n2.a;
-						return start;
-					},
-					moves);
+						moves));
 				var turn = author$project$Type$TurnNeedStartLoc(
 					{
-						move_type: author$project$Type$WithCard(active_card),
 						moves: moves,
+						play_type: author$project$Type$PlayCard(active_card),
 						start_locs: start_locs
 					});
 				return _Utils_update(
@@ -7156,38 +7077,24 @@ var author$project$Player$activate_card = F2(
 			}
 		}
 	});
-var author$project$Player$finish_card = F2(
-	function (active_color, model) {
-		var players = A3(
-			author$project$Player$update_player,
-			model.players,
-			active_color,
-			function (player) {
-				var possibly_finish_turn = function (move_type) {
-					return A5(author$project$Player$maybe_finish_turn, move_type, player, model.piece_map, model.zone_colors, active_color);
-				};
-				var turn = function () {
-					var _n0 = player.turn;
-					switch (_n0.$) {
-						case 'TurnNeedStartLoc':
-							var info = _n0.a;
-							return possibly_finish_turn(info.move_type);
-						case 'TurnNeedEndLoc':
-							var info = _n0.a;
-							return possibly_finish_turn(info.move_type);
-						default:
-							var other = _n0;
-							return other;
-					}
-				}();
+var author$project$Player$discard_card = F2(
+	function (idx, player) {
+		var _n0 = A2(elm_community$list_extra$List$Extra$getAt, idx, player.hand);
+		if (_n0.$ === 'Nothing') {
+			return player;
+		} else {
+			var card = _n0.a;
+			var _n1 = player.turn;
+			if (_n1.$ === 'TurnNeedDiscard') {
+				var turn = author$project$Player$is_move_again_card(card) ? author$project$Type$TurnNeedDiscard : author$project$Type$TurnDone;
+				var new_hand = A2(elm_community$list_extra$List$Extra$removeAt, idx, player.hand);
 				return _Utils_update(
 					player,
-					{turn: turn});
-			});
-		var model_ = _Utils_update(
-			model,
-			{players: players});
-		return A2(author$project$Player$maybe_replenish_hand, active_color, model_);
+					{hand: new_hand, turn: turn});
+			} else {
+				return player;
+			}
+		}
 	});
 var author$project$Player$set_turn = F3(
 	function (color, turn, players) {
@@ -7216,13 +7123,6 @@ var author$project$Main$update = F2(
 						model,
 						{seed: seed, state: author$project$Type$Ready}));
 				return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
-			case 'NewSeed':
-				var time = msg.a;
-				var seed = author$project$Main$seed_from_time(time);
-				var model_ = _Utils_update(
-					model,
-					{seed: seed});
-				return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
 			case 'SetStartLocation':
 				var clicked_loc = msg.a;
 				var model_ = A2(author$project$Main$handle_start_loc_click, model, clicked_loc);
@@ -7241,11 +7141,14 @@ var author$project$Main$update = F2(
 					author$project$Player$update_active_player,
 					author$project$Player$activate_card(idx),
 					model);
-				return _Utils_Tuple2(model_, author$project$Main$randomize);
-			case 'FinishCard':
+				return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
+			case 'DiscardCard':
 				var player_color = msg.a;
-				var model_ = A2(author$project$Player$finish_card, player_color, model);
-				var active_color = author$project$Main$get_active_color(model.zone_colors);
+				var idx = msg.b;
+				var model_ = A2(
+					author$project$Player$update_active_player,
+					author$project$Player$discard_card(idx),
+					model);
 				return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
 			default:
 				var old_player_color = author$project$Main$get_active_color(model.zone_colors);
@@ -7282,6 +7185,95 @@ var author$project$Player$start_locs_for_player = function (player) {
 		return elm$core$Set$empty;
 	}
 };
+var elm$core$Basics$pi = _Basics_pi;
+var elm$core$Basics$degrees = function (angleInDegrees) {
+	return (angleInDegrees * elm$core$Basics$pi) / 180;
+};
+var elm$core$Basics$tan = _Basics_tan;
+var author$project$Polygon$incircle_radius = F2(
+	function (side_count, panel_width) {
+		var half_side = panel_width / 2;
+		var angle = elm$core$Basics$degrees(180.0 / side_count);
+		return half_side / elm$core$Basics$tan(angle);
+	});
+var author$project$Polygon$get_center_offset = F3(
+	function (side_count, panel_width, panel_height) {
+		return panel_height + A2(author$project$Polygon$incircle_radius, side_count, panel_width);
+	});
+var author$project$Polygon$get_angle = function (side_count) {
+	return 360.0 / side_count;
+};
+var elm$core$String$fromFloat = _String_fromNumber;
+var elm$json$Json$Decode$map = _Json_map1;
+var elm$json$Json$Decode$map2 = _Json_map2;
+var elm$json$Json$Decode$succeed = _Json_succeed;
+var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
+	switch (handler.$) {
+		case 'Normal':
+			return 0;
+		case 'MayStopPropagation':
+			return 1;
+		case 'MayPreventDefault':
+			return 2;
+		default:
+			return 3;
+	}
+};
+var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var elm$svg$Svg$g = elm$svg$Svg$trustedNode('g');
+var elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
+var author$project$Polygon$make_polygon = F3(
+	function (panel_width, panel_height, panels) {
+		var side_count = elm$core$List$length(panels);
+		var pad_one_panel = function (panel) {
+			var offset = A2(author$project$Polygon$incircle_radius, side_count, panel_width);
+			var translate = 'translate(0 ' + (elm$core$String$fromFloat(offset) + ')');
+			return A2(
+				elm$svg$Svg$g,
+				_List_fromArray(
+					[
+						elm$svg$Svg$Attributes$transform(translate)
+					]),
+				_List_fromArray(
+					[panel]));
+		};
+		var arrange_one_panel = F2(
+			function (idx, panel) {
+				var center_offset = A3(author$project$Polygon$get_center_offset, side_count, panel_width, panel_height);
+				var center = elm$core$String$fromFloat(center_offset);
+				var translate = 'translate(' + (center + (' ' + (center + ')')));
+				var angle = idx * author$project$Polygon$get_angle(side_count);
+				var rotate = 'rotate(' + (elm$core$String$fromFloat(angle) + ')');
+				var transform_ = translate + (' ' + rotate);
+				return A2(
+					elm$svg$Svg$g,
+					_List_fromArray(
+						[
+							elm$svg$Svg$Attributes$transform(transform_)
+						]),
+					_List_fromArray(
+						[panel]));
+			});
+		var new_panels = A2(
+			elm$core$List$indexedMap,
+			arrange_one_panel,
+			A2(elm$core$List$map, pad_one_panel, panels));
+		return A2(elm$svg$Svg$g, _List_Nil, new_panels);
+	});
+var author$project$View$nudge = function (board) {
+	var offset = elm$core$String$fromFloat(author$project$Config$square_size);
+	var translate = 'translate(' + (offset + (' ' + (offset + ')')));
+	return A2(
+		elm$svg$Svg$g,
+		_List_fromArray(
+			[
+				elm$svg$Svg$Attributes$transform(translate)
+			]),
+		_List_fromArray(
+			[board]));
+};
+var author$project$View$panel_height = 5 * author$project$Config$square_size;
+var author$project$View$panel_width = 4 * author$project$Config$square_size;
 var author$project$Config$config_locations = _List_fromArray(
 	[
 		{id: 'HP1', x: -4.2, y: 1.7},
@@ -7307,20 +7299,6 @@ var author$project$Config$config_locations = _List_fromArray(
 		{id: 'R3', x: 2, y: 3},
 		{id: 'R4', x: 2, y: 4}
 	]);
-var author$project$View$get_angle = function (zone_colors) {
-	return 360.0 / elm$core$List$length(zone_colors);
-};
-var elm$core$Basics$pi = _Basics_pi;
-var elm$core$Basics$degrees = function (angleInDegrees) {
-	return (angleInDegrees * elm$core$Basics$pi) / 180;
-};
-var elm$core$Basics$tan = _Basics_tan;
-var author$project$View$get_zone_height = function (zone_colors) {
-	var angle = author$project$View$get_angle(zone_colors);
-	var half_angle = elm$core$Basics$degrees(angle / 2);
-	var num_squares = 5 + (2.0 / elm$core$Basics$tan(half_angle));
-	return num_squares * author$project$Config$square_size;
-};
 var author$project$Config$gutter_size = 4.0;
 var author$project$Type$SetEndLocation = function (a) {
 	return {$: 'SetEndLocation', a: a};
@@ -7328,23 +7306,6 @@ var author$project$Type$SetEndLocation = function (a) {
 var author$project$Type$SetStartLocation = function (a) {
 	return {$: 'SetStartLocation', a: a};
 };
-var elm$core$String$fromFloat = _String_fromNumber;
-var elm$json$Json$Decode$map = _Json_map1;
-var elm$json$Json$Decode$map2 = _Json_map2;
-var elm$json$Json$Decode$succeed = _Json_succeed;
-var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
-	switch (handler.$) {
-		case 'Normal':
-			return 0;
-		case 'MayStopPropagation':
-			return 1;
-		case 'MayPreventDefault':
-			return 2;
-		default:
-			return 3;
-	}
-};
-var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var elm$svg$Svg$circle = elm$svg$Svg$trustedNode('circle');
 var elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
@@ -7386,15 +7347,14 @@ var elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		elm$json$Json$Decode$succeed(msg));
 };
-var elm$svg$Svg$g = elm$svg$Svg$trustedNode('g');
 var elm$svg$Svg$rect = elm$svg$Svg$trustedNode('rect');
 var elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
 var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
-var author$project$View$location_view = F8(
-	function (zone_height, piece_map, zone_color, start_locs, end_locs, active_color, selected_location, location_info) {
+var author$project$View$location_view = F7(
+	function (piece_map, zone_color, start_locs, end_locs, active_color, selected_location, location_info) {
 		var w = author$project$Config$square_size - author$project$Config$gutter_size;
 		var radius = w / 2;
 		var id = location_info.id;
@@ -7426,7 +7386,7 @@ var author$project$View$location_view = F8(
 			elm$core$Maybe$Just(active_color));
 		var h = author$project$Config$square_size - author$project$Config$gutter_size;
 		var fill_color = is_selected_piece ? 'lightblue' : (is_start_loc ? 'lightcyan' : (is_reachable ? 'lightgreen' : (is_me ? 'mintcream' : 'white')));
-		var cy_ = zone_height - (location_info.y * author$project$Config$square_size);
+		var cy_ = author$project$View$panel_height - (location_info.y * author$project$Config$square_size);
 		var ypos = cy_ - (h / 2);
 		var cx_ = location_info.x * author$project$Config$square_size;
 		var s_pieces = function () {
@@ -7478,52 +7438,33 @@ var author$project$View$location_view = F8(
 		var contents = A2(elm$core$List$cons, s_location, s_pieces);
 		return A2(elm$svg$Svg$g, _List_Nil, contents);
 	});
-var author$project$View$zone_index = F2(
-	function (x, lst) {
-		if (!lst.b) {
-			return -1;
-		} else {
-			var first = lst.a;
-			var rest = lst.b;
-			return _Utils_eq(first, x) ? 0 : (1 + A2(author$project$View$zone_index, x, rest));
-		}
-	});
-var elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
-var author$project$View$draw_zone = F7(
-	function (piece_map, start_locs, end_locs, active_color, start_location, zone_colors, zone_color) {
-		var zone_height = author$project$View$get_zone_height(zone_colors);
+var author$project$View$zone_view = F6(
+	function (piece_map, start_locs, end_locs, active_color, start_location, zone_color) {
 		var locations = author$project$Config$config_locations;
-		var idx = A2(author$project$View$zone_index, zone_color, zone_colors);
-		var color = zone_color;
 		var drawn_locations = A2(
 			elm$core$List$map,
-			A7(author$project$View$location_view, zone_height, piece_map, color, start_locs, end_locs, active_color, start_location),
+			A6(author$project$View$location_view, piece_map, zone_color, start_locs, end_locs, active_color, start_location),
 			locations);
-		var center = elm$core$String$fromFloat(zone_height + author$project$Config$square_size);
-		var translate = 'translate(' + (center + (' ' + (center + ')')));
-		var angle = idx * author$project$View$get_angle(zone_colors);
-		var rotate = 'rotate(' + (elm$core$String$fromFloat(angle) + ')');
-		var transform_ = translate + (' ' + rotate);
-		return A2(
-			elm$svg$Svg$g,
-			_List_fromArray(
-				[
-					elm$svg$Svg$Attributes$transform(transform_)
-				]),
-			drawn_locations);
+		return A2(elm$svg$Svg$g, _List_Nil, drawn_locations);
 	});
 var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
 var author$project$View$board_view = F4(
 	function (piece_map, zone_colors, active_player, active_color) {
 		var start_locs = author$project$Player$start_locs_for_player(active_player);
 		var start_location = author$project$Player$get_start_location(active_player);
+		var side_count = elm$core$List$length(zone_colors);
 		var end_locs = author$project$Player$end_locs_for_player(active_player);
-		var content = A2(
-			elm$core$List$map,
-			A6(author$project$View$draw_zone, piece_map, start_locs, end_locs, active_color, start_location, zone_colors),
-			zone_colors);
-		var board_size = elm$core$String$fromFloat(
-			(2 * author$project$View$get_zone_height(zone_colors)) + (3 * author$project$Config$square_size));
+		var content = author$project$View$nudge(
+			A3(
+				author$project$Polygon$make_polygon,
+				author$project$View$panel_width,
+				author$project$View$panel_height,
+				A2(
+					elm$core$List$map,
+					A5(author$project$View$zone_view, piece_map, start_locs, end_locs, active_color, start_location),
+					zone_colors)));
+		var center_offset = A3(author$project$Polygon$get_center_offset, side_count, author$project$View$panel_width, author$project$View$panel_height);
+		var board_size = elm$core$String$fromFloat((2 * center_offset) + (3 * author$project$Config$square_size));
 		return A2(
 			elm$svg$Svg$svg,
 			_List_fromArray(
@@ -7531,19 +7472,24 @@ var author$project$View$board_view = F4(
 					elm$svg$Svg$Attributes$width(board_size),
 					elm$svg$Svg$Attributes$height(board_size)
 				]),
-			content);
+			_List_fromArray(
+				[content]));
 	});
 var author$project$Player$get_playable_cards = function (player) {
 	var _n0 = player.turn;
 	if (_n0.$ === 'TurnNeedCard') {
 		var info = _n0.a;
-		return A2(
-			elm$core$Set$map,
-			function (_n1) {
-				var card = _n1.a;
-				return card;
-			},
-			info.moves);
+		return elm$core$Set$fromList(
+			A2(
+				elm$core$List$map,
+				author$project$LegalMove$get_card_for_move_type,
+				A2(
+					elm$core$List$map,
+					function (_n1) {
+						var move_type = _n1.a;
+						return move_type;
+					},
+					info.moves)));
 	} else {
 		return elm$core$Set$empty;
 	}
@@ -7551,18 +7497,19 @@ var author$project$Player$get_playable_cards = function (player) {
 var author$project$Type$ReplenishHand = {$: 'ReplenishHand'};
 var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
-var author$project$View$card_css = function (color) {
-	return _List_fromArray(
-		[
-			A2(elm$html$Html$Attributes$style, 'border-color', color),
-			A2(elm$html$Html$Attributes$style, 'background', 'white'),
-			A2(elm$html$Html$Attributes$style, 'color', color),
-			A2(elm$html$Html$Attributes$style, 'padding', '4px'),
-			A2(elm$html$Html$Attributes$style, 'margin', '3px'),
-			A2(elm$html$Html$Attributes$style, 'font-size', '110%'),
-			A2(elm$html$Html$Attributes$style, 'min-width', '30px')
-		]);
-};
+var author$project$View$card_css = F2(
+	function (border_color, color) {
+		return _List_fromArray(
+			[
+				A2(elm$html$Html$Attributes$style, 'border-color', border_color),
+				A2(elm$html$Html$Attributes$style, 'color', color),
+				A2(elm$html$Html$Attributes$style, 'background', 'white'),
+				A2(elm$html$Html$Attributes$style, 'padding', '4px'),
+				A2(elm$html$Html$Attributes$style, 'margin', '3px'),
+				A2(elm$html$Html$Attributes$style, 'font-size', '110%'),
+				A2(elm$html$Html$Attributes$style, 'min-width', '30px')
+			]);
+	});
 var elm$html$Html$button = _VirtualDom_node('button');
 var elm$html$Html$span = _VirtualDom_node('span');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -7571,7 +7518,7 @@ var author$project$View$deck_view = F2(
 	function (player, color) {
 		var handCount = elm$core$List$length(player.hand);
 		if (_Utils_eq(player.turn, author$project$Type$TurnDone) && (handCount < 5)) {
-			var css = author$project$View$card_css(color);
+			var css = A2(author$project$View$card_css, color, color);
 			var attrs = _List_fromArray(
 				[
 					elm$html$Html$Events$onClick(author$project$Type$ReplenishHand)
@@ -7587,6 +7534,86 @@ var author$project$View$deck_view = F2(
 			return A2(elm$html$Html$span, _List_Nil, _List_Nil);
 		}
 	});
+var author$project$Type$ActivateCard = F2(
+	function (a, b) {
+		return {$: 'ActivateCard', a: a, b: b};
+	});
+var author$project$Type$DiscardCard = F2(
+	function (a, b) {
+		return {$: 'DiscardCard', a: a, b: b};
+	});
+var author$project$View$CanActivate = {$: 'CanActivate'};
+var author$project$View$CanDiscard = {$: 'CanDiscard'};
+var author$project$View$Ignore = {$: 'Ignore'};
+var elm$json$Json$Encode$bool = _Json_wrap;
+var elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$bool(bool));
+	});
+var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
+var author$project$View$hand_card_view = F5(
+	function (color, player, playable_cards, idx, card) {
+		var action = function () {
+			var _n2 = player.turn;
+			switch (_n2.$) {
+				case 'TurnNeedCard':
+					return A2(elm$core$Set$member, card, playable_cards) ? author$project$View$CanActivate : author$project$View$Ignore;
+				case 'TurnNeedDiscard':
+					return author$project$View$CanDiscard;
+				default:
+					return author$project$View$Ignore;
+			}
+		}();
+		var attrs = function () {
+			switch (action.$) {
+				case 'CanActivate':
+					return _List_fromArray(
+						[
+							elm$html$Html$Events$onClick(
+							A2(author$project$Type$ActivateCard, color, idx))
+						]);
+				case 'CanDiscard':
+					return _List_fromArray(
+						[
+							elm$html$Html$Events$onClick(
+							A2(author$project$Type$DiscardCard, color, idx))
+						]);
+				default:
+					return _List_fromArray(
+						[
+							elm$html$Html$Attributes$disabled(true)
+						]);
+			}
+		}();
+		var css = function () {
+			switch (action.$) {
+				case 'CanActivate':
+					return A2(author$project$View$card_css, color, color);
+				case 'CanDiscard':
+					return A2(author$project$View$card_css, 'gray', color);
+				default:
+					return A2(author$project$View$card_css, 'gray', 'gray');
+			}
+		}();
+		return A2(
+			elm$html$Html$button,
+			_Utils_ap(attrs, css),
+			_List_fromArray(
+				[
+					elm$html$Html$text(card)
+				]));
+	});
+var author$project$LegalMove$get_card_for_play_type = function (play_type) {
+	if (play_type.$ === 'PlayCard') {
+		var card = play_type.a;
+		return card;
+	} else {
+		return '7';
+	}
+};
 var elm$html$Html$b = _VirtualDom_node('b');
 var author$project$View$active_card_view = F3(
 	function (active_card, color, instructions) {
@@ -7615,9 +7642,9 @@ var author$project$View$active_card_view = F3(
 	});
 var elm$html$Html$div = _VirtualDom_node('div');
 var author$project$View$player_need_end = F2(
-	function (move_type, color) {
+	function (play_type, color) {
 		var instructions = 'now click piece\'s end location';
-		var active_card = author$project$LegalMove$get_card_for_move_type(move_type);
+		var active_card = author$project$LegalMove$get_card_for_play_type(play_type);
 		return A2(
 			elm$html$Html$div,
 			_List_Nil,
@@ -7626,49 +7653,23 @@ var author$project$View$player_need_end = F2(
 					A3(author$project$View$active_card_view, active_card, color, instructions)
 				]));
 	});
-var author$project$Type$FinishCard = function (a) {
-	return {$: 'FinishCard', a: a};
-};
 var author$project$View$player_need_start = F2(
-	function (move_type, color) {
+	function (play_type, color) {
 		var instructions = function () {
-			switch (move_type.$) {
-				case 'WithCard':
-					return 'click a piece to start move';
-				case 'Reverse':
-					return 'click a piece to start move';
-				case 'JackTrade':
-					return 'click a piece to start move';
-				case 'FinishSplit':
-					var count = move_type.a;
-					return 'click a piece to finish split (moving ' + (elm$core$String$fromInt(count) + ')');
-				default:
-					return 'unexpected';
+			if (play_type.$ === 'PlayCard') {
+				return 'click a piece to start move';
+			} else {
+				var count = play_type.a;
+				return 'click a piece to finish split (moving ' + (elm$core$String$fromInt(count) + ')');
 			}
 		}();
-		var finish_button = A2(
-			elm$html$Html$button,
-			_List_fromArray(
-				[
-					elm$html$Html$Events$onClick(
-					author$project$Type$FinishCard(color))
-				]),
-			_List_fromArray(
-				[
-					elm$html$Html$text('Done')
-				]));
-		var active_card = author$project$LegalMove$get_card_for_move_type(move_type);
+		var active_card = author$project$LegalMove$get_card_for_play_type(play_type);
 		return A2(
 			elm$html$Html$div,
 			_List_Nil,
 			_List_fromArray(
 				[
-					A3(author$project$View$active_card_view, active_card, color, instructions),
-					A2(
-					elm$html$Html$div,
-					_List_Nil,
-					_List_fromArray(
-						[finish_button]))
+					A3(author$project$View$active_card_view, active_card, color, instructions)
 				]));
 	});
 var author$project$Type$RotateBoard = {$: 'RotateBoard'};
@@ -7688,66 +7689,26 @@ var author$project$View$rotate_button = A2(
 					elm$html$Html$text('Finish Turn')
 				]))
 		]));
-var author$project$Type$ActivateCard = F2(
-	function (a, b) {
-		return {$: 'ActivateCard', a: a, b: b};
-	});
-var elm$json$Json$Encode$bool = _Json_wrap;
-var elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$bool(bool));
-	});
-var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
-var author$project$View$view_hand_card = F5(
-	function (color, player, playable_cards, idx, card) {
-		var enabled = function () {
-			var _n1 = player.turn;
-			if (_n1.$ === 'TurnNeedCard') {
-				return A2(elm$core$Set$member, card, playable_cards);
-			} else {
-				return false;
-			}
-		}();
-		var border_color = enabled ? color : 'gray';
-		var css = author$project$View$card_css(border_color);
-		var attrs = function () {
-			var _n0 = player.turn;
-			if (_n0.$ === 'TurnNeedCard') {
-				return _List_fromArray(
-					[
-						elm$html$Html$Events$onClick(
-						A2(author$project$Type$ActivateCard, color, idx))
-					]);
-			} else {
-				return _List_fromArray(
-					[
-						elm$html$Html$Attributes$disabled(true)
-					]);
-			}
-		}();
-		return A2(
-			elm$html$Html$button,
-			_Utils_ap(attrs, css),
-			_List_fromArray(
-				[
-					elm$html$Html$text(card)
-				]));
-	});
 var author$project$View$player_view = F2(
 	function (player, color) {
 		var playable_cards = author$project$Player$get_playable_cards(player);
 		var hand_cards = A2(
 			elm$core$List$indexedMap,
-			A3(author$project$View$view_hand_card, color, player, playable_cards),
+			A3(author$project$View$hand_card_view, color, player, playable_cards),
 			player.hand);
 		var hand = A2(elm$html$Html$span, _List_Nil, hand_cards);
 		var deck = A2(author$project$View$deck_view, player, color);
 		var console = function () {
 			var _n0 = player.turn;
 			switch (_n0.$) {
+				case 'TurnNeedDiscard':
+					return A2(
+						elm$html$Html$div,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('click a card to discard')
+							]));
 				case 'TurnNeedCard':
 					return A2(
 						elm$html$Html$div,
@@ -7758,10 +7719,10 @@ var author$project$View$player_view = F2(
 							]));
 				case 'TurnNeedStartLoc':
 					var turn_info = _n0.a;
-					return A2(author$project$View$player_need_start, turn_info.move_type, color);
+					return A2(author$project$View$player_need_start, turn_info.play_type, color);
 				case 'TurnNeedEndLoc':
 					var turn_info = _n0.a;
-					return A2(author$project$View$player_need_end, turn_info.move_type, color);
+					return A2(author$project$View$player_need_end, turn_info.play_type, color);
 				case 'TurnDone':
 					return A2(
 						elm$html$Html$div,
