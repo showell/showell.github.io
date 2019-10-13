@@ -4676,8 +4676,8 @@ var author$project$Main$get_active_color = function (zone_colors) {
 };
 var author$project$Config$holding_pen_locations = _List_fromArray(
 	['HP1', 'HP2', 'HP3', 'HP4']);
-var author$project$Setup$Normal = {$: 'Normal'};
-var author$project$Setup$init_setup = author$project$Setup$Normal;
+var author$project$Setup$Discard = {$: 'Discard'};
+var author$project$Setup$init_setup = author$project$Setup$Discard;
 var elm$core$List$foldrHelper = F4(
 	function (fn, acc, ctr, ls) {
 		if (!ls.b) {
@@ -4757,12 +4757,17 @@ var author$project$Setup$starting_locations = function (color) {
 			ids);
 	};
 	var _n0 = author$project$Setup$init_setup;
-	if (_n0.$ === 'ForcedToReverse') {
-		return in_my_zone(
-			_List_fromArray(
-				['HP1', 'B1', 'B3', 'R0']));
-	} else {
-		return in_my_zone(author$project$Config$holding_pen_locations);
+	switch (_n0.$) {
+		case 'ForcedToReverse':
+			return in_my_zone(
+				_List_fromArray(
+					['HP1', 'B1', 'B3', 'R0']));
+		case 'Cover':
+			return in_my_zone(
+				_List_fromArray(
+					['HP1', 'HP2', 'HP3', 'B2']));
+		default:
+			return in_my_zone(author$project$Config$holding_pen_locations);
 	}
 };
 var elm$core$Dict$Black = {$: 'Black'};
@@ -4899,6 +4904,9 @@ var author$project$Setup$starting_hand = function (color) {
 		case 'ForcedToReverse':
 			return _List_fromArray(
 				['7', '8', '10', '9', '9']);
+		case 'Cover':
+			return _List_fromArray(
+				['K', 'Q', 'Q', 'Q', '2']);
 		case 'Discard':
 			return _List_fromArray(
 				['K', 'Q', 'Q', 'Q', '8']);
@@ -6798,19 +6806,32 @@ var author$project$Player$get_moves_for_player = F4(
 var author$project$Type$TurnNeedCard = function (a) {
 	return {$: 'TurnNeedCard', a: a};
 };
+var author$project$Type$TurnNeedCover = {$: 'TurnNeedCover'};
 var author$project$Type$TurnNeedDiscard = {$: 'TurnNeedDiscard'};
 var author$project$Player$turn_need_card = F4(
 	function (piece_map, zone_colors, active_color, player) {
 		var moves = A4(author$project$Player$get_moves_for_player, player, piece_map, zone_colors, active_color);
-		return (!elm$core$List$length(moves)) ? _Utils_update(
-			player,
-			{turn: author$project$Type$TurnNeedDiscard}) : _Utils_update(
-			player,
-			{
-				get_out_credits: 0,
-				turn: author$project$Type$TurnNeedCard(
-					{moves: moves})
-			});
+		if (!elm$core$List$length(moves)) {
+			var turn_ = function () {
+				var _n0 = player.turn;
+				if (_n0.$ === 'TurnBegin') {
+					return author$project$Type$TurnNeedDiscard;
+				} else {
+					return author$project$Type$TurnNeedCover;
+				}
+			}();
+			return _Utils_update(
+				player,
+				{turn: turn_});
+		} else {
+			return _Utils_update(
+				player,
+				{
+					get_out_credits: 0,
+					turn: author$project$Type$TurnNeedCard(
+						{moves: moves})
+				});
+		}
 	});
 var author$project$Player$update_active_player = F2(
 	function (f, model) {
@@ -7078,7 +7099,7 @@ var author$project$Main$seed_from_time = function (time) {
 	return elm$random$Random$initialSeed(
 		elm$time$Time$posixToMillis(time));
 };
-var author$project$Config$num_credits_to_get_out = 3;
+var author$project$Config$num_credits_to_get_out = 5;
 var elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -7121,9 +7142,18 @@ var author$project$Piece$bring_player_out = F2(
 		}
 	});
 var author$project$Player$clear_credits = function (player) {
+	var new_turn = function () {
+		var _n0 = player.turn;
+		if (_n0.$ === 'TurnNeedDiscard') {
+			return author$project$Type$TurnNeedCover;
+		} else {
+			var other = _n0;
+			return other;
+		}
+	}();
 	return _Utils_update(
 		player,
-		{get_out_credits: 0});
+		{get_out_credits: 0, turn: new_turn});
 };
 var author$project$Move$maybe_get_out_via_discard = F2(
 	function (active_color, model) {
@@ -7176,6 +7206,25 @@ var author$project$Player$activate_card = F2(
 						play_type: author$project$Type$PlayCard(active_card),
 						start_locs: start_locs
 					});
+				return _Utils_update(
+					player,
+					{hand: new_hand, turn: turn});
+			} else {
+				return player;
+			}
+		}
+	});
+var author$project$Player$cover_card = F2(
+	function (idx, player) {
+		var _n0 = A2(elm_community$list_extra$List$Extra$getAt, idx, player.hand);
+		if (_n0.$ === 'Nothing') {
+			return player;
+		} else {
+			var card = _n0.a;
+			var _n1 = player.turn;
+			if (_n1.$ === 'TurnNeedCover') {
+				var turn = author$project$Player$is_move_again_card(card) ? author$project$Type$TurnNeedCover : author$project$Type$TurnDone;
+				var new_hand = A2(elm_community$list_extra$List$Extra$removeAt, idx, player.hand);
 				return _Utils_update(
 					player,
 					{hand: new_hand, turn: turn});
@@ -7259,6 +7308,17 @@ var author$project$Main$update = F2(
 					A2(
 						author$project$Player$update_active_player,
 						author$project$Player$discard_card(idx),
+						model));
+				return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
+			case 'CoverCard':
+				var player_color = msg.a;
+				var idx = msg.b;
+				var model_ = A2(
+					author$project$Move$maybe_get_out_via_discard,
+					player_color,
+					A2(
+						author$project$Player$update_active_player,
+						author$project$Player$cover_card(idx),
 						model));
 				return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
 			default:
@@ -7607,25 +7667,30 @@ var author$project$Player$get_playable_cards = function (player) {
 };
 var elm$html$Html$b = _VirtualDom_node('b');
 var elm$html$Html$div = _VirtualDom_node('div');
+var elm$html$Html$span = _VirtualDom_node('span');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var author$project$View$credits_view = function (player) {
-	var credits = elm$core$String$fromInt(player.get_out_credits);
-	return A2(
-		elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				elm$html$Html$text('You have '),
-				A2(
-				elm$html$Html$b,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text(credits)
-					])),
-				elm$html$Html$text(' credits')
-			]));
+	if (player.get_out_credits > 0) {
+		var credits = elm$core$String$fromInt(player.get_out_credits);
+		return A2(
+			elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					elm$html$Html$text('You have '),
+					A2(
+					elm$html$Html$b,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text(credits)
+						])),
+					elm$html$Html$text(' credits (you need 5 to get out)')
+				]));
+	} else {
+		return A2(elm$html$Html$span, _List_Nil, _List_Nil);
+	}
 };
 var author$project$Type$ReplenishHand = {$: 'ReplenishHand'};
 var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
@@ -7644,7 +7709,6 @@ var author$project$View$card_css = F2(
 			]);
 	});
 var elm$html$Html$button = _VirtualDom_node('button');
-var elm$html$Html$span = _VirtualDom_node('span');
 var author$project$View$deck_view = F2(
 	function (player, color) {
 		var handCount = elm$core$List$length(player.hand);
@@ -7669,11 +7733,16 @@ var author$project$Type$ActivateCard = F2(
 	function (a, b) {
 		return {$: 'ActivateCard', a: a, b: b};
 	});
+var author$project$Type$CoverCard = F2(
+	function (a, b) {
+		return {$: 'CoverCard', a: a, b: b};
+	});
 var author$project$Type$DiscardCard = F2(
 	function (a, b) {
 		return {$: 'DiscardCard', a: a, b: b};
 	});
 var author$project$View$CanActivate = {$: 'CanActivate'};
+var author$project$View$CanCover = {$: 'CanCover'};
 var author$project$View$CanDiscard = {$: 'CanDiscard'};
 var author$project$View$Ignore = {$: 'Ignore'};
 var elm$json$Json$Encode$bool = _Json_wrap;
@@ -7694,6 +7763,8 @@ var author$project$View$hand_card_view = F5(
 					return A2(elm$core$Set$member, card, playable_cards) ? author$project$View$CanActivate : author$project$View$Ignore;
 				case 'TurnNeedDiscard':
 					return author$project$View$CanDiscard;
+				case 'TurnNeedCover':
+					return author$project$View$CanCover;
 				default:
 					return author$project$View$Ignore;
 			}
@@ -7712,6 +7783,12 @@ var author$project$View$hand_card_view = F5(
 							elm$html$Html$Events$onClick(
 							A2(author$project$Type$DiscardCard, color, idx))
 						]);
+				case 'CanCover':
+					return _List_fromArray(
+						[
+							elm$html$Html$Events$onClick(
+							A2(author$project$Type$CoverCard, color, idx))
+						]);
 				default:
 					return _List_fromArray(
 						[
@@ -7724,6 +7801,8 @@ var author$project$View$hand_card_view = F5(
 				case 'CanActivate':
 					return A2(author$project$View$card_css, color, color);
 				case 'CanDiscard':
+					return A2(author$project$View$card_css, 'gray', color);
+				case 'CanCover':
 					return A2(author$project$View$card_css, 'gray', color);
 				default:
 					return A2(author$project$View$card_css, 'gray', 'gray');
@@ -7837,6 +7916,14 @@ var author$project$View$player_view = F2(
 						_List_fromArray(
 							[
 								elm$html$Html$text('click a card to discard')
+							]));
+				case 'TurnNeedCover':
+					return A2(
+						elm$html$Html$div,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('click a card to cover')
 							]));
 				case 'TurnNeedCard':
 					return A2(
