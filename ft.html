@@ -4910,6 +4910,9 @@ var author$project$Setup$startingHand = function (color) {
 		case 'Discard':
 			return _List_fromArray(
 				['K', 'Q', 'Q', 'Q', '8']);
+		case 'BullsEye':
+			return _List_fromArray(
+				['A', '6', 'Q', '8', '9']);
 		default:
 			return _List_Nil;
 	}
@@ -5779,6 +5782,19 @@ var author$project$LegalMove$nextZoneColor = F2(
 			'bogus',
 			A2(elm_community$list_extra$List$Extra$getAt, nextIdx, zoneColors));
 	});
+var author$project$LegalMove$prevZoneColor = F2(
+	function (color, zoneColors) {
+		var len = elm$core$List$length(zoneColors);
+		var idx = A2(
+			elm$core$Maybe$withDefault,
+			1,
+			A2(elm_community$list_extra$List$Extra$elemIndex, color, zoneColors));
+		var nextIdx = A2(elm$core$Basics$modBy, len, idx - 1);
+		return A2(
+			elm$core$Maybe$withDefault,
+			'bogus',
+			A2(elm_community$list_extra$List$Extra$getAt, nextIdx, zoneColors));
+	});
 var elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -5802,6 +5818,7 @@ var author$project$LegalMove$getNextLocs = F2(
 			return A2(elm$core$List$filter, isFree, lst);
 		};
 		var canLeavePen = params.canLeavePen;
+		var canLeaveBullsEye = params.canLeaveBullsEye;
 		var canFastTrack = params.canFastTrack;
 		var _n0 = loc;
 		var zoneColor = _n0.a;
@@ -5815,7 +5832,18 @@ var author$project$LegalMove$getNextLocs = F2(
 					])) : _List_Nil;
 		} else {
 			if (id === 'FT') {
-				return (canFastTrack && (!_Utils_eq(nextColor, pieceColor))) ? filter(
+				return _Utils_eq(pieceColor, zoneColor) ? (canFastTrack ? filter(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(nextColor, 'FT'),
+							_Utils_Tuple2(nextColor, 'R4'),
+							_Utils_Tuple2('black', 'bullseye')
+						])) : filter(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(nextColor, 'R4'),
+							_Utils_Tuple2('black', 'bullseye')
+						]))) : ((canFastTrack && (!_Utils_eq(pieceColor, nextColor))) ? filter(
 					_List_fromArray(
 						[
 							_Utils_Tuple2(nextColor, 'FT'),
@@ -5824,16 +5852,29 @@ var author$project$LegalMove$getNextLocs = F2(
 					_List_fromArray(
 						[
 							_Utils_Tuple2(nextColor, 'R4')
-						]));
+						])));
 			} else {
-				var nextIds = A3(author$project$Config$nextIdsInZone, id, pieceColor, zoneColor);
-				return filter(
-					A2(
-						elm$core$List$map,
-						function (id_) {
-							return _Utils_Tuple2(zoneColor, id_);
-						},
-						nextIds));
+				if (id === 'bullseye') {
+					if (canLeaveBullsEye) {
+						var prevColor = A2(author$project$LegalMove$prevZoneColor, pieceColor, zoneColors);
+						return filter(
+							_List_fromArray(
+								[
+									_Utils_Tuple2(prevColor, 'FT')
+								]));
+					} else {
+						return _List_Nil;
+					}
+				} else {
+					var nextIds = A3(author$project$Config$nextIdsInZone, id, pieceColor, zoneColor);
+					return filter(
+						A2(
+							elm$core$List$map,
+							function (id_) {
+								return _Utils_Tuple2(zoneColor, id_);
+							},
+							nextIds));
+				}
 			}
 		}
 	});
@@ -5848,19 +5889,6 @@ var author$project$Config$isBaseId = function (id) {
 var author$project$Config$prevIdInZone = function (id) {
 	return (id === 'HH') ? 'DS' : ((id === 'L0') ? 'HH' : ((id === 'L1') ? 'L0' : ((id === 'L2') ? 'L1' : ((id === 'L3') ? 'L2' : ((id === 'L4') ? 'L3' : ((id === 'FT') ? 'L4' : ((id === 'R3') ? 'R4' : ((id === 'R2') ? 'R3' : ((id === 'R1') ? 'R2' : ((id === 'R0') ? 'R1' : ((id === 'BR') ? 'R0' : ((id === 'DS') ? 'BR' : 'bogus'))))))))))));
 };
-var author$project$LegalMove$prevZoneColor = F2(
-	function (color, zoneColors) {
-		var len = elm$core$List$length(zoneColors);
-		var idx = A2(
-			elm$core$Maybe$withDefault,
-			1,
-			A2(elm_community$list_extra$List$Extra$elemIndex, color, zoneColors));
-		var nextIdx = A2(elm$core$Basics$modBy, len, idx - 1);
-		return A2(
-			elm$core$Maybe$withDefault,
-			'bogus',
-			A2(elm_community$list_extra$List$Extra$getAt, nextIdx, zoneColors));
-	});
 var author$project$LegalMove$getPrevLocs = F2(
 	function (params, loc) {
 		var zoneColors = params.zoneColors;
@@ -5882,19 +5910,23 @@ var author$project$LegalMove$getPrevLocs = F2(
 			if (author$project$Config$isBaseId(id)) {
 				return _List_Nil;
 			} else {
-				if (id === 'R4') {
-					return filter(
-						_List_fromArray(
-							[
-								_Utils_Tuple2(prevColor, 'FT')
-							]));
+				if (id === 'bullseye') {
+					return _List_Nil;
 				} else {
-					var prevId = author$project$Config$prevIdInZone(id);
-					return filter(
-						_List_fromArray(
-							[
-								_Utils_Tuple2(zoneColor, prevId)
-							]));
+					if (id === 'R4') {
+						return filter(
+							_List_fromArray(
+								[
+									_Utils_Tuple2(prevColor, 'FT')
+								]));
+					} else {
+						var prevId = author$project$Config$prevIdInZone(id);
+						return filter(
+							_List_fromArray(
+								[
+									_Utils_Tuple2(zoneColor, prevId)
+								]));
+					}
 				}
 			}
 		}
@@ -6035,12 +6067,13 @@ var author$project$LegalMove$hasPieceOnFastTrack = F2(
 var author$project$LegalMove$getCanGoNSpaces = F4(
 	function (pieceMap, loc, zoneColors, n) {
 		var pieceColor = A2(author$project$Piece$getThePiece, pieceMap, loc);
+		var canLeaveBullsEye = false;
 		var _n0 = loc;
 		var id = _n0.b;
 		var canFastTrack = id === 'FT';
 		var canMove = canFastTrack || (!A2(author$project$LegalMove$hasPieceOnFastTrack, pieceMap, pieceColor));
 		if (canMove) {
-			var params = {canFastTrack: canFastTrack, canLeavePen: false, pieceColor: pieceColor, pieceMap: pieceMap, reverseMode: false, zoneColors: zoneColors};
+			var params = {canFastTrack: canFastTrack, canLeaveBullsEye: canLeaveBullsEye, canLeavePen: false, pieceColor: pieceColor, pieceMap: pieceMap, reverseMode: false, zoneColors: zoneColors};
 			var getNeighbors = author$project$LegalMove$getNextLocs(params);
 			return A3(author$project$Graph$canTravelNEdges, getNeighbors, n, loc);
 		} else {
@@ -6738,9 +6771,14 @@ var author$project$LegalMove$getMovesFromLocation = F4(
 		var id = _n0.b;
 		var canFastTrack = id === 'FT';
 		var canMove = canFastTrack || (!A2(author$project$LegalMove$hasPieceOnFastTrack, pieceMap, pieceColor));
+		var canLeaveBullsEye = A2(
+			elm$core$List$member,
+			activeCard,
+			_List_fromArray(
+				['J', 'Q', 'K'])) && (id === 'bullseye');
 		var movesLeft = A2(author$project$LegalMove$moveCountForMoveType, moveType, id);
 		if (canMove) {
-			var params = {canFastTrack: canFastTrack, canLeavePen: canLeavePen, pieceColor: pieceColor, pieceMap: pieceMap, reverseMode: reverseMode, zoneColors: zoneColors};
+			var params = {canFastTrack: canFastTrack, canLeaveBullsEye: canLeaveBullsEye, canLeavePen: canLeavePen, pieceColor: pieceColor, pieceMap: pieceMap, reverseMode: reverseMode, zoneColors: zoneColors};
 			var makeMove = function (endLoc) {
 				return _Utils_Tuple3(moveType, startLoc, endLoc);
 			};
@@ -7431,45 +7469,6 @@ var author$project$Polygon$makePolygon = F3(
 			A2(elm$core$List$map, padOnePanel, panels));
 		return A2(elm$svg$Svg$g, _List_Nil, newPanels);
 	});
-var author$project$View$nudge = function (board) {
-	var offset = elm$core$String$fromFloat(author$project$Config$squareSize);
-	var translate = 'translate(' + (offset + (' ' + (offset + ')')));
-	return A2(
-		elm$svg$Svg$g,
-		_List_fromArray(
-			[
-				elm$svg$Svg$Attributes$transform(translate)
-			]),
-		_List_fromArray(
-			[board]));
-};
-var author$project$View$panelHeight = 5 * author$project$Config$squareSize;
-var author$project$View$panelWidth = 4 * author$project$Config$squareSize;
-var author$project$Config$configLocations = _List_fromArray(
-	[
-		{id: 'HP1', x: -4.2, y: 1.7},
-		{id: 'HP2', x: -3.2, y: 1.7},
-		{id: 'HP3', x: -4.2, y: 0.7},
-		{id: 'HP4', x: -3.2, y: 0.7},
-		{id: 'B1', x: 0, y: 1},
-		{id: 'B2', x: 0, y: 2},
-		{id: 'B3', x: 0, y: 3},
-		{id: 'B4', x: 0, y: 4},
-		{id: 'HH', x: -1, y: 0},
-		{id: 'DS', x: 0, y: 0},
-		{id: 'BR', x: 1, y: 0},
-		{id: 'L0', x: -2, y: 0},
-		{id: 'L1', x: -2, y: 1},
-		{id: 'L2', x: -2, y: 2},
-		{id: 'L3', x: -2, y: 3},
-		{id: 'L4', x: -2, y: 4},
-		{id: 'FT', x: -2, y: 5},
-		{id: 'R0', x: 2, y: 0},
-		{id: 'R1', x: 2, y: 1},
-		{id: 'R2', x: 2, y: 2},
-		{id: 'R3', x: 2, y: 3},
-		{id: 'R4', x: 2, y: 4}
-	]);
 var author$project$Config$gutterSize = 4.0;
 var author$project$Type$SetEndLocation = function (a) {
 	return {$: 'SetEndLocation', a: a};
@@ -7524,14 +7523,13 @@ var elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
 var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
-var author$project$View$locationView = F7(
-	function (pieceMap, zoneColor, startLocs, endLocs, activeColor, selectedLocation, locationInfo) {
+var author$project$View$drawLocationAtCoords = F9(
+	function (pieceMap, zoneColor, id, startLocs, endLocs, activeColor, selectedLocation, cx_, cy_) {
 		var w = author$project$Config$squareSize - author$project$Config$gutterSize;
-		var radius = w / 2;
-		var id = locationInfo.id;
-		var isRect = author$project$Config$isHoldingPenId(id) || author$project$Config$isBaseId(id);
 		var pieceLocation = _Utils_Tuple2(zoneColor, id);
-		var isReachable = A2(elm$core$Set$member, pieceLocation, endLocs);
+		var myPiece = A2(author$project$Piece$getPiece, pieceMap, pieceLocation);
+		var isStartLoc = A2(elm$core$Set$member, pieceLocation, startLocs);
+		var strokeColor = isStartLoc ? 'black' : zoneColor;
 		var isSelectedPiece = function () {
 			if (selectedLocation.$ === 'Just') {
 				var location = selectedLocation.a;
@@ -7540,8 +7538,8 @@ var author$project$View$locationView = F7(
 				return false;
 			}
 		}();
-		var isStartLoc = A2(elm$core$Set$member, pieceLocation, startLocs);
-		var strokeColor = isStartLoc ? 'black' : zoneColor;
+		var isRect = author$project$Config$isHoldingPenId(id) || author$project$Config$isBaseId(id);
+		var isReachable = A2(elm$core$Set$member, pieceLocation, endLocs);
 		var locHandlers = isStartLoc ? _List_fromArray(
 			[
 				elm$html$Html$Events$onClick(
@@ -7551,15 +7549,6 @@ var author$project$View$locationView = F7(
 				elm$html$Html$Events$onClick(
 				author$project$Type$SetEndLocation(pieceLocation))
 			]) : _List_Nil);
-		var myPiece = A2(author$project$Piece$getPiece, pieceMap, pieceLocation);
-		var isMe = _Utils_eq(
-			myPiece,
-			elm$core$Maybe$Just(activeColor));
-		var h = author$project$Config$squareSize - author$project$Config$gutterSize;
-		var fillColor = isSelectedPiece ? 'lightblue' : (isStartLoc ? 'lightcyan' : (isReachable ? 'lightgreen' : (isMe ? 'mintcream' : 'white')));
-		var cy_ = author$project$View$panelHeight - (locationInfo.y * author$project$Config$squareSize);
-		var ypos = cy_ - (h / 2);
-		var cx_ = locationInfo.x * author$project$Config$squareSize;
 		var sPieces = function () {
 			if (myPiece.$ === 'Just') {
 				var pieceColor = myPiece.a;
@@ -7571,43 +7560,110 @@ var author$project$View$locationView = F7(
 				return _List_Nil;
 			}
 		}();
-		var xpos = cx_ - (w / 2);
-		var sLocation = isRect ? A2(
-			elm$svg$Svg$rect,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						elm$svg$Svg$Attributes$x(
-						elm$core$String$fromFloat(xpos)),
-						elm$svg$Svg$Attributes$y(
-						elm$core$String$fromFloat(ypos)),
-						elm$svg$Svg$Attributes$fill(fillColor),
-						elm$svg$Svg$Attributes$stroke(strokeColor),
-						elm$svg$Svg$Attributes$width(
-						elm$core$String$fromFloat(w)),
-						elm$svg$Svg$Attributes$height(
-						elm$core$String$fromFloat(h)),
-						elm$svg$Svg$Attributes$rx('2')
-					]),
-				locHandlers),
-			_List_Nil) : A2(
-			elm$svg$Svg$circle,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						elm$svg$Svg$Attributes$cx(
-						elm$core$String$fromFloat(cx_)),
-						elm$svg$Svg$Attributes$cy(
-						elm$core$String$fromFloat(cy_)),
-						elm$svg$Svg$Attributes$fill(fillColor),
-						elm$svg$Svg$Attributes$stroke(strokeColor),
-						elm$svg$Svg$Attributes$r(
-						elm$core$String$fromFloat(radius))
-					]),
-				locHandlers),
-			_List_Nil);
+		var isMe = _Utils_eq(
+			myPiece,
+			elm$core$Maybe$Just(activeColor));
+		var fillColor = isSelectedPiece ? 'lightblue' : (isStartLoc ? 'lightcyan' : (isReachable ? 'lightgreen' : (isMe ? 'mintcream' : 'white')));
+		var sLocation = function () {
+			if (isRect) {
+				var xpos = cx_ - (w / 2);
+				var h = w;
+				var ypos = cy_ - (h / 2);
+				return A2(
+					elm$svg$Svg$rect,
+					_Utils_ap(
+						_List_fromArray(
+							[
+								elm$svg$Svg$Attributes$x(
+								elm$core$String$fromFloat(xpos)),
+								elm$svg$Svg$Attributes$y(
+								elm$core$String$fromFloat(ypos)),
+								elm$svg$Svg$Attributes$fill(fillColor),
+								elm$svg$Svg$Attributes$stroke(strokeColor),
+								elm$svg$Svg$Attributes$width(
+								elm$core$String$fromFloat(w)),
+								elm$svg$Svg$Attributes$height(
+								elm$core$String$fromFloat(h)),
+								elm$svg$Svg$Attributes$rx('2')
+							]),
+						locHandlers),
+					_List_Nil);
+			} else {
+				var radius = w / 2;
+				return A2(
+					elm$svg$Svg$circle,
+					_Utils_ap(
+						_List_fromArray(
+							[
+								elm$svg$Svg$Attributes$cx(
+								elm$core$String$fromFloat(cx_)),
+								elm$svg$Svg$Attributes$cy(
+								elm$core$String$fromFloat(cy_)),
+								elm$svg$Svg$Attributes$fill(fillColor),
+								elm$svg$Svg$Attributes$stroke(strokeColor),
+								elm$svg$Svg$Attributes$r(
+								elm$core$String$fromFloat(radius))
+							]),
+						locHandlers),
+					_List_Nil);
+			}
+		}();
 		var contents = A2(elm$core$List$cons, sLocation, sPieces);
 		return A2(elm$svg$Svg$g, _List_Nil, contents);
+	});
+var author$project$View$bullsEyeView = F6(
+	function (pieceMap, startLocs, endLocs, activeColor, selectedLocation, centerOffset) {
+		var zoneColor = 'black';
+		var id = 'bullseye';
+		var cy_ = centerOffset;
+		var cx_ = centerOffset;
+		return A9(author$project$View$drawLocationAtCoords, pieceMap, zoneColor, id, startLocs, endLocs, activeColor, selectedLocation, cx_, cy_);
+	});
+var author$project$View$nudge = function (board) {
+	var offset = elm$core$String$fromFloat(author$project$Config$squareSize);
+	var translate = 'translate(' + (offset + (' ' + (offset + ')')));
+	return A2(
+		elm$svg$Svg$g,
+		_List_fromArray(
+			[
+				elm$svg$Svg$Attributes$transform(translate)
+			]),
+		_List_fromArray(
+			[board]));
+};
+var author$project$View$panelHeight = 5 * author$project$Config$squareSize;
+var author$project$View$panelWidth = 4 * author$project$Config$squareSize;
+var author$project$Config$configLocations = _List_fromArray(
+	[
+		{id: 'HP1', x: -4.2, y: 1.7},
+		{id: 'HP2', x: -3.2, y: 1.7},
+		{id: 'HP3', x: -4.2, y: 0.7},
+		{id: 'HP4', x: -3.2, y: 0.7},
+		{id: 'B1', x: 0, y: 1},
+		{id: 'B2', x: 0, y: 2},
+		{id: 'B3', x: 0, y: 3},
+		{id: 'B4', x: 0, y: 4},
+		{id: 'HH', x: -1, y: 0},
+		{id: 'DS', x: 0, y: 0},
+		{id: 'BR', x: 1, y: 0},
+		{id: 'L0', x: -2, y: 0},
+		{id: 'L1', x: -2, y: 1},
+		{id: 'L2', x: -2, y: 2},
+		{id: 'L3', x: -2, y: 3},
+		{id: 'L4', x: -2, y: 4},
+		{id: 'FT', x: -2, y: 5},
+		{id: 'R0', x: 2, y: 0},
+		{id: 'R1', x: 2, y: 1},
+		{id: 'R2', x: 2, y: 2},
+		{id: 'R3', x: 2, y: 3},
+		{id: 'R4', x: 2, y: 4}
+	]);
+var author$project$View$locationView = F7(
+	function (pieceMap, zoneColor, startLocs, endLocs, activeColor, selectedLocation, locationInfo) {
+		var id = locationInfo.id;
+		var cy_ = author$project$View$panelHeight - (locationInfo.y * author$project$Config$squareSize);
+		var cx_ = locationInfo.x * author$project$Config$squareSize;
+		return A9(author$project$View$drawLocationAtCoords, pieceMap, zoneColor, id, startLocs, endLocs, activeColor, selectedLocation, cx_, cy_);
 	});
 var author$project$View$zoneView = F6(
 	function (pieceMap, startLocs, endLocs, activeColor, startLocation, zoneColor) {
@@ -7625,17 +7681,26 @@ var author$project$View$boardView = F4(
 		var startLocation = author$project$Player$getStartLocation(activePlayer);
 		var sideCount = elm$core$List$length(zoneColors);
 		var endLocs = author$project$Player$endLocsForPlayer(activePlayer);
-		var content = author$project$View$nudge(
-			A3(
-				author$project$Polygon$makePolygon,
-				author$project$View$panelWidth,
-				author$project$View$panelHeight,
-				A2(
-					elm$core$List$map,
-					A5(author$project$View$zoneView, pieceMap, startLocs, endLocs, activeColor, startLocation),
-					zoneColors)));
+		var zoneLocations = A3(
+			author$project$Polygon$makePolygon,
+			author$project$View$panelWidth,
+			author$project$View$panelHeight,
+			A2(
+				elm$core$List$map,
+				A5(author$project$View$zoneView, pieceMap, startLocs, endLocs, activeColor, startLocation),
+				zoneColors));
 		var centerOffset = A3(author$project$Polygon$getCenterOffset, sideCount, author$project$View$panelWidth, author$project$View$panelHeight);
+		var bullsEye = A6(author$project$View$bullsEyeView, pieceMap, startLocs, endLocs, activeColor, startLocation, centerOffset);
 		var boardSize = elm$core$String$fromFloat((2 * centerOffset) + (3 * author$project$Config$squareSize));
+		var allLocations = author$project$View$nudge(
+			A2(
+				elm$svg$Svg$g,
+				_List_Nil,
+				_Utils_ap(
+					_List_fromArray(
+						[zoneLocations]),
+					_List_fromArray(
+						[bullsEye]))));
 		return A2(
 			elm$svg$Svg$svg,
 			_List_fromArray(
@@ -7644,7 +7709,7 @@ var author$project$View$boardView = F4(
 					elm$svg$Svg$Attributes$height(boardSize)
 				]),
 			_List_fromArray(
-				[content]));
+				[allLocations]));
 	});
 var author$project$Player$getPlayableCards = function (player) {
 	var _n0 = player.turn;
