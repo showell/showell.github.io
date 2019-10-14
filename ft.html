@@ -7886,20 +7886,13 @@ var author$project$Config$hintForCard = function (card) {
 };
 var elm$core$List$sortBy = _List_sortBy;
 var elm$html$Html$br = _VirtualDom_node('br');
-var author$project$View$playerNeedCard = function (playableCards) {
+var author$project$View$cheatSheet = function (cards) {
 	var title = A2(
 		elm$html$Html$b,
 		_List_Nil,
 		_List_fromArray(
 			[
 				elm$html$Html$text('Cheat sheet:')
-			]));
-	var instructions = A2(
-		elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				elm$html$Html$text('click a card above')
 			]));
 	var cardHint = function (card) {
 		var hint = card + (' - ' + author$project$Config$hintForCard(card));
@@ -7920,8 +7913,8 @@ var author$project$View$playerNeedCard = function (playableCards) {
 			A2(
 				elm$core$List$sortBy,
 				author$project$Config$cardValue,
-				elm$core$Set$toList(playableCards))));
-	var cheatSheet = A2(
+				elm$core$Set$toList(cards))));
+	return A2(
 		elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
@@ -7930,11 +7923,23 @@ var author$project$View$playerNeedCard = function (playableCards) {
 				title,
 				cardHints
 			]));
+};
+var author$project$View$playerNeedCard = function (playableCards) {
+	var instructions = A2(
+		elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				elm$html$Html$text('click a card above')
+			]));
 	return A2(
 		elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
-			[instructions, cheatSheet]));
+			[
+				instructions,
+				author$project$View$cheatSheet(playableCards)
+			]));
 };
 var author$project$LegalMove$getCardForPlayType = function (playType) {
 	if (playType.$ === 'PlayCard') {
@@ -7997,7 +8002,11 @@ var author$project$View$playerNeedStart = F2(
 			_List_Nil,
 			_List_fromArray(
 				[
-					A3(author$project$View$activeCardView, activeCard, color, instructions)
+					A3(author$project$View$activeCardView, activeCard, color, instructions),
+					author$project$View$cheatSheet(
+					elm$core$Set$fromList(
+						_List_fromArray(
+							[activeCard])))
 				]));
 	});
 var author$project$Type$RotateBoard = {$: 'RotateBoard'};
