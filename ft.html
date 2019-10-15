@@ -4762,6 +4762,10 @@ var author$project$Setup$startingLocations = function (color) {
 			return inMyZone(
 				_List_fromArray(
 					['HP1', 'B1', 'B3', 'R0']));
+		case 'SevenSplit':
+			return inMyZone(
+				_List_fromArray(
+					['L0', 'L2', 'R2', 'B2']));
 		case 'Cover':
 			return inMyZone(
 				_List_fromArray(
@@ -4913,6 +4917,9 @@ var author$project$Setup$startingHand = function (color) {
 		case 'BullsEye':
 			return _List_fromArray(
 				['A', '6', 'Q', '8', '9']);
+		case 'SevenSplit':
+			return _List_fromArray(
+				['7', '7', '2', 'Q', 'K']);
 		default:
 			return _List_Nil;
 	}
@@ -5954,38 +5961,38 @@ var author$project$LegalMove$getCardForMoveType = function (moveType) {
 			return 'via discards';
 	}
 };
-var elm$core$Basics$not = _Basics_not;
-var author$project$LegalMove$isNormalLoc = function (_n0) {
-	var id = _n0.b;
-	return (!author$project$Config$isHoldingPenId(id)) && (!author$project$Config$isBaseId(id));
-};
-var author$project$LegalMove$isColor = F3(
-	function (pieceMap, color, loc) {
-		var locColor = A2(elm$core$Dict$get, loc, pieceMap);
-		return _Utils_eq(
-			locColor,
-			elm$core$Maybe$Just(color));
-	});
-var author$project$LegalMove$swappableLocs = F2(
-	function (pieceMap, activeColor) {
-		var isThem = function (loc) {
-			return !A3(author$project$LegalMove$isColor, pieceMap, activeColor, loc);
-		};
-		return elm$core$Set$fromList(
-			A2(
-				elm$core$List$filter,
-				author$project$LegalMove$isNormalLoc,
-				A2(
-					elm$core$List$filter,
-					isThem,
-					elm$core$Dict$keys(pieceMap))));
-	});
 var author$project$Piece$getThePiece = F2(
 	function (pieceMap, pieceLoc) {
 		return A2(
 			elm$core$Maybe$withDefault,
 			'bogus',
 			A2(elm$core$Dict$get, pieceLoc, pieceMap));
+	});
+var elm$core$Basics$not = _Basics_not;
+var author$project$Piece$isNormalLoc = function (_n0) {
+	var id = _n0.b;
+	return (!author$project$Config$isHoldingPenId(id)) && (!author$project$Config$isBaseId(id));
+};
+var author$project$Piece$isColor = F3(
+	function (pieceMap, color, loc) {
+		var locColor = A2(elm$core$Dict$get, loc, pieceMap);
+		return _Utils_eq(
+			locColor,
+			elm$core$Maybe$Just(color));
+	});
+var author$project$Piece$swappableLocs = F2(
+	function (pieceMap, activeColor) {
+		var isThem = function (loc) {
+			return !A3(author$project$Piece$isColor, pieceMap, activeColor, loc);
+		};
+		return elm$core$Set$fromList(
+			A2(
+				elm$core$List$filter,
+				author$project$Piece$isNormalLoc,
+				A2(
+					elm$core$List$filter,
+					isThem,
+					elm$core$Dict$keys(pieceMap))));
 	});
 var author$project$Type$JackTrade = {$: 'JackTrade'};
 var author$project$Type$WithCard = function (a) {
@@ -5995,13 +6002,13 @@ var author$project$LegalMove$getMovesForJack = F2(
 	function (params, startLoc) {
 		var pieceMap = params.pieceMap;
 		var pieceColor = A2(author$project$Piece$getThePiece, pieceMap, startLoc);
-		var tradeMoves = author$project$LegalMove$isNormalLoc(startLoc) ? A2(
+		var tradeMoves = author$project$Piece$isNormalLoc(startLoc) ? A2(
 			elm$core$List$map,
 			function (endLoc) {
 				return _Utils_Tuple3(author$project$Type$JackTrade, startLoc, endLoc);
 			},
 			elm$core$Set$toList(
-				A2(author$project$LegalMove$swappableLocs, pieceMap, pieceColor))) : _List_Nil;
+				A2(author$project$Piece$swappableLocs, pieceMap, pieceColor))) : _List_Nil;
 		var movesLeft = 1;
 		var forwardMoves = A2(
 			elm$core$List$map,
@@ -6044,15 +6051,15 @@ var author$project$Graph$canTravelNEdges = F3(
 			A2(author$project$Graph$canTravelNEdges, getNeighbors, n - 1),
 			getNeighbors(node));
 	});
-var author$project$LegalMove$myPieces = F2(
+var author$project$Piece$myPieces = F2(
 	function (pieceMap, activeColor) {
 		return elm$core$Set$fromList(
 			A2(
 				elm$core$List$filter,
-				A2(author$project$LegalMove$isColor, pieceMap, activeColor),
+				A2(author$project$Piece$isColor, pieceMap, activeColor),
 				elm$core$Dict$keys(pieceMap)));
 	});
-var author$project$LegalMove$hasPieceOnFastTrack = F2(
+var author$project$Piece$hasPieceOnFastTrack = F2(
 	function (pieceMap, activeColor) {
 		var isFt = function (_n0) {
 			var id = _n0.b;
@@ -6062,7 +6069,7 @@ var author$project$LegalMove$hasPieceOnFastTrack = F2(
 			elm$core$List$any,
 			isFt,
 			elm$core$Set$toList(
-				A2(author$project$LegalMove$myPieces, pieceMap, activeColor)));
+				A2(author$project$Piece$myPieces, pieceMap, activeColor)));
 	});
 var author$project$LegalMove$getCanGoNSpaces = F4(
 	function (pieceMap, loc, zoneColors, n) {
@@ -6071,7 +6078,7 @@ var author$project$LegalMove$getCanGoNSpaces = F4(
 		var _n0 = loc;
 		var id = _n0.b;
 		var canFastTrack = id === 'FT';
-		var canMove = canFastTrack || (!A2(author$project$LegalMove$hasPieceOnFastTrack, pieceMap, pieceColor));
+		var canMove = canFastTrack || (!A2(author$project$Piece$hasPieceOnFastTrack, pieceMap, pieceColor));
 		if (canMove) {
 			var params = {canFastTrack: canFastTrack, canLeaveBullsEye: canLeaveBullsEye, canLeavePen: false, pieceColor: pieceColor, pieceMap: pieceMap, reverseMode: false, zoneColors: zoneColors};
 			var getNeighbors = author$project$LegalMove$getNextLocs(params);
@@ -6596,14 +6603,8 @@ var elm$core$Set$filter = F2(
 					}),
 				dict));
 	});
-var elm$core$Set$remove = F2(
-	function (key, _n0) {
-		var dict = _n0.a;
-		return elm$core$Set$Set_elm_builtin(
-			A2(elm$core$Dict$remove, key, dict));
-	});
-var author$project$LegalMove$otherMobilePieces = F3(
-	function (pieceMap, activeColor, loc) {
+var author$project$Piece$nonPenPieces = F2(
+	function (pieceMap, activeColor) {
 		var isMobile = function (_n0) {
 			var id = _n0.b;
 			return !author$project$Config$isHoldingPenId(id);
@@ -6611,10 +6612,20 @@ var author$project$LegalMove$otherMobilePieces = F3(
 		return A2(
 			elm$core$Set$filter,
 			isMobile,
-			A2(
-				elm$core$Set$remove,
-				loc,
-				A2(author$project$LegalMove$myPieces, pieceMap, activeColor)));
+			A2(author$project$Piece$myPieces, pieceMap, activeColor));
+	});
+var elm$core$Set$remove = F2(
+	function (key, _n0) {
+		var dict = _n0.a;
+		return elm$core$Set$Set_elm_builtin(
+			A2(elm$core$Dict$remove, key, dict));
+	});
+var author$project$Piece$otherNonPenPieces = F3(
+	function (pieceMap, activeColor, loc) {
+		return A2(
+			elm$core$Set$remove,
+			loc,
+			A2(author$project$Piece$nonPenPieces, pieceMap, activeColor));
 	});
 var author$project$Type$StartSplit = function (a) {
 	return {$: 'StartSplit', a: a};
@@ -6648,7 +6659,7 @@ var author$project$LegalMove$getMovesForSeven = F2(
 		var zoneColors = params.zoneColors;
 		var pieceMap = params.pieceMap;
 		var pieceColor = A2(author$project$Piece$getThePiece, pieceMap, startLoc);
-		var otherLocs = A3(author$project$LegalMove$otherMobilePieces, pieceMap, pieceColor, startLoc);
+		var otherLocs = A3(author$project$Piece$otherNonPenPieces, pieceMap, pieceColor, startLoc);
 		var getLocs = function (moveCount) {
 			return A3(author$project$LegalMove$endLocations, params, startLoc, moveCount);
 		};
@@ -6777,7 +6788,7 @@ var author$project$LegalMove$getMovesFromLocation = F4(
 		var _n0 = startLoc;
 		var id = _n0.b;
 		var canFastTrack = id === 'FT';
-		var canMove = canFastTrack || (!A2(author$project$LegalMove$hasPieceOnFastTrack, pieceMap, pieceColor));
+		var canMove = canFastTrack || (!A2(author$project$Piece$hasPieceOnFastTrack, pieceMap, pieceColor));
 		var canLeaveBullsEye = A2(
 			elm$core$List$member,
 			activeCard,
@@ -6801,14 +6812,54 @@ var author$project$LegalMove$getMovesFromLocation = F4(
 			return _List_Nil;
 		}
 	});
+var elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var author$project$Piece$pieceToMoveOutOfPen = F2(
+	function (pieceMap, color) {
+		var isOccupied = function (id) {
+			return !_Utils_eq(
+				A2(
+					author$project$Piece$getPiece,
+					pieceMap,
+					_Utils_Tuple2(color, id)),
+				elm$core$Maybe$Nothing);
+		};
+		return A2(
+			elm$core$Maybe$map,
+			function (id) {
+				return _Utils_Tuple2(color, id);
+			},
+			elm$core$List$head(
+				elm$core$List$reverse(
+					A2(elm$core$List$filter, isOccupied, author$project$Config$holdingPenLocations))));
+	});
+var author$project$Piece$movablePieces = F2(
+	function (pieceMap, color) {
+		var pieces = A2(author$project$Piece$nonPenPieces, pieceMap, color);
+		var _n0 = A2(author$project$Piece$pieceToMoveOutOfPen, pieceMap, color);
+		if (_n0.$ === 'Nothing') {
+			return pieces;
+		} else {
+			var pen_loc = _n0.a;
+			return A2(elm$core$Set$insert, pen_loc, pieces);
+		}
+	});
 var author$project$LegalMove$getMovesForMoveType = F4(
 	function (moveType, pieceMap, zoneColors, activeColor) {
 		var startLocs = function () {
 			if (moveType.$ === 'FinishSplit') {
 				var excludeLoc = moveType.b;
-				return A3(author$project$LegalMove$otherMobilePieces, pieceMap, activeColor, excludeLoc);
+				return A3(author$project$Piece$otherNonPenPieces, pieceMap, activeColor, excludeLoc);
 			} else {
-				return A2(author$project$LegalMove$myPieces, pieceMap, activeColor);
+				return A2(author$project$Piece$movablePieces, pieceMap, activeColor);
 			}
 		}();
 		var getMoves = function (startLoc) {
@@ -7145,37 +7196,10 @@ var author$project$Main$seedFromTime = function (time) {
 		elm$time$Time$posixToMillis(time));
 };
 var author$project$Config$numCreditsToGetOut = 5;
-var elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
-var author$project$Piece$occupiedHoldingPenLocation = F2(
-	function (pieceMap, color) {
-		var isOccupied = function (id) {
-			return !_Utils_eq(
-				A2(
-					author$project$Piece$getPiece,
-					pieceMap,
-					_Utils_Tuple2(color, id)),
-				elm$core$Maybe$Nothing);
-		};
-		return A2(
-			elm$core$Maybe$map,
-			function (id) {
-				return _Utils_Tuple2(color, id);
-			},
-			A2(elm_community$list_extra$List$Extra$find, isOccupied, author$project$Config$holdingPenLocations));
-	});
 var author$project$Type$ComeOutWithCredits = {$: 'ComeOutWithCredits'};
 var author$project$Piece$bringPlayerOut = F2(
 	function (color, pieceMap) {
-		var penLoc = A2(author$project$Piece$occupiedHoldingPenLocation, pieceMap, color);
+		var penLoc = A2(author$project$Piece$pieceToMoveOutOfPen, pieceMap, color);
 		if (penLoc.$ === 'Nothing') {
 			return pieceMap;
 		} else {
