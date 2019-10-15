@@ -6672,7 +6672,14 @@ var author$project$LegalMove$getMovesForSeven = F2(
 					function (endLoc) {
 						return _Utils_Tuple3(moveType, startLoc, endLoc);
 					},
-					getLocs(moveCount));
+					A2(
+						elm$core$List$filter,
+						function (endLoc) {
+							return !_Utils_eq(
+								endLoc,
+								_Utils_Tuple2('black', 'bullseye'));
+						},
+						getLocs(moveCount)));
 				return A2(
 					elm$core$List$filter,
 					A4(author$project$LegalMove$canFinishSplit, zoneColors, otherLocs, pieceMap, otherCount),
@@ -6929,7 +6936,7 @@ var author$project$Player$finishSevenSplit = F5(
 		return author$project$Type$TurnNeedStartLoc(
 			{moves: moves, playType: playType, startLocs: startLocs});
 	});
-var author$project$Player$isMoveAgainCard = function (card) {
+var author$project$Config$isMoveAgainCard = function (card) {
 	return A2(
 		elm$core$List$member,
 		card,
@@ -6939,7 +6946,7 @@ var author$project$Player$isMoveAgainCard = function (card) {
 var author$project$Type$TurnDone = {$: 'TurnDone'};
 var author$project$Player$maybeFinishTurn = F5(
 	function (card, pieceMap, zoneColors, activeColor, player) {
-		return author$project$Player$isMoveAgainCard(card) ? A4(author$project$Player$turnNeedCard, pieceMap, zoneColors, activeColor, player) : _Utils_update(
+		return author$project$Config$isMoveAgainCard(card) ? A4(author$project$Player$turnNeedCard, pieceMap, zoneColors, activeColor, player) : _Utils_update(
 			player,
 			{turn: author$project$Type$TurnDone});
 	});
@@ -7261,7 +7268,7 @@ var author$project$Player$coverCard = F2(
 			var card = _n0.a;
 			var _n1 = player.turn;
 			if (_n1.$ === 'TurnNeedCover') {
-				var turn = author$project$Player$isMoveAgainCard(card) ? author$project$Type$TurnNeedCover : author$project$Type$TurnDone;
+				var turn = author$project$Config$isMoveAgainCard(card) ? author$project$Type$TurnNeedCover : author$project$Type$TurnDone;
 				var newHand = A2(elm_community$list_extra$List$Extra$removeAt, idx, player.hand);
 				return _Utils_update(
 					player,
@@ -7280,7 +7287,7 @@ var author$project$Player$discardCard = F2(
 			var card = _n0.a;
 			var _n1 = player.turn;
 			if (_n1.$ === 'TurnNeedDiscard') {
-				var turn = author$project$Player$isMoveAgainCard(card) ? author$project$Type$TurnNeedDiscard : author$project$Type$TurnDone;
+				var turn = author$project$Config$isMoveAgainCard(card) ? author$project$Type$TurnNeedDiscard : author$project$Type$TurnDone;
 				var newHand = A2(elm_community$list_extra$List$Extra$removeAt, idx, player.hand);
 				var credits = player.getOutCredits + 1;
 				return _Utils_update(
