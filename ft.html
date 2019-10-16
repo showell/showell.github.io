@@ -5955,10 +5955,8 @@ var author$project$LegalMove$getCardForMoveType = function (moveType) {
 			return '7';
 		case 'FinishSplit':
 			return '7';
-		case 'JackTrade':
-			return 'J';
 		default:
-			return 'via discards';
+			return 'J';
 	}
 };
 var author$project$Piece$getThePiece = F2(
@@ -6146,6 +6144,7 @@ var author$project$Piece$openHoldingPenLocation = F2(
 				},
 				A2(elm_community$list_extra$List$Extra$find, isOpen, author$project$Config$holdingPenLocations)));
 	});
+var author$project$Type$TradePieces = {$: 'TradePieces'};
 var elm$core$Dict$getMin = function (dict) {
 	getMin:
 	while (true) {
@@ -6508,18 +6507,13 @@ var elm$core$Dict$remove = F2(
 			return x;
 		}
 	});
-var author$project$Piece$movePiece = F2(
-	function (move, pieceMap) {
-		var _n0 = move;
-		var moveType = _n0.a;
-		var startLoc = _n0.b;
-		var endLoc = _n0.c;
-		var maybeEndColor = A2(author$project$Piece$getPiece, pieceMap, endLoc);
-		var wantTrade = _Utils_eq(moveType, author$project$Type$JackTrade);
+var author$project$Piece$executeMove = F4(
+	function (moveFlavor, startLoc, endLoc, pieceMap) {
 		var startColor = A2(author$project$Piece$getThePiece, pieceMap, startLoc);
+		var maybeEndColor = A2(author$project$Piece$getPiece, pieceMap, endLoc);
 		if (maybeEndColor.$ === 'Just') {
 			var endColor = maybeEndColor.a;
-			if (wantTrade) {
+			if (_Utils_eq(moveFlavor, author$project$Type$TradePieces)) {
 				return A3(
 					elm$core$Dict$insert,
 					endLoc,
@@ -6543,6 +6537,22 @@ var author$project$Piece$movePiece = F2(
 				startColor,
 				A2(elm$core$Dict$remove, startLoc, pieceMap));
 		}
+	});
+var author$project$Type$RegularMove = {$: 'RegularMove'};
+var author$project$Piece$movePiece = F2(
+	function (move, pieceMap) {
+		var _n0 = move;
+		var moveType = _n0.a;
+		var startLoc = _n0.b;
+		var endLoc = _n0.c;
+		var moveFlavor = function () {
+			if (moveType.$ === 'JackTrade') {
+				return author$project$Type$TradePieces;
+			} else {
+				return author$project$Type$RegularMove;
+			}
+		}();
+		return A4(author$project$Piece$executeMove, moveFlavor, startLoc, endLoc, pieceMap);
 	});
 var author$project$LegalMove$canFinishSplit = F5(
 	function (zoneColors, otherLocs, pieceMap, count, move) {
@@ -6754,10 +6764,8 @@ var author$project$LegalMove$moveCountForMoveType = F2(
 			case 'FinishSplit':
 				var count = moveType.a;
 				return count;
-			case 'JackTrade':
-				return 0;
 			default:
-				return 1;
+				return 0;
 		}
 	});
 var elm$core$List$member = F2(
@@ -7008,7 +7016,6 @@ var author$project$WhatIf$getStateFromCover = F2(
 			{actions: newActions, cards: newCards, nextStep: nextStep});
 	});
 var author$project$Config$numCreditsToGetOut = 5;
-var author$project$Type$ComeOutWithCredits = {$: 'ComeOutWithCredits'};
 var author$project$Piece$bringPlayerOut = F2(
 	function (color, pieceMap) {
 		var penLoc = A2(author$project$Piece$pieceToMoveOutOfPen, pieceMap, color);
@@ -7016,10 +7023,8 @@ var author$project$Piece$bringPlayerOut = F2(
 			return pieceMap;
 		} else {
 			var startLoc = penLoc.a;
-			var moveType = author$project$Type$ComeOutWithCredits;
 			var endLoc = _Utils_Tuple2(color, 'L0');
-			var move = _Utils_Tuple3(moveType, startLoc, endLoc);
-			return A2(author$project$Piece$movePiece, move, pieceMap);
+			return A4(author$project$Piece$executeMove, author$project$Type$RegularMove, startLoc, endLoc, pieceMap);
 		}
 	});
 var author$project$WhatIf$DiscardCard = {$: 'DiscardCard'};
@@ -7071,10 +7076,8 @@ var author$project$WhatIf$getStateFromMove = F2(
 					return elm$core$Maybe$Nothing;
 				case 'FinishSplit':
 					return elm$core$Maybe$Just('7');
-				case 'JackTrade':
-					return elm$core$Maybe$Just('J');
 				default:
-					return elm$core$Maybe$Nothing;
+					return elm$core$Maybe$Just('J');
 			}
 		}();
 		var newCards = function () {
@@ -7098,10 +7101,8 @@ var author$project$WhatIf$getStateFromMove = F2(
 					return A2(author$project$WhatIf$FinishSeven, 7 - count, endLoc);
 				case 'FinishSplit':
 					return author$project$WhatIf$Nada;
-				case 'JackTrade':
-					return author$project$WhatIf$NormalPlay;
 				default:
-					return author$project$WhatIf$Nada;
+					return author$project$WhatIf$NormalPlay;
 			}
 		}();
 		return _Utils_update(
