@@ -5060,6 +5060,30 @@ var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var author$project$Main$subscriptions = function (_n0) {
 	return elm$core$Platform$Sub$none;
 };
+var elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(x);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
+var elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var author$project$Color$getActiveColor = function (zoneColors) {
+	return A2(
+		elm$core$Maybe$withDefault,
+		'bogus',
+		elm$core$List$head(zoneColors));
+};
 var elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
 		takeReverse:
@@ -5186,7 +5210,7 @@ var elm$core$List$take = F2(
 	function (n, list) {
 		return A3(elm$core$List$takeFast, 0, n, list);
 	});
-var author$project$Config$getZoneColors = function (numPlayers) {
+var author$project$Color$getZoneColors = function (numPlayers) {
 	return A2(
 		elm$core$List$take,
 		numPlayers,
@@ -5232,15 +5256,6 @@ var elm$core$List$drop = F2(
 			}
 		}
 	});
-var elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return elm$core$Maybe$Just(x);
-	} else {
-		return elm$core$Maybe$Nothing;
-	}
-};
 var elm_community$list_extra$List$Extra$getAt = F2(
 	function (idx, xs) {
 		return (idx < 0) ? elm$core$Maybe$Nothing : elm$core$List$head(
@@ -5428,15 +5443,6 @@ var elm$core$Dict$get = F2(
 			}
 		}
 	});
-var elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var author$project$Player$getPlayer = F2(
 	function (players, color) {
 		return A2(
@@ -5598,6 +5604,61 @@ var author$project$Graph$getNodesNEdgesAway = F3(
 				A2(author$project$Graph$getNodesNEdgesAway, getNeighbors, n - 1),
 				getNeighbors(node)));
 	});
+var elm$core$Basics$modBy = _Basics_modBy;
+var elm_community$list_extra$List$Extra$findIndexHelp = F3(
+	function (index, predicate, list) {
+		findIndexHelp:
+		while (true) {
+			if (!list.b) {
+				return elm$core$Maybe$Nothing;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (predicate(x)) {
+					return elm$core$Maybe$Just(index);
+				} else {
+					var $temp$index = index + 1,
+						$temp$predicate = predicate,
+						$temp$list = xs;
+					index = $temp$index;
+					predicate = $temp$predicate;
+					list = $temp$list;
+					continue findIndexHelp;
+				}
+			}
+		}
+	});
+var elm_community$list_extra$List$Extra$findIndex = elm_community$list_extra$List$Extra$findIndexHelp(0);
+var elm_community$list_extra$List$Extra$elemIndex = function (x) {
+	return elm_community$list_extra$List$Extra$findIndex(
+		elm$core$Basics$eq(x));
+};
+var author$project$Color$nextZoneColor = F2(
+	function (color, zoneColors) {
+		var len = elm$core$List$length(zoneColors);
+		var idx = A2(
+			elm$core$Maybe$withDefault,
+			-1,
+			A2(elm_community$list_extra$List$Extra$elemIndex, color, zoneColors));
+		var nextIdx = A2(elm$core$Basics$modBy, len, idx + 1);
+		return A2(
+			elm$core$Maybe$withDefault,
+			'bogus',
+			A2(elm_community$list_extra$List$Extra$getAt, nextIdx, zoneColors));
+	});
+var author$project$Color$prevZoneColor = F2(
+	function (color, zoneColors) {
+		var len = elm$core$List$length(zoneColors);
+		var idx = A2(
+			elm$core$Maybe$withDefault,
+			1,
+			A2(elm_community$list_extra$List$Extra$elemIndex, color, zoneColors));
+		var nextIdx = A2(elm$core$Basics$modBy, len, idx - 1);
+		return A2(
+			elm$core$Maybe$withDefault,
+			'bogus',
+			A2(elm_community$list_extra$List$Extra$getAt, nextIdx, zoneColors));
+	});
 var author$project$Config$holdingPenLocations = _List_fromArray(
 	['HP1', 'HP2', 'HP3', 'HP4']);
 var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
@@ -5670,61 +5731,6 @@ var author$project$LegalMove$isLocFree = F3(
 			return !_Utils_eq(color, pieceColor);
 		}
 	});
-var elm$core$Basics$modBy = _Basics_modBy;
-var elm_community$list_extra$List$Extra$findIndexHelp = F3(
-	function (index, predicate, list) {
-		findIndexHelp:
-		while (true) {
-			if (!list.b) {
-				return elm$core$Maybe$Nothing;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (predicate(x)) {
-					return elm$core$Maybe$Just(index);
-				} else {
-					var $temp$index = index + 1,
-						$temp$predicate = predicate,
-						$temp$list = xs;
-					index = $temp$index;
-					predicate = $temp$predicate;
-					list = $temp$list;
-					continue findIndexHelp;
-				}
-			}
-		}
-	});
-var elm_community$list_extra$List$Extra$findIndex = elm_community$list_extra$List$Extra$findIndexHelp(0);
-var elm_community$list_extra$List$Extra$elemIndex = function (x) {
-	return elm_community$list_extra$List$Extra$findIndex(
-		elm$core$Basics$eq(x));
-};
-var author$project$LegalMove$nextZoneColor = F2(
-	function (color, zoneColors) {
-		var len = elm$core$List$length(zoneColors);
-		var idx = A2(
-			elm$core$Maybe$withDefault,
-			-1,
-			A2(elm_community$list_extra$List$Extra$elemIndex, color, zoneColors));
-		var nextIdx = A2(elm$core$Basics$modBy, len, idx + 1);
-		return A2(
-			elm$core$Maybe$withDefault,
-			'bogus',
-			A2(elm_community$list_extra$List$Extra$getAt, nextIdx, zoneColors));
-	});
-var author$project$LegalMove$prevZoneColor = F2(
-	function (color, zoneColors) {
-		var len = elm$core$List$length(zoneColors);
-		var idx = A2(
-			elm$core$Maybe$withDefault,
-			1,
-			A2(elm_community$list_extra$List$Extra$elemIndex, color, zoneColors));
-		var nextIdx = A2(elm$core$Basics$modBy, len, idx - 1);
-		return A2(
-			elm$core$Maybe$withDefault,
-			'bogus',
-			A2(elm_community$list_extra$List$Extra$getAt, nextIdx, zoneColors));
-	});
 var elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -5753,7 +5759,7 @@ var author$project$LegalMove$getNextLocs = F2(
 		var _n0 = loc;
 		var zoneColor = _n0.a;
 		var id = _n0.b;
-		var nextColor = A2(author$project$LegalMove$nextZoneColor, zoneColor, zoneColors);
+		var nextColor = A2(author$project$Color$nextZoneColor, zoneColor, zoneColors);
 		if (author$project$Config$isHoldingPenId(id)) {
 			return canLeavePen ? filter(
 				_List_fromArray(
@@ -5786,7 +5792,7 @@ var author$project$LegalMove$getNextLocs = F2(
 			} else {
 				if (id === 'bullseye') {
 					if (canLeaveBullsEye) {
-						var prevColor = A2(author$project$LegalMove$prevZoneColor, pieceColor, zoneColors);
+						var prevColor = A2(author$project$Color$prevZoneColor, pieceColor, zoneColors);
 						return filter(
 							_List_fromArray(
 								[
@@ -5833,7 +5839,7 @@ var author$project$LegalMove$getPrevLocs = F2(
 		var _n0 = loc;
 		var zoneColor = _n0.a;
 		var id = _n0.b;
-		var prevColor = A2(author$project$LegalMove$prevZoneColor, zoneColor, zoneColors);
+		var prevColor = A2(author$project$Color$prevZoneColor, zoneColor, zoneColors);
 		if (author$project$Config$isHoldingPenId(id)) {
 			return _List_Nil;
 		} else {
@@ -7119,12 +7125,6 @@ var author$project$Game$beginActiveTurn = function (game) {
 		author$project$Player$setTurnToNeedCard(
 			author$project$Player$replenishHand(game)));
 };
-var author$project$Game$getActiveColor = function (zoneColors) {
-	return A2(
-		elm$core$Maybe$withDefault,
-		'bogus',
-		elm$core$List$head(zoneColors));
-};
 var elm$random$Random$initialSeed = function (x) {
 	var _n0 = elm$random$Random$next(
 		A2(elm$random$Random$Seed, 0, 1013904223));
@@ -7197,8 +7197,8 @@ var author$project$Player$configPlayers = function (zoneColors) {
 var author$project$Game$beginGame = function (time) {
 	var seed = author$project$Game$seedFromTime(time);
 	var numPlayers = 4;
-	var zoneColors = author$project$Config$getZoneColors(numPlayers);
-	var activeColor = author$project$Game$getActiveColor(zoneColors);
+	var zoneColors = author$project$Color$getZoneColors(numPlayers);
+	var activeColor = author$project$Color$getActiveColor(zoneColors);
 	return author$project$Game$beginActiveTurn(
 		{
 			activeColor: activeColor,
@@ -7416,7 +7416,7 @@ var author$project$Game$handleStartLocClick = F2(
 			return game;
 		}
 	});
-var author$project$Game$rotateColors = function (zones) {
+var author$project$Color$rotateColors = function (zones) {
 	return _Utils_ap(
 		A2(elm$core$List$drop, 1, zones),
 		A2(elm$core$List$take, 1, zones));
@@ -7435,9 +7435,9 @@ var author$project$Player$setTurn = F3(
 	});
 var author$project$Type$TurnIdle = {$: 'TurnIdle'};
 var author$project$Game$rotateBoard = function (game) {
-	var oldPlayerColor = author$project$Game$getActiveColor(game.zoneColors);
-	var newZoneColors = author$project$Game$rotateColors(game.zoneColors);
-	var newPlayerColor = author$project$Game$getActiveColor(newZoneColors);
+	var oldPlayerColor = author$project$Color$getActiveColor(game.zoneColors);
+	var newZoneColors = author$project$Color$rotateColors(game.zoneColors);
+	var newPlayerColor = author$project$Color$getActiveColor(newZoneColors);
 	var players = A3(
 		author$project$Player$setTurn,
 		newPlayerColor,
@@ -8417,24 +8417,30 @@ var author$project$View$playerNeedStart = F2(
 				]));
 	});
 var author$project$Type$RotateBoard = {$: 'RotateBoard'};
-var author$project$View$rotateButton = A2(
-	elm$html$Html$div,
-	_List_Nil,
-	_List_fromArray(
-		[
-			A2(
-			elm$html$Html$button,
-			_List_fromArray(
-				[
-					elm$html$Html$Events$onClick(author$project$Type$RotateBoard)
-				]),
-			_List_fromArray(
-				[
-					elm$html$Html$text('Finish Turn')
-				]))
-		]));
+var author$project$View$rotateButtonView = function (player) {
+	var _n0 = player.turn;
+	if (_n0.$ === 'TurnDone') {
+		return _List_fromArray(
+			[
+				A2(
+				elm$html$Html$button,
+				_List_fromArray(
+					[
+						elm$html$Html$Events$onClick(author$project$Type$RotateBoard),
+						A2(elm$html$Html$Attributes$style, 'background', 'lightgreen')
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text('done')
+					]))
+			]);
+	} else {
+		return _List_Nil;
+	}
+};
 var author$project$View$playerView = F3(
-	function (player, color, undoButtons) {
+	function (player, color, undoButton) {
+		var rotateButton = author$project$View$rotateButtonView(player);
 		var playableCards = author$project$Player$getPlayableCards(player);
 		var handCards = A2(
 			elm$core$List$indexedMap,
@@ -8443,7 +8449,9 @@ var author$project$View$playerView = F3(
 		var hand = A2(
 			elm$html$Html$span,
 			_List_Nil,
-			_Utils_ap(handCards, undoButtons));
+			_Utils_ap(
+				handCards,
+				_Utils_ap(undoButton, rotateButton)));
 		var console = function () {
 			var _n0 = player.turn;
 			switch (_n0.$) {
@@ -8477,8 +8485,7 @@ var author$project$View$playerView = F3(
 						_List_Nil,
 						_List_fromArray(
 							[
-								elm$html$Html$text('ok, now finish your turn'),
-								author$project$View$rotateButton
+								elm$html$Html$text('ok, now hit \'done\' if you\'re happy')
 							]));
 				default:
 					return A2(elm$html$Html$div, _List_Nil, _List_Nil);
@@ -8498,7 +8505,7 @@ var elm$html$Html$hr = _VirtualDom_node('hr');
 var author$project$View$gameView = F2(
 	function (game, showUndoButton) {
 		var zoneColors = game.zoneColors;
-		var undoButtons = showUndoButton ? _List_fromArray(
+		var undoButton = showUndoButton ? _List_fromArray(
 			[
 				A2(
 				elm$html$Html$button,
@@ -8524,7 +8531,7 @@ var author$project$View$gameView = F2(
 				[
 					A4(author$project$View$boardView, pieceMap, zoneColors, activePlayer, activeColor)
 				]));
-		var playerConsole = A3(author$project$View$playerView, activePlayer, activeColor, undoButtons);
+		var playerConsole = A3(author$project$View$playerView, activePlayer, activeColor, undoButton);
 		var leftSide = A2(
 			elm$html$Html$div,
 			_List_Nil,
