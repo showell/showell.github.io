@@ -8047,6 +8047,82 @@ var author$project$View$boardView = F4(
 			_List_fromArray(
 				[allLocations]));
 	});
+var author$project$Config$cardValue = function (card) {
+	switch (card) {
+		case 'A':
+			return 1;
+		case '2':
+			return 2;
+		case '3':
+			return 3;
+		case '4':
+			return 4;
+		case '5':
+			return 5;
+		case '6':
+			return 6;
+		case '7':
+			return 7;
+		case '8':
+			return 8;
+		case '9':
+			return 9;
+		case '10':
+			return 10;
+		case 'J':
+			return 11;
+		case 'Q':
+			return 12;
+		case 'K':
+			return 13;
+		case 'joker':
+			return 14;
+		default:
+			return 0;
+	}
+};
+var author$project$Config$hintForCard = function (card) {
+	switch (card) {
+		case 'A':
+			return 'move 1 or get out';
+		case '2':
+			return 'move 2';
+		case '3':
+			return 'move 3';
+		case '4':
+			return 'move backward 4';
+		case '5':
+			return 'move 5';
+		case '6':
+			return 'move 6 or get out';
+		case '7':
+			return 'move 7 or split';
+		case '8':
+			return 'move 8';
+		case '9':
+			return 'move 9';
+		case '10':
+			return 'move 10';
+		case 'J':
+			return 'move 1 or trade pieces';
+		case 'Q':
+			return 'move 1';
+		case 'K':
+			return 'move 1';
+		case 'joker':
+			return 'move 1 or get out';
+		default:
+			return '';
+	}
+};
+var author$project$LegalMove$getCardForPlayType = function (playType) {
+	if (playType.$ === 'PlayCard') {
+		var card = playType.a;
+		return card;
+	} else {
+		return '7';
+	}
+};
 var author$project$Player$getPlayableCards = function (player) {
 	var _n0 = player.turn;
 	if (_n0.$ === 'TurnNeedCard') {
@@ -8066,11 +8142,88 @@ var author$project$Player$getPlayableCards = function (player) {
 		return elm$core$Set$empty;
 	}
 };
+var elm$core$Dict$singleton = F2(
+	function (key, value) {
+		return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
+	});
+var elm$core$Set$singleton = function (key) {
+	return elm$core$Set$Set_elm_builtin(
+		A2(elm$core$Dict$singleton, key, _Utils_Tuple0));
+};
+var author$project$View$cheatSheetCards = function (player) {
+	var _n0 = player.turn;
+	switch (_n0.$) {
+		case 'TurnNeedCard':
+			return author$project$Player$getPlayableCards(player);
+		case 'TurnNeedStartLoc':
+			var info = _n0.a;
+			return elm$core$Set$singleton(
+				author$project$LegalMove$getCardForPlayType(info.playType));
+		default:
+			return elm$core$Set$empty;
+	}
+};
+var elm$core$List$sortBy = _List_sortBy;
+var elm$core$Dict$isEmpty = function (dict) {
+	if (dict.$ === 'RBEmpty_elm_builtin') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var elm$core$Set$isEmpty = function (_n0) {
+	var dict = _n0.a;
+	return elm$core$Dict$isEmpty(dict);
+};
 var elm$html$Html$b = _VirtualDom_node('b');
+var elm$html$Html$br = _VirtualDom_node('br');
 var elm$html$Html$div = _VirtualDom_node('div');
-var elm$html$Html$span = _VirtualDom_node('span');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var author$project$View$cheatSheetView = function (player) {
+	var cards = author$project$View$cheatSheetCards(player);
+	if (elm$core$Set$isEmpty(cards)) {
+		return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+	} else {
+		var title = A2(
+			elm$html$Html$b,
+			_List_Nil,
+			_List_fromArray(
+				[
+					elm$html$Html$text('Cheat sheet:')
+				]));
+		var cardHint = function (card) {
+			var hint = card + (' - ' + author$project$Config$hintForCard(card));
+			return A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text(hint)
+					]));
+		};
+		var cardHints = A2(
+			elm$html$Html$div,
+			_List_Nil,
+			A2(
+				elm$core$List$map,
+				cardHint,
+				A2(
+					elm$core$List$sortBy,
+					author$project$Config$cardValue,
+					elm$core$Set$toList(cards))));
+		return A2(
+			elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(elm$html$Html$br, _List_Nil, _List_Nil),
+					title,
+					cardHints
+				]));
+	}
+};
+var elm$html$Html$span = _VirtualDom_node('span');
 var author$project$View$creditsView = function (player) {
 	if (player.getOutCredits > 0) {
 		var credits = elm$core$String$fromInt(player.getOutCredits);
@@ -8193,115 +8346,7 @@ var author$project$View$handCardView = F5(
 					elm$html$Html$text(card)
 				]));
 	});
-var author$project$Config$cardValue = function (card) {
-	switch (card) {
-		case 'A':
-			return 1;
-		case '2':
-			return 2;
-		case '3':
-			return 3;
-		case '4':
-			return 4;
-		case '5':
-			return 5;
-		case '6':
-			return 6;
-		case '7':
-			return 7;
-		case '8':
-			return 8;
-		case '9':
-			return 9;
-		case '10':
-			return 10;
-		case 'J':
-			return 11;
-		case 'Q':
-			return 12;
-		case 'K':
-			return 13;
-		case 'joker':
-			return 14;
-		default:
-			return 0;
-	}
-};
-var author$project$Config$hintForCard = function (card) {
-	switch (card) {
-		case 'A':
-			return 'move 1 or get out';
-		case '2':
-			return 'move 2';
-		case '3':
-			return 'move 3';
-		case '4':
-			return 'move backward 4';
-		case '5':
-			return 'move 5';
-		case '6':
-			return 'move 6 or get out';
-		case '7':
-			return 'move 7 or split';
-		case '8':
-			return 'move 8';
-		case '9':
-			return 'move 9';
-		case '10':
-			return 'move 10';
-		case 'J':
-			return 'move 1 or trade pieces';
-		case 'Q':
-			return 'move 1';
-		case 'K':
-			return 'move 1';
-		case 'joker':
-			return 'move 1 or get out';
-		default:
-			return '';
-	}
-};
-var elm$core$List$sortBy = _List_sortBy;
-var elm$html$Html$br = _VirtualDom_node('br');
-var author$project$View$cheatSheet = function (cards) {
-	var title = A2(
-		elm$html$Html$b,
-		_List_Nil,
-		_List_fromArray(
-			[
-				elm$html$Html$text('Cheat sheet:')
-			]));
-	var cardHint = function (card) {
-		var hint = card + (' - ' + author$project$Config$hintForCard(card));
-		return A2(
-			elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					elm$html$Html$text(hint)
-				]));
-	};
-	var cardHints = A2(
-		elm$html$Html$div,
-		_List_Nil,
-		A2(
-			elm$core$List$map,
-			cardHint,
-			A2(
-				elm$core$List$sortBy,
-				author$project$Config$cardValue,
-				elm$core$Set$toList(cards))));
-	return A2(
-		elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				A2(elm$html$Html$br, _List_Nil, _List_Nil),
-				title,
-				cardHints
-			]));
-};
-var author$project$View$playerNeedCard = function (playableCards) {
+var author$project$View$playerNeedCard = function () {
 	var instructions = A2(
 		elm$html$Html$div,
 		_List_Nil,
@@ -8313,19 +8358,8 @@ var author$project$View$playerNeedCard = function (playableCards) {
 		elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
-			[
-				instructions,
-				author$project$View$cheatSheet(playableCards)
-			]));
-};
-var author$project$LegalMove$getCardForPlayType = function (playType) {
-	if (playType.$ === 'PlayCard') {
-		var card = playType.a;
-		return card;
-	} else {
-		return '7';
-	}
-};
+			[instructions]));
+}();
 var author$project$View$activeCardView = F3(
 	function (activeCard, color, instructions) {
 		var css = _List_fromArray(
@@ -8379,11 +8413,7 @@ var author$project$View$playerNeedStart = F2(
 			_List_Nil,
 			_List_fromArray(
 				[
-					A3(author$project$View$activeCardView, activeCard, color, instructions),
-					author$project$View$cheatSheet(
-					elm$core$Set$fromList(
-						_List_fromArray(
-							[activeCard])))
+					A3(author$project$View$activeCardView, activeCard, color, instructions)
 				]));
 	});
 var author$project$Type$RotateBoard = {$: 'RotateBoard'};
@@ -8434,7 +8464,7 @@ var author$project$View$playerView = F3(
 								elm$html$Html$text('click a card to cover')
 							]));
 				case 'TurnNeedCard':
-					return author$project$View$playerNeedCard(playableCards);
+					return author$project$View$playerNeedCard;
 				case 'TurnNeedStartLoc':
 					var turnInfo = _n0.a;
 					return A2(author$project$View$playerNeedStart, turnInfo.playType, color);
@@ -8485,6 +8515,8 @@ var author$project$View$gameView = F2(
 		var pieceMap = game.pieceMap;
 		var activeColor = game.activeColor;
 		var activePlayer = A2(author$project$Player$getPlayer, players, activeColor);
+		var cheatSheet = author$project$View$cheatSheetView(activePlayer);
+		var rightSide = cheatSheet;
 		var board = A2(
 			elm$html$Html$div,
 			_List_Nil,
@@ -8493,13 +8525,40 @@ var author$project$View$gameView = F2(
 					A4(author$project$View$boardView, pieceMap, zoneColors, activePlayer, activeColor)
 				]));
 		var playerConsole = A3(author$project$View$playerView, activePlayer, activeColor, undoButtons);
-		return _List_fromArray(
-			[
-				board,
-				A2(elm$html$Html$hr, _List_Nil, _List_Nil),
-				playerConsole
-			]);
+		var leftSide = A2(
+			elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					board,
+					A2(elm$html$Html$hr, _List_Nil, _List_Nil),
+					playerConsole
+				]));
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2(elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2(elm$html$Html$Attributes$style, 'flex-direction', 'row')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$div,
+					_List_Nil,
+					_List_fromArray(
+						[leftSide])),
+					A2(
+					elm$html$Html$div,
+					_List_Nil,
+					_List_fromArray(
+						[rightSide]))
+				]));
 	});
+var elm$core$List$singleton = function (value) {
+	return _List_fromArray(
+		[value]);
+};
 var elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var elm$html$Html$map = elm$virtual_dom$VirtualDom$map;
 var author$project$Main$view = function (model) {
@@ -8513,12 +8572,11 @@ var author$project$Main$view = function (model) {
 		} else {
 			var game = _n0.a;
 			var showUndoButton = A2(author$project$History$canUndo, model.history, game);
-			return A2(
-				elm$core$List$map,
-				function (msg) {
-					return A2(elm$html$Html$map, author$project$Type$UpdateGame, msg);
-				},
-				A2(author$project$View$gameView, game, showUndoButton));
+			return elm$core$List$singleton(
+				A2(
+					elm$html$Html$map,
+					author$project$Type$UpdateGame,
+					A2(author$project$View$gameView, game, showUndoButton)));
 		}
 	}();
 	return {body: body, title: 'Fast Track'};
