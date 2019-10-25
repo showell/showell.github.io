@@ -5166,17 +5166,6 @@ var author$project$DictHelper$listToStats = function (lst) {
 			author$project$MyDict$toInternalRepresentation(
 				author$project$DictHelper$listToDict(lst))));
 };
-var author$project$DictView$getNodeColor = function (statsNode) {
-	var _n0 = statsNode.color;
-	switch (_n0) {
-		case 'R':
-			return 'red';
-		case 'B':
-			return 'black';
-		default:
-			return 'yellow';
-	}
-};
 var author$project$BinaryTree$size = function (tree) {
 	if (tree.$ === 'Node') {
 		var left = tree.b;
@@ -5386,10 +5375,21 @@ var author$project$TreeDiagram$diagramView = F2(
 				]),
 			_Utils_ap(drawEdges, drawCoordNodes));
 	});
-var author$project$DictView$treeDiagram = function (n) {
+var author$project$View$getNodeColor = function (statsNode) {
+	var _n0 = statsNode.color;
+	switch (_n0) {
+		case 'R':
+			return 'red';
+		case 'B':
+			return 'black';
+		default:
+			return 'yellow';
+	}
+};
+var author$project$View$treeDiagram = function (n) {
 	var stats = author$project$DictHelper$listToStats(
 		A2(elm$core$List$range, 1, n));
-	return A2(author$project$TreeDiagram$diagramView, author$project$DictView$getNodeColor, stats);
+	return A2(author$project$TreeDiagram$diagramView, author$project$View$getNodeColor, stats);
 };
 var author$project$BinaryTree$height = function (tree) {
 	if (tree.$ === 'Node') {
@@ -5460,7 +5460,10 @@ var author$project$DictHelper$statsToDescription = function (stats) {
 		return author$project$DictHelper$Broken;
 	}
 };
-var author$project$DictView$description = function (treeDesc) {
+var author$project$Type$ShowTree = function (a) {
+	return {$: 'ShowTree', a: a};
+};
+var author$project$View$description = function (treeDesc) {
 	switch (treeDesc.$) {
 		case 'Tree1':
 			var count1 = treeDesc.a;
@@ -5479,9 +5482,6 @@ var author$project$DictView$description = function (treeDesc) {
 		default:
 			return 'broken';
 	}
-};
-var author$project$Type$ShowTree = function (a) {
-	return {$: 'ShowTree', a: a};
 };
 var elm$core$List$singleton = function (value) {
 	return _List_fromArray(
@@ -5513,17 +5513,30 @@ var elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		elm$json$Json$Decode$succeed(msg));
 };
-var author$project$DictView$treeTable = function () {
+var author$project$View$treeTable = function (activeTreeSize) {
 	var size = function (tree) {
 		return elm$html$Html$text(
 			elm$core$String$fromInt(
 				author$project$BinaryTree$size(tree)));
 	};
-	var lists = A2(
+	var listTups = A2(
 		elm$core$List$map,
-		elm$core$List$range(1),
+		function (n) {
+			return _Utils_Tuple2(
+				n,
+				A2(elm$core$List$range, 1, n));
+		},
 		A2(elm$core$List$range, 1, 63));
-	var trees = A2(elm$core$List$map, author$project$DictHelper$listToStats, lists);
+	var treeTups = A2(
+		elm$core$List$map,
+		function (_n1) {
+			var n = _n1.a;
+			var list = _n1.b;
+			return _Utils_Tuple2(
+				n,
+				author$project$DictHelper$listToStats(list));
+		},
+		listTups);
 	var height = function (tree) {
 		return elm$html$Html$text(
 			elm$core$String$fromInt(
@@ -5571,22 +5584,31 @@ var author$project$DictView$treeTable = function () {
 				]),
 			elm$core$List$singleton(item));
 	};
-	var formatRow = function (items) {
-		return A2(
-			elm$html$Html$tr,
-			_List_Nil,
-			A2(elm$core$List$map, formatCell, items));
-	};
 	var cells = function (stats) {
 		return _List_fromArray(
 			[
 				size(stats),
 				height(stats),
 				elm$html$Html$text(
-				author$project$DictView$description(
+				author$project$View$description(
 					author$project$DictHelper$statsToDescription(stats))),
 				getButton(stats)
 			]);
+	};
+	var formatRow = function (_n0) {
+		var n = _n0.a;
+		var stats = _n0.b;
+		var css = _Utils_eq(n, activeTreeSize) ? _List_fromArray(
+			[
+				A2(elm$html$Html$Attributes$style, 'background', 'lightgreen')
+			]) : _List_Nil;
+		return A2(
+			elm$html$Html$tr,
+			css,
+			A2(
+				elm$core$List$map,
+				formatCell,
+				cells(stats)));
 	};
 	return function (rows) {
 		return A2(
@@ -5594,19 +5616,16 @@ var author$project$DictView$treeTable = function () {
 			_List_Nil,
 			A2(elm$core$List$cons, headerRow, rows));
 	}(
-		A2(
-			elm$core$List$map,
-			formatRow,
-			A2(elm$core$List$map, cells, trees)));
-}();
+		A2(elm$core$List$map, formatRow, treeTups));
+};
 var elm$html$Html$div = _VirtualDom_node('div');
-var author$project$DictView$show = function (model) {
-	var rightSide = author$project$DictView$treeDiagram(model.activeTreeSize);
+var author$project$View$view = function (model) {
+	var rightSide = author$project$View$treeDiagram(model.activeTreeSize);
 	var rightCss = _List_fromArray(
 		[
 			A2(elm$html$Html$Attributes$style, 'padding', '20px')
 		]);
-	var leftSide = author$project$DictView$treeTable;
+	var leftSide = author$project$View$treeTable(model.activeTreeSize);
 	var leftCss = _List_fromArray(
 		[
 			A2(elm$html$Html$Attributes$style, 'height', '100vh'),
@@ -5639,7 +5658,7 @@ var author$project$Main$view = function (model) {
 	return {
 		body: _List_fromArray(
 			[
-				author$project$DictView$show(model)
+				author$project$View$view(model)
 			]),
 		title: 'RedBlack Trees from Elm'
 	};
