@@ -4816,6 +4816,181 @@ var author$project$Main$update = F2(
 		}();
 		return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
 	});
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
+var elm$json$Json$Decode$map = _Json_map1;
+var elm$json$Json$Decode$map2 = _Json_map2;
+var elm$json$Json$Decode$succeed = _Json_succeed;
+var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
+	switch (handler.$) {
+		case 'Normal':
+			return 0;
+		case 'MayStopPropagation':
+			return 1;
+		case 'MayPreventDefault':
+			return 2;
+		default:
+			return 3;
+	}
+};
+var elm$html$Html$b = _VirtualDom_node('b');
+var elm$html$Html$div = _VirtualDom_node('div');
+var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
+var author$project$View$diagramHeading = function (n) {
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2(elm$html$Html$Attributes$style, 'font-size', '120%'),
+				A2(elm$html$Html$Attributes$style, 'padding', '5px')
+			]),
+		_List_fromArray(
+			[
+				elm$html$Html$text('RedBlack tree for '),
+				A2(
+				elm$html$Html$b,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text(
+						elm$core$String$fromInt(n))
+					])),
+				elm$html$Html$text(' elements')
+			]));
+};
+var author$project$Type$ShowTree = function (a) {
+	return {$: 'ShowTree', a: a};
+};
+var elm$html$Html$button = _VirtualDom_node('button');
+var elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'click',
+		elm$json$Json$Decode$succeed(msg));
+};
+var author$project$View$showTreeButton = F2(
+	function (n, label) {
+		return A2(
+			elm$html$Html$button,
+			_List_fromArray(
+				[
+					elm$html$Html$Events$onClick(
+					author$project$Type$ShowTree(n))
+				]),
+			_List_fromArray(
+				[
+					elm$html$Html$text(label)
+				]));
+	});
+var author$project$View$showTreeNumButton = function (n) {
+	return A2(
+		author$project$View$showTreeButton,
+		n,
+		elm$core$String$fromInt(n));
+};
+var elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							elm$core$List$foldl,
+							fn,
+							acc,
+							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var author$project$View$plusMinusButtons = function (nCurrent) {
+	var moreButtons = _List_fromArray(
+		[
+			A2(author$project$View$showTreeButton, nCurrent + 1, 'more')
+		]);
+	var lessButtons = (nCurrent === 1) ? _List_Nil : _List_fromArray(
+		[
+			A2(author$project$View$showTreeButton, nCurrent - 1, 'less')
+		]);
+	var cannedButtons = A2(
+		elm$core$List$map,
+		author$project$View$showTreeNumButton,
+		_List_fromArray(
+			[3, 7, 15, 31, 63]));
+	var buttons = _Utils_ap(
+		lessButtons,
+		_Utils_ap(moreButtons, cannedButtons));
+	return A2(elm$html$Html$div, _List_Nil, buttons);
+};
 var author$project$MyDict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var author$project$MyDict$empty = author$project$MyDict$RBEmpty_elm_builtin;
 var author$project$MyDict$Black = {$: 'Black'};
@@ -4939,75 +5114,6 @@ var author$project$MyDict$fromList = function (assocs) {
 		author$project$MyDict$empty,
 		assocs);
 };
-var elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
-		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							elm$core$List$foldl,
-							fn,
-							acc,
-							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
-		}
-	});
-var elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
-	});
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
 var author$project$DictHelper$listToDict = function (lst) {
 	return author$project$MyDict$fromList(
 		A2(
@@ -5166,6 +5272,128 @@ var author$project$DictHelper$listToStats = function (lst) {
 			author$project$MyDict$toInternalRepresentation(
 				author$project$DictHelper$listToDict(lst))));
 };
+var author$project$DictHelper$Broken = {$: 'Broken'};
+var author$project$DictHelper$Nada = {$: 'Nada'};
+var author$project$DictHelper$Tree1 = function (a) {
+	return {$: 'Tree1', a: a};
+};
+var author$project$DictHelper$Tree2 = F2(
+	function (a, b) {
+		return {$: 'Tree2', a: a, b: b};
+	});
+var author$project$DictHelper$Tree3 = F3(
+	function (a, b, c) {
+		return {$: 'Tree3', a: a, b: b, c: c};
+	});
+var author$project$DictHelper$statsToDescription = function (stats) {
+	if (stats.$ === 'Empty') {
+		return author$project$DictHelper$Nada;
+	} else {
+		var data = stats.a;
+		var left = stats.b;
+		var right = stats.c;
+		var size = data.size;
+		var rData = A2(author$project$BinaryTree$withDefault, author$project$DictHelper$emptyStatsInfo, right);
+		var rSize = rData.size;
+		var rColor = rData.color;
+		var lData = A2(author$project$BinaryTree$withDefault, author$project$DictHelper$emptyStatsInfo, left);
+		var lSize = lData.size;
+		var lColor = lData.color;
+		var _n1 = _Utils_Tuple2(lColor, rColor);
+		_n1$3:
+		while (true) {
+			switch (_n1.b) {
+				case '':
+					return author$project$DictHelper$Tree1(size);
+				case 'B':
+					switch (_n1.a) {
+						case 'B':
+							return A2(author$project$DictHelper$Tree2, lSize, rSize);
+						case 'R':
+							if (left.$ === 'Empty') {
+								return author$project$DictHelper$Broken;
+							} else {
+								var ll = left.b;
+								var lr = left.c;
+								var lrSize = A2(author$project$BinaryTree$withDefault, author$project$DictHelper$emptyStatsInfo, lr).size;
+								var llSize = A2(author$project$BinaryTree$withDefault, author$project$DictHelper$emptyStatsInfo, ll).size;
+								return A3(author$project$DictHelper$Tree3, llSize, lrSize, rSize);
+							}
+						default:
+							break _n1$3;
+					}
+				default:
+					break _n1$3;
+			}
+		}
+		return author$project$DictHelper$Broken;
+	}
+};
+var author$project$View$arithmeticBreakdown = function (treeDesc) {
+	switch (treeDesc.$) {
+		case 'Tree2':
+			var n1 = treeDesc.a;
+			var n2 = treeDesc.b;
+			return elm$core$String$fromInt((n1 + n2) + 1) + (' = ' + (elm$core$String$fromInt(n1) + (' + 1 + ' + elm$core$String$fromInt(n2))));
+		case 'Tree3':
+			var n1 = treeDesc.a;
+			var n2 = treeDesc.b;
+			var n3 = treeDesc.c;
+			return elm$core$String$fromInt(((n1 + n2) + n3) + 2) + (' = ' + (elm$core$String$fromInt(n1) + (' + 1 + ' + (elm$core$String$fromInt(n2) + (' + 1 + ' + elm$core$String$fromInt(n3))))));
+		default:
+			return '';
+	}
+};
+var elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var author$project$View$subTreeButtons = function (n) {
+	var treeDesc = author$project$DictHelper$statsToDescription(
+		author$project$DictHelper$listToStats(
+			A2(elm$core$List$range, 1, n)));
+	var counts = function () {
+		switch (treeDesc.$) {
+			case 'Tree1':
+				var n1 = treeDesc.a;
+				return _List_fromArray(
+					[n1]);
+			case 'Tree2':
+				var n1 = treeDesc.a;
+				var n2 = treeDesc.b;
+				return _List_fromArray(
+					[n1, n2]);
+			case 'Tree3':
+				var n1 = treeDesc.a;
+				var n2 = treeDesc.b;
+				var n3 = treeDesc.c;
+				return _List_fromArray(
+					[n1, n2, n3]);
+			default:
+				return _List_Nil;
+		}
+	}();
+	var buttons = A2(elm$core$List$map, author$project$View$showTreeNumButton, counts);
+	return elm$core$List$isEmpty(buttons) ? _List_Nil : A2(
+		elm$core$List$cons,
+		elm$html$Html$text('Subtrees: '),
+		_Utils_ap(
+			buttons,
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$div,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text(
+							author$project$View$arithmeticBreakdown(treeDesc))
+						]))
+				])));
+};
 var author$project$BinaryTree$size = function (tree) {
 	if (tree.$ === 'Node') {
 		var left = tree.b;
@@ -5271,24 +5499,6 @@ var author$project$TreeDiagram$diagramData = function (tree) {
 		author$project$TreeDiagram$toCoordsTree(tree));
 };
 var elm$core$String$fromFloat = _String_fromNumber;
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
-var elm$json$Json$Decode$map = _Json_map1;
-var elm$json$Json$Decode$map2 = _Json_map2;
-var elm$json$Json$Decode$succeed = _Json_succeed;
-var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
-	switch (handler.$) {
-		case 'Normal':
-			return 0;
-		case 'MayStopPropagation':
-			return 1;
-		case 'MayPreventDefault':
-			return 2;
-		default:
-			return 3;
-	}
-};
 var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var elm$svg$Svg$circle = elm$svg$Svg$trustedNode('circle');
 var elm$svg$Svg$line = elm$svg$Svg$trustedNode('line');
@@ -5403,66 +5613,6 @@ var author$project$BinaryTree$height = function (tree) {
 		return 0;
 	}
 };
-var author$project$DictHelper$Broken = {$: 'Broken'};
-var author$project$DictHelper$Nada = {$: 'Nada'};
-var author$project$DictHelper$Tree1 = function (a) {
-	return {$: 'Tree1', a: a};
-};
-var author$project$DictHelper$Tree2 = F2(
-	function (a, b) {
-		return {$: 'Tree2', a: a, b: b};
-	});
-var author$project$DictHelper$Tree3 = F3(
-	function (a, b, c) {
-		return {$: 'Tree3', a: a, b: b, c: c};
-	});
-var author$project$DictHelper$statsToDescription = function (stats) {
-	if (stats.$ === 'Empty') {
-		return author$project$DictHelper$Nada;
-	} else {
-		var data = stats.a;
-		var left = stats.b;
-		var right = stats.c;
-		var size = data.size;
-		var rData = A2(author$project$BinaryTree$withDefault, author$project$DictHelper$emptyStatsInfo, right);
-		var rSize = rData.size;
-		var rColor = rData.color;
-		var lData = A2(author$project$BinaryTree$withDefault, author$project$DictHelper$emptyStatsInfo, left);
-		var lSize = lData.size;
-		var lColor = lData.color;
-		var _n1 = _Utils_Tuple2(lColor, rColor);
-		_n1$3:
-		while (true) {
-			switch (_n1.b) {
-				case '':
-					return author$project$DictHelper$Tree1(size);
-				case 'B':
-					switch (_n1.a) {
-						case 'B':
-							return A2(author$project$DictHelper$Tree2, lSize, rSize);
-						case 'R':
-							if (left.$ === 'Empty') {
-								return author$project$DictHelper$Broken;
-							} else {
-								var ll = left.b;
-								var lr = left.c;
-								var lrSize = A2(author$project$BinaryTree$withDefault, author$project$DictHelper$emptyStatsInfo, lr).size;
-								var llSize = A2(author$project$BinaryTree$withDefault, author$project$DictHelper$emptyStatsInfo, ll).size;
-								return A3(author$project$DictHelper$Tree3, llSize, lrSize, rSize);
-							}
-						default:
-							break _n1$3;
-					}
-				default:
-					break _n1$3;
-			}
-		}
-		return author$project$DictHelper$Broken;
-	}
-};
-var author$project$Type$ShowTree = function (a) {
-	return {$: 'ShowTree', a: a};
-};
 var author$project$View$description = function (treeDesc) {
 	switch (treeDesc.$) {
 		case 'Tree1':
@@ -5487,32 +5637,10 @@ var elm$core$List$singleton = function (value) {
 	return _List_fromArray(
 		[value]);
 };
-var elm$html$Html$button = _VirtualDom_node('button');
 var elm$html$Html$table = _VirtualDom_node('table');
 var elm$html$Html$td = _VirtualDom_node('td');
-var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var elm$html$Html$th = _VirtualDom_node('th');
 var elm$html$Html$tr = _VirtualDom_node('tr');
-var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
-var elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			elm$virtual_dom$VirtualDom$on,
-			event,
-			elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		elm$html$Html$Events$on,
-		'click',
-		elm$json$Json$Decode$succeed(msg));
-};
 var author$project$View$treeTable = function (activeTreeSize) {
 	var size = function (tree) {
 		return elm$html$Html$text(
@@ -5559,20 +5687,6 @@ var author$project$View$treeTable = function (activeTreeSize) {
 			header,
 			_List_fromArray(
 				['size', 'height', 'black subtree sizes', 'action'])));
-	var getButton = function (stats) {
-		var n = author$project$BinaryTree$size(stats);
-		return A2(
-			elm$html$Html$button,
-			_List_fromArray(
-				[
-					elm$html$Html$Events$onClick(
-					author$project$Type$ShowTree(n))
-				]),
-			_List_fromArray(
-				[
-					elm$html$Html$text('show')
-				]));
-	};
 	var formatCell = function (item) {
 		return A2(
 			elm$html$Html$td,
@@ -5584,17 +5698,18 @@ var author$project$View$treeTable = function (activeTreeSize) {
 				]),
 			elm$core$List$singleton(item));
 	};
-	var cells = function (stats) {
-		return _List_fromArray(
-			[
-				size(stats),
-				height(stats),
-				elm$html$Html$text(
-				author$project$View$description(
-					author$project$DictHelper$statsToDescription(stats))),
-				getButton(stats)
-			]);
-	};
+	var cells = F2(
+		function (n, stats) {
+			return _List_fromArray(
+				[
+					size(stats),
+					height(stats),
+					elm$html$Html$text(
+					author$project$View$description(
+						author$project$DictHelper$statsToDescription(stats))),
+					A2(author$project$View$showTreeButton, n, 'show')
+				]);
+		});
 	var formatRow = function (_n0) {
 		var n = _n0.a;
 		var stats = _n0.b;
@@ -5608,7 +5723,7 @@ var author$project$View$treeTable = function (activeTreeSize) {
 			A2(
 				elm$core$List$map,
 				formatCell,
-				cells(stats)));
+				A2(cells, n, stats)));
 	};
 	return function (rows) {
 		return A2(
@@ -5618,14 +5733,28 @@ var author$project$View$treeTable = function (activeTreeSize) {
 	}(
 		A2(elm$core$List$map, formatRow, treeTups));
 };
-var elm$html$Html$div = _VirtualDom_node('div');
 var author$project$View$view = function (model) {
-	var rightSide = author$project$View$treeDiagram(model.activeTreeSize);
 	var rightCss = _List_fromArray(
 		[
 			A2(elm$html$Html$Attributes$style, 'padding', '20px')
 		]);
-	var leftSide = author$project$View$treeTable(model.activeTreeSize);
+	var n = model.activeTreeSize;
+	var rightSide = _Utils_ap(
+		_List_fromArray(
+			[
+				author$project$View$diagramHeading(n),
+				author$project$View$plusMinusButtons(n)
+			]),
+		_Utils_ap(
+			author$project$View$subTreeButtons(n),
+			_List_fromArray(
+				[
+					author$project$View$treeDiagram(n)
+				])));
+	var leftSide = _List_fromArray(
+		[
+			author$project$View$treeTable(n)
+		]);
 	var leftCss = _List_fromArray(
 		[
 			A2(elm$html$Html$Attributes$style, 'height', '100vh'),
@@ -5642,16 +5771,8 @@ var author$project$View$view = function (model) {
 			]),
 		_List_fromArray(
 			[
-				A2(
-				elm$html$Html$div,
-				leftCss,
-				_List_fromArray(
-					[leftSide])),
-				A2(
-				elm$html$Html$div,
-				rightCss,
-				_List_fromArray(
-					[rightSide]))
+				A2(elm$html$Html$div, leftCss, leftSide),
+				A2(elm$html$Html$div, rightCss, rightSide)
 			]));
 };
 var author$project$Main$view = function (model) {
