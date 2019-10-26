@@ -5469,19 +5469,70 @@ var author$project$RangeList$toDict = function (spec) {
 			},
 			author$project$RangeList$toList(spec)));
 };
+var elm$html$Html$span = _VirtualDom_node('span');
+var author$project$TreeSummary$coloredText = F2(
+	function (color, text) {
+		return A2(
+			elm$html$Html$span,
+			_List_fromArray(
+				[
+					A2(elm$html$Html$Attributes$style, 'color', color)
+				]),
+			_List_fromArray(
+				[
+					elm$html$Html$text(text)
+				]));
+	});
+var author$project$TreeSummary$coloredInt = F2(
+	function (color, n) {
+		return A2(
+			author$project$TreeSummary$coloredText,
+			color,
+			elm$core$String$fromInt(n));
+	});
 var author$project$TreeSummary$arithmeticBreakdown = function (treeSummary) {
+	var plus = A2(author$project$TreeSummary$coloredText, 'blue', ' + ');
+	var equal = A2(author$project$TreeSummary$coloredText, 'blue', ' = ');
 	switch (treeSummary.$) {
 		case 'Tree2':
 			var n1 = treeSummary.a;
 			var n2 = treeSummary.b;
-			return elm$core$String$fromInt((n1 + n2) + 1) + (' = ' + (elm$core$String$fromInt(n1) + (' + 1 + ' + elm$core$String$fromInt(n2))));
+			return A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(author$project$TreeSummary$coloredInt, 'blue', (n1 + n2) + 1),
+						equal,
+						A2(author$project$TreeSummary$coloredInt, 'black', n1),
+						plus,
+						A2(author$project$TreeSummary$coloredInt, 'black', 1),
+						plus,
+						A2(author$project$TreeSummary$coloredInt, 'black', n2)
+					]));
 		case 'Tree3':
 			var n1 = treeSummary.a;
 			var n2 = treeSummary.b;
 			var n3 = treeSummary.c;
-			return elm$core$String$fromInt(((n1 + n2) + n3) + 2) + (' = ' + (elm$core$String$fromInt(n1) + (' + 1 + ' + (elm$core$String$fromInt(n2) + (' + 1 + ' + elm$core$String$fromInt(n3))))));
+			return A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(author$project$TreeSummary$coloredInt, 'blue', ((n1 + n2) + n3) + 2),
+						equal,
+						A2(author$project$TreeSummary$coloredInt, 'black', n1),
+						plus,
+						A2(author$project$TreeSummary$coloredInt, 'red', 1),
+						plus,
+						A2(author$project$TreeSummary$coloredInt, 'black', n2),
+						plus,
+						A2(author$project$TreeSummary$coloredInt, 'black', 1),
+						plus,
+						A2(author$project$TreeSummary$coloredInt, 'black', n3)
+					]));
 		default:
-			return '';
+			return A2(elm$html$Html$div, _List_Nil, _List_Nil);
 	}
 };
 var author$project$TreeSummary$toCountList = function (treeSummary) {
@@ -5542,27 +5593,32 @@ var elm$core$List$singleton = function (value) {
 	return _List_fromArray(
 		[value]);
 };
-var elm$html$Html$span = _VirtualDom_node('span');
 var author$project$View$binaryBreakdown = function (stats) {
 	if (stats.$ === 'Empty') {
 		return _List_Nil;
 	} else {
 		var data = stats.a;
-		var redFrag = function (n) {
-			return _List_fromArray(
-				[
-					elm$html$Html$text(' + '),
-					A2(
+		var coloredText = F2(
+			function (color, text) {
+				return A2(
 					elm$html$Html$span,
 					_List_fromArray(
 						[
-							A2(elm$html$Html$Attributes$style, 'color', 'red')
+							A2(elm$html$Html$Attributes$style, 'color', color)
 						]),
 					_List_fromArray(
 						[
-							elm$html$Html$text(
-							elm$core$String$fromInt(n))
-						]))
+							elm$html$Html$text(text)
+						]));
+			});
+		var redFrag = function (n) {
+			return _List_fromArray(
+				[
+					A2(coloredText, 'blue', ' + '),
+					A2(
+					coloredText,
+					'red',
+					elm$core$String$fromInt(n))
 				]);
 		};
 		var blackCount = A2(elm$core$Basics$pow, 2, data.blackDepth) - 1;
@@ -5572,29 +5628,15 @@ var author$project$View$binaryBreakdown = function (stats) {
 		var content = A2(
 			elm$core$List$cons,
 			A2(
-				elm$html$Html$span,
-				_List_fromArray(
-					[
-						A2(elm$html$Html$Attributes$style, 'color', 'blue')
-					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text(
-						elm$core$String$fromInt(data.size) + ' = ')
-					])),
+				coloredText,
+				'blue',
+				elm$core$String$fromInt(data.size) + ' = '),
 			A2(
 				elm$core$List$cons,
 				A2(
-					elm$html$Html$span,
-					_List_fromArray(
-						[
-							A2(elm$html$Html$Attributes$style, 'color', 'black')
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text(
-							elm$core$String$fromInt(blackCount))
-						])),
+					coloredText,
+					'black',
+					elm$core$String$fromInt(blackCount)),
 				redBreakdown));
 		return elm$core$List$singleton(
 			A2(elm$html$Html$div, _List_Nil, content));
@@ -5621,17 +5663,7 @@ var author$project$View$subTreeButtons = function (spec) {
 			countList));
 	var breakDowns = A2(
 		elm$core$List$cons,
-		A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					A2(elm$html$Html$Attributes$style, 'color', 'blue')
-				]),
-			_List_fromArray(
-				[
-					elm$html$Html$text(
-					author$project$TreeSummary$arithmeticBreakdown(treeSummary))
-				])),
+		author$project$TreeSummary$arithmeticBreakdown(treeSummary),
 		author$project$View$binaryBreakdown(stats));
 	return elm$core$List$isEmpty(buttons) ? _List_Nil : A2(
 		elm$core$List$cons,
