@@ -4886,6 +4886,18 @@ var elm$html$Html$Events$onClick = function (msg) {
 		elm$json$Json$Decode$succeed(msg));
 };
 var author$project$View$diagramHeading = function (spec) {
+	var flipButton = A2(
+		elm$html$Html$button,
+		_List_fromArray(
+			[
+				elm$html$Html$Events$onClick(
+				author$project$Type$ShowTree(
+					author$project$RangeList$flip(spec)))
+			]),
+		_List_fromArray(
+			[
+				elm$html$Html$text('flip')
+			]));
 	return A2(
 		elm$html$Html$div,
 		_List_Nil,
@@ -4921,18 +4933,7 @@ var author$project$View$diagramHeading = function (spec) {
 					[
 						elm$html$Html$text(
 						author$project$RangeList$toString(spec)),
-						A2(
-						elm$html$Html$button,
-						_List_fromArray(
-							[
-								elm$html$Html$Events$onClick(
-								author$project$Type$ShowTree(
-									author$project$RangeList$flip(spec)))
-							]),
-						_List_fromArray(
-							[
-								elm$html$Html$text('flip')
-							]))
+						flipButton
 					]))
 			]));
 };
@@ -5845,138 +5846,23 @@ var author$project$View$treeDiagram = function (spec) {
 		author$project$View$getNodeText,
 		author$project$View$specToStats(spec));
 };
-var author$project$BinaryTree$height = function (tree) {
-	if (tree.$ === 'Node') {
-		var left = tree.b;
-		var right = tree.c;
-		return 1 + A2(
-			elm$core$Basics$max,
-			author$project$BinaryTree$height(left),
-			author$project$BinaryTree$height(right));
-	} else {
-		return 0;
-	}
-};
-var author$project$TreeSummary$description = function (treeSummary) {
-	switch (treeSummary.$) {
-		case 'Tree1':
-			var count1 = treeSummary.a;
-			return elm$core$String$fromInt(count1);
-		case 'Tree2':
-			var count1 = treeSummary.a;
-			var count2 = treeSummary.b;
-			return elm$core$String$fromInt(count1) + (' ' + elm$core$String$fromInt(count2));
-		case 'Tree3':
-			var count1 = treeSummary.a;
-			var count2 = treeSummary.b;
-			var count3 = treeSummary.c;
-			return elm$core$String$fromInt(count1) + (' ' + (elm$core$String$fromInt(count2) + (' ' + elm$core$String$fromInt(count3))));
-		case 'Nada':
-			return 'nada';
-		default:
-			return 'broken';
-	}
-};
-var elm$html$Html$table = _VirtualDom_node('table');
-var elm$html$Html$td = _VirtualDom_node('td');
-var elm$html$Html$th = _VirtualDom_node('th');
-var elm$html$Html$tr = _VirtualDom_node('tr');
-var author$project$View$treeTable = function (currSpec) {
-	var size = function (tree) {
-		return elm$html$Html$text(
-			elm$core$String$fromInt(
-				author$project$BinaryTree$size(tree)));
-	};
-	var insertionMode = currSpec.insertionMode;
-	var height = function (tree) {
-		return elm$html$Html$text(
-			elm$core$String$fromInt(
-				author$project$BinaryTree$height(tree)));
-	};
-	var header = function (s) {
-		return A2(
-			elm$html$Html$th,
-			_List_Nil,
-			_List_fromArray(
-				[
-					elm$html$Html$text(s)
-				]));
-	};
-	var headerRow = A2(
-		elm$html$Html$tr,
-		_List_Nil,
-		A2(
-			elm$core$List$map,
-			header,
-			_List_fromArray(
-				['size', 'height', 'black subtree sizes', 'action'])));
-	var formatCell = function (item) {
-		return A2(
-			elm$html$Html$td,
-			_List_fromArray(
-				[
-					A2(elm$html$Html$Attributes$style, 'padding-left', '10px'),
-					A2(elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
-					A2(elm$html$Html$Attributes$style, 'text-align', 'center')
-				]),
-			elm$core$List$singleton(item));
-	};
-	var cells = F2(
-		function (spec, stats) {
-			return _List_fromArray(
-				[
-					size(stats),
-					height(stats),
-					elm$html$Html$text(
-					author$project$TreeSummary$description(
-						author$project$DictHelper$statsToSummary(stats))),
-					A2(author$project$View$showTreeButton, spec, 'show')
-				]);
-		});
-	var formatRow = function (_n0) {
-		var spec = _n0.a;
-		var stats = _n0.b;
-		var css = _Utils_eq(spec.n, currSpec.n) ? _List_fromArray(
-			[
-				A2(elm$html$Html$Attributes$style, 'background', 'lightgreen')
-			]) : _List_Nil;
-		return A2(
-			elm$html$Html$tr,
-			css,
-			A2(
-				elm$core$List$map,
-				formatCell,
-				A2(cells, spec, stats)));
-	};
-	var allSpecs = A2(
-		elm$core$List$map,
-		function (n) {
-			return {insertionMode: insertionMode, n: n};
-		},
-		A2(elm$core$List$range, 1, 63));
-	var specStatTups = A2(
-		elm$core$List$map,
-		function (spec) {
-			return _Utils_Tuple2(
-				spec,
-				author$project$View$specToStats(spec));
-		},
-		allSpecs);
-	return function (rows) {
-		return A2(
-			elm$html$Html$table,
-			_List_Nil,
-			A2(elm$core$List$cons, headerRow, rows));
-	}(
-		A2(elm$core$List$map, formatRow, specStatTups));
-};
 var author$project$View$view = function (model) {
-	var rightCss = _List_fromArray(
+	var rangeSpec = model.rangeSpec;
+	var treeView = A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2(elm$html$Html$Attributes$style, 'max-width', '800px')
+			]),
+		_List_fromArray(
+			[
+				author$project$View$treeDiagram(rangeSpec)
+			]));
+	var css = _List_fromArray(
 		[
 			A2(elm$html$Html$Attributes$style, 'padding', '20px')
 		]);
-	var rangeSpec = model.rangeSpec;
-	var rightSide = _Utils_ap(
+	var contents = _Utils_ap(
 		_List_fromArray(
 			[
 				author$project$View$diagramHeading(rangeSpec),
@@ -5985,32 +5871,8 @@ var author$project$View$view = function (model) {
 		_Utils_ap(
 			author$project$View$subTreeButtons(rangeSpec),
 			_List_fromArray(
-				[
-					author$project$View$treeDiagram(rangeSpec)
-				])));
-	var leftSide = _List_fromArray(
-		[
-			author$project$View$treeTable(rangeSpec)
-		]);
-	var leftCss = _List_fromArray(
-		[
-			A2(elm$html$Html$Attributes$style, 'height', '100vh'),
-			A2(elm$html$Html$Attributes$style, 'overflow-y', 'auto'),
-			A2(elm$html$Html$Attributes$style, 'padding-right', '100px'),
-			A2(elm$html$Html$Attributes$style, 'min-width', '200px')
-		]);
-	return A2(
-		elm$html$Html$div,
-		_List_fromArray(
-			[
-				A2(elm$html$Html$Attributes$style, 'display', 'flex'),
-				A2(elm$html$Html$Attributes$style, 'flex-direction', 'row')
-			]),
-		_List_fromArray(
-			[
-				A2(elm$html$Html$div, leftCss, leftSide),
-				A2(elm$html$Html$div, rightCss, rightSide)
-			]));
+				[treeView])));
+	return A2(elm$html$Html$div, css, contents);
 };
 var author$project$Main$view = function (model) {
 	return {
