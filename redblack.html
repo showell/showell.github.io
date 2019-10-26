@@ -4799,7 +4799,7 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$init = function (_n0) {
-	var rangeSpec = {insertionMode: author$project$Type$InsertForward, n: 10};
+	var rangeSpec = {insertionMode: author$project$Type$InsertForward, n: 16};
 	var model = {rangeSpec: rangeSpec};
 	return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 };
@@ -4818,28 +4818,12 @@ var author$project$Main$update = F2(
 		}();
 		return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
 	});
-var author$project$Type$InsertReverse = {$: 'InsertReverse'};
-var author$project$RangeList$flip = function (spec) {
-	var newInsertionMode = function () {
-		var _n0 = spec.insertionMode;
-		if (_n0.$ === 'InsertForward') {
-			return author$project$Type$InsertReverse;
-		} else {
-			return author$project$Type$InsertForward;
-		}
-	}();
-	return _Utils_update(
-		spec,
-		{insertionMode: newInsertionMode});
-};
-var author$project$RangeList$toString = function (spec) {
-	var _n0 = spec.insertionMode;
-	if (_n0.$ === 'InsertForward') {
-		return 'from 1 to ' + (elm$core$String$fromInt(spec.n) + ' (forward)');
-	} else {
-		return 'from ' + (elm$core$String$fromInt(spec.n) + ' to 1 (reverse)');
-	}
-};
+var author$project$RangeList$setN = F2(
+	function (spec, n) {
+		return _Utils_update(
+			spec,
+			{n: n});
+	});
 var author$project$Type$ShowTree = function (a) {
 	return {$: 'ShowTree', a: a};
 };
@@ -4861,13 +4845,9 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 			return 3;
 	}
 };
-var elm$html$Html$b = _VirtualDom_node('b');
 var elm$html$Html$button = _VirtualDom_node('button');
-var elm$html$Html$div = _VirtualDom_node('div');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
-var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
 var elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -4885,74 +4865,6 @@ var elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		elm$json$Json$Decode$succeed(msg));
 };
-var author$project$View$diagramHeading = function (spec) {
-	var flipButton = A2(
-		elm$html$Html$button,
-		_List_fromArray(
-			[
-				elm$html$Html$Events$onClick(
-				author$project$Type$ShowTree(
-					author$project$RangeList$flip(spec)))
-			]),
-		_List_fromArray(
-			[
-				elm$html$Html$text('flip')
-			]));
-	return A2(
-		elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$div,
-				_List_fromArray(
-					[
-						A2(elm$html$Html$Attributes$style, 'font-size', '120%'),
-						A2(elm$html$Html$Attributes$style, 'padding', '5px')
-					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text('RedBlack tree for '),
-						A2(
-						elm$html$Html$b,
-						_List_Nil,
-						_List_fromArray(
-							[
-								elm$html$Html$text(
-								elm$core$String$fromInt(spec.n))
-							])),
-						elm$html$Html$text(' elements')
-					])),
-				A2(
-				elm$html$Html$div,
-				_List_fromArray(
-					[
-						A2(elm$html$Html$Attributes$style, 'padding', '5px')
-					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text(
-						author$project$RangeList$toString(spec)),
-						flipButton
-					]))
-			]));
-};
-var author$project$RangeList$decr = function (spec) {
-	return _Utils_update(
-		spec,
-		{n: spec.n - 1});
-};
-var author$project$RangeList$incr = function (spec) {
-	return _Utils_update(
-		spec,
-		{n: spec.n + 1});
-};
-var author$project$RangeList$setN = F2(
-	function (spec, n) {
-		return _Utils_update(
-			spec,
-			{n: n});
-	});
 var author$project$View$showTreeButton = F2(
 	function (spec, label) {
 		return A2(
@@ -5042,32 +4954,141 @@ var elm$core$List$map = F2(
 			_List_Nil,
 			xs);
 	});
-var author$project$View$plusMinusButtons = function (spec) {
-	var moreButtons = _List_fromArray(
-		[
-			A2(
-			author$project$View$showTreeButton,
-			author$project$RangeList$incr(spec),
-			'more')
-		]);
-	var lessButtons = (spec.n === 1) ? _List_Nil : _List_fromArray(
-		[
-			A2(
-			author$project$View$showTreeButton,
-			author$project$RangeList$decr(spec),
-			'less')
-		]);
-	var cannedButtons = A2(
-		elm$core$List$map,
-		author$project$View$showTreeNumButton,
+var elm$html$Html$div = _VirtualDom_node('div');
+var author$project$View$cannedButtons = function (spec) {
+	return A2(
+		elm$html$Html$div,
+		_List_Nil,
 		A2(
 			elm$core$List$map,
-			author$project$RangeList$setN(spec),
+			author$project$View$showTreeNumButton,
+			A2(
+				elm$core$List$map,
+				author$project$RangeList$setN(spec),
+				_List_fromArray(
+					[2, 4, 8, 16, 32, 64, 128]))));
+};
+var author$project$Type$InsertReverse = {$: 'InsertReverse'};
+var author$project$RangeList$flip = function (spec) {
+	var newInsertionMode = function () {
+		var _n0 = spec.insertionMode;
+		if (_n0.$ === 'InsertForward') {
+			return author$project$Type$InsertReverse;
+		} else {
+			return author$project$Type$InsertForward;
+		}
+	}();
+	return _Utils_update(
+		spec,
+		{insertionMode: newInsertionMode});
+};
+var author$project$RangeList$toString = function (spec) {
+	var _n0 = spec.insertionMode;
+	if (_n0.$ === 'InsertForward') {
+		return 'from 1 to ' + (elm$core$String$fromInt(spec.n) + ' (forward)');
+	} else {
+		return 'from ' + (elm$core$String$fromInt(spec.n) + ' to 1 (reverse)');
+	}
+};
+var elm$html$Html$b = _VirtualDom_node('b');
+var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
+var author$project$View$diagramHeading = function (spec) {
+	var flipButton = A2(
+		elm$html$Html$button,
+		_List_fromArray(
+			[
+				elm$html$Html$Events$onClick(
+				author$project$Type$ShowTree(
+					author$project$RangeList$flip(spec)))
+			]),
+		_List_fromArray(
+			[
+				elm$html$Html$text('flip')
+			]));
+	return A2(
+		elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2(elm$html$Html$Attributes$style, 'font-size', '120%'),
+						A2(elm$html$Html$Attributes$style, 'padding', '5px')
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text('RedBlack tree for '),
+						A2(
+						elm$html$Html$b,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text(
+								elm$core$String$fromInt(spec.n))
+							])),
+						elm$html$Html$text(' elements')
+					])),
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2(elm$html$Html$Attributes$style, 'padding', '5px')
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text(
+						author$project$RangeList$toString(spec)),
+						flipButton
+					]))
+			]));
+};
+var author$project$RangeList$decr = function (spec) {
+	return _Utils_update(
+		spec,
+		{n: spec.n - 1});
+};
+var author$project$RangeList$incr = function (spec) {
+	return _Utils_update(
+		spec,
+		{n: spec.n + 1});
+};
+var elm$json$Json$Encode$bool = _Json_wrap;
+var elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$bool(bool));
+	});
+var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
+var author$project$View$plusMinusButtons = function (spec) {
+	var moreButton = A2(
+		author$project$View$showTreeButton,
+		author$project$RangeList$incr(spec),
+		'more');
+	var lessButton = function () {
+		var attrs = (spec.n === 1) ? _List_fromArray(
+			[
+				elm$html$Html$Attributes$disabled(true)
+			]) : _List_fromArray(
+			[
+				elm$html$Html$Events$onClick(
+				author$project$Type$ShowTree(
+					author$project$RangeList$decr(spec)))
+			]);
+		return A2(
+			elm$html$Html$button,
+			attrs,
 			_List_fromArray(
-				[3, 7, 15, 31, 63])));
-	var buttons = _Utils_ap(
-		lessButtons,
-		_Utils_ap(moreButtons, cannedButtons));
+				[
+					elm$html$Html$text('less')
+				]));
+	}();
+	var buttons = _List_fromArray(
+		[lessButton, moreButton]);
 	return A2(elm$html$Html$div, _List_Nil, buttons);
 };
 var author$project$BinaryTree$Empty = {$: 'Empty'};
@@ -5846,6 +5867,7 @@ var author$project$View$treeDiagram = function (spec) {
 		author$project$View$getNodeText,
 		author$project$View$specToStats(spec));
 };
+var elm$html$Html$hr = _VirtualDom_node('hr');
 var author$project$View$view = function (model) {
 	var rangeSpec = model.rangeSpec;
 	var treeView = A2(
@@ -5865,8 +5887,10 @@ var author$project$View$view = function (model) {
 	var contents = _Utils_ap(
 		_List_fromArray(
 			[
-				author$project$View$diagramHeading(rangeSpec),
-				author$project$View$plusMinusButtons(rangeSpec)
+				author$project$View$cannedButtons(rangeSpec),
+				author$project$View$plusMinusButtons(rangeSpec),
+				A2(elm$html$Html$hr, _List_Nil, _List_Nil),
+				author$project$View$diagramHeading(rangeSpec)
 			]),
 		_Utils_ap(
 			author$project$View$subTreeButtons(rangeSpec),
