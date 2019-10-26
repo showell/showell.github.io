@@ -5083,7 +5083,7 @@ var author$project$BinaryTree$withDefault = F2(
 			return _default;
 		}
 	});
-var author$project$DictHelper$emptyStatsInfo = {blackDepth: 0, color: '', depth: 0, sig: '_', size: 0};
+var author$project$DictHelper$emptyStatsInfo = {blackDepth: 0, color: '', depth: 0, n: 0, sig: '_', size: 0};
 var elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
@@ -5097,6 +5097,7 @@ var author$project$DictHelper$shapeToStats = function (shapeTree) {
 		var right_ = shapeTree.c;
 		var right = author$project$DictHelper$shapeToStats(right_);
 		var r = A2(author$project$BinaryTree$withDefault, author$project$DictHelper$emptyStatsInfo, right);
+		var n = data_.n;
 		var left = author$project$DictHelper$shapeToStats(left_);
 		var l = A2(author$project$BinaryTree$withDefault, author$project$DictHelper$emptyStatsInfo, left);
 		var size = (1 + l.size) + r.size;
@@ -5104,8 +5105,32 @@ var author$project$DictHelper$shapeToStats = function (shapeTree) {
 		var color = data_.color;
 		var sig = color + (' (' + (l.sig + (', ' + (r.sig + ')'))));
 		var blackDepth = (color === 'B') ? (1 + l.blackDepth) : l.blackDepth;
-		var data = {blackDepth: blackDepth, color: color, depth: depth, sig: sig, size: size};
+		var data = {blackDepth: blackDepth, color: color, depth: depth, n: n, sig: sig, size: size};
 		return A3(author$project$BinaryTree$Node, data, left, right);
+	}
+};
+var author$project$BinaryTree$map = F2(
+	function (f, tree) {
+		if (tree.$ === 'Node') {
+			var v = tree.a;
+			var left = tree.b;
+			var right = tree.c;
+			return A3(
+				author$project$BinaryTree$Node,
+				f(v),
+				A2(author$project$BinaryTree$map, f, left),
+				A2(author$project$BinaryTree$map, f, right));
+		} else {
+			return author$project$BinaryTree$Empty;
+		}
+	});
+var author$project$BinaryTree$size = function (tree) {
+	if (tree.$ === 'Node') {
+		var left = tree.b;
+		var right = tree.c;
+		return (1 + author$project$BinaryTree$size(left)) + author$project$BinaryTree$size(right);
+	} else {
+		return 0;
 	}
 };
 var elm$core$List$filter = F2(
@@ -5175,12 +5200,19 @@ var author$project$DictHelper$toShapeTree = function (internals) {
 						},
 						internals)));
 		};
-		var data = {color: top.color};
-		return A3(
-			author$project$BinaryTree$Node,
-			data,
-			getSubTree('l'),
+		var left = getSubTree('l');
+		var offset = 1 + author$project$BinaryTree$size(left);
+		var data = {color: top.color, n: offset};
+		var bump = function (node) {
+			return _Utils_update(
+				node,
+				{n: node.n + offset});
+		};
+		var right = A2(
+			author$project$BinaryTree$map,
+			bump,
 			getSubTree('r'));
+		return A3(author$project$BinaryTree$Node, data, left, right);
 	}
 };
 var author$project$MyDict$toInternalRepresentation = function (dict) {
@@ -5584,30 +5616,6 @@ var author$project$View$subTreeButtons = function (spec) {
 		elm$html$Html$text('Subtrees: '),
 		_Utils_ap(buttons, breakDowns));
 };
-var author$project$BinaryTree$size = function (tree) {
-	if (tree.$ === 'Node') {
-		var left = tree.b;
-		var right = tree.c;
-		return (1 + author$project$BinaryTree$size(left)) + author$project$BinaryTree$size(right);
-	} else {
-		return 0;
-	}
-};
-var author$project$BinaryTree$map = F2(
-	function (f, tree) {
-		if (tree.$ === 'Node') {
-			var v = tree.a;
-			var left = tree.b;
-			var right = tree.c;
-			return A3(
-				author$project$BinaryTree$Node,
-				f(v),
-				A2(author$project$BinaryTree$map, f, left),
-				A2(author$project$BinaryTree$map, f, right));
-		} else {
-			return author$project$BinaryTree$Empty;
-		}
-	});
 var author$project$TreeDiagram$toCoordsTree = function (tree) {
 	if (tree.$ === 'Node') {
 		var data = tree.a;
@@ -5691,22 +5699,29 @@ var author$project$TreeDiagram$diagramData = function (tree) {
 var elm$core$String$fromFloat = _String_fromNumber;
 var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var elm$svg$Svg$circle = elm$svg$Svg$trustedNode('circle');
+var elm$svg$Svg$g = elm$svg$Svg$trustedNode('g');
 var elm$svg$Svg$line = elm$svg$Svg$trustedNode('line');
 var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
+var elm$svg$Svg$text = elm$virtual_dom$VirtualDom$text;
+var elm$svg$Svg$text_ = elm$svg$Svg$trustedNode('text');
 var elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
 var elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
 var elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
 var elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+var elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
 var elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
 var elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
+var elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
 var elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
-var author$project$TreeDiagram$diagramView = F2(
-	function (getNodeColor, tree) {
+var author$project$TreeDiagram$diagramView = F3(
+	function (getNodeColor, getNodeText, tree) {
 		var size = author$project$BinaryTree$size(tree);
 		var w = 100.0 / (size + 2);
 		var r = w / 2.5;
@@ -5717,7 +5732,8 @@ var author$project$TreeDiagram$diagramView = F2(
 			var xx = (w * x) + r;
 			return _Utils_Tuple2(xx, yy);
 		};
-		var strokeWidth = r / 5.0;
+		var strokeWidth = r / 30.0;
+		var fontSize = r * 0.7;
 		var drawEdge = function (edge) {
 			var stroke = 'gray';
 			var _n1 = scaleCoord(edge.child.coord);
@@ -5745,11 +5761,15 @@ var author$project$TreeDiagram$diagramView = F2(
 				_List_Nil);
 		};
 		var drawCoordNode = function (coordNode) {
+			var textFill = 'white';
+			var textAnchor = 'middle';
+			var text = getNodeText(coordNode.data);
 			var fill = getNodeColor(coordNode.data);
 			var _n0 = scaleCoord(coordNode.coord);
 			var cx = _n0.a;
 			var cy = _n0.b;
-			return A2(
+			var x = cx;
+			var circle = A2(
 				elm$svg$Svg$circle,
 				_List_fromArray(
 					[
@@ -5762,6 +5782,31 @@ var author$project$TreeDiagram$diagramView = F2(
 						elm$svg$Svg$Attributes$fill(fill)
 					]),
 				_List_Nil);
+			var y = cy + (fontSize / 4);
+			var label = A2(
+				elm$svg$Svg$text_,
+				_List_fromArray(
+					[
+						elm$svg$Svg$Attributes$x(
+						elm$core$String$fromFloat(x)),
+						elm$svg$Svg$Attributes$y(
+						elm$core$String$fromFloat(y)),
+						elm$svg$Svg$Attributes$fontSize(
+						elm$core$String$fromFloat(fontSize)),
+						elm$svg$Svg$Attributes$fill(textFill),
+						elm$svg$Svg$Attributes$strokeWidth(
+						elm$core$String$fromFloat(strokeWidth)),
+						elm$svg$Svg$Attributes$textAnchor(textAnchor)
+					]),
+				_List_fromArray(
+					[
+						elm$svg$Svg$text(text)
+					]));
+			return A2(
+				elm$svg$Svg$g,
+				_List_Nil,
+				_List_fromArray(
+					[circle, label]));
 		};
 		var data = author$project$TreeDiagram$diagramData(tree);
 		var drawCoordNodes = A2(elm$core$List$map, drawCoordNode, data.coordNodes);
@@ -5775,8 +5820,8 @@ var author$project$TreeDiagram$diagramView = F2(
 				]),
 			_Utils_ap(drawEdges, drawCoordNodes));
 	});
-var author$project$View$getNodeColor = function (statsNode) {
-	var _n0 = statsNode.color;
+var author$project$View$getNodeColor = function (statsInfo) {
+	var _n0 = statsInfo.color;
 	switch (_n0) {
 		case 'R':
 			return 'red';
@@ -5786,14 +5831,18 @@ var author$project$View$getNodeColor = function (statsNode) {
 			return 'yellow';
 	}
 };
+var author$project$View$getNodeText = function (statsInfo) {
+	return elm$core$String$fromInt(statsInfo.n);
+};
 var author$project$View$specToStats = function (spec) {
 	return author$project$DictHelper$dictToStats(
 		author$project$RangeList$toDict(spec));
 };
 var author$project$View$treeDiagram = function (spec) {
-	return A2(
+	return A3(
 		author$project$TreeDiagram$diagramView,
 		author$project$View$getNodeColor,
+		author$project$View$getNodeText,
 		author$project$View$specToStats(spec));
 };
 var author$project$BinaryTree$height = function (tree) {
