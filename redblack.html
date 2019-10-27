@@ -4320,8 +4320,13 @@ function _Browser_load(url)
 		}
 	}));
 }
+var author$project$Type$Explorer = function (a) {
+	return {$: 'Explorer', a: a};
+};
 var author$project$Type$InsertForward = {$: 'InsertForward'};
-var author$project$Type$SmallTree = {$: 'SmallTree'};
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
 var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
@@ -4801,7 +4806,7 @@ var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$init = function (_n0) {
 	var rangeSpec = {insertionMode: author$project$Type$InsertForward, n: 16};
-	var page = author$project$Type$SmallTree;
+	var page = author$project$Type$Explorer(rangeSpec);
 	var model = {page: page};
 	return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 };
@@ -4809,9 +4814,6 @@ var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var author$project$Main$subscriptions = function (_n0) {
 	return elm$core$Platform$Sub$none;
-};
-var author$project$Type$Explorer = function (a) {
-	return {$: 'Explorer', a: a};
 };
 var author$project$Main$update = F2(
 	function (msg, model) {
@@ -5312,9 +5314,6 @@ var elm$core$List$concat = function (lists) {
 var elm$core$List$singleton = function (value) {
 	return _List_fromArray(
 		[value]);
-};
-var elm$core$Basics$identity = function (x) {
-	return x;
 };
 var elm$json$Json$Decode$map = _Json_map1;
 var elm$json$Json$Decode$map2 = _Json_map2;
@@ -5939,108 +5938,11 @@ var author$project$ExplorerView$view = function (rangeSpec) {
 		]);
 	return A2(elm$html$Html$div, css, contents);
 };
-var author$project$DictHelper$listToDict = function (lst) {
-	return author$project$MyDict$fromList(
-		A2(
-			elm$core$List$map,
-			function (k) {
-				return _Utils_Tuple2(k, '');
-			},
-			lst));
-};
-var author$project$DictHelper$listToStats = function (lst) {
-	return author$project$DictHelper$dictToStats(
-		author$project$DictHelper$listToDict(lst));
-};
-var elm$core$Debug$toString = _Debug_toString;
-var elm$html$Html$table = _VirtualDom_node('table');
-var elm$html$Html$td = _VirtualDom_node('td');
-var elm$html$Html$tr = _VirtualDom_node('tr');
-var elm$core$List$concatMap = F2(
-	function (f, list) {
-		return elm$core$List$concat(
-			A2(elm$core$List$map, f, list));
-	});
-var elm_community$list_extra$List$Extra$select = function (list) {
-	if (!list.b) {
-		return _List_Nil;
-	} else {
-		var x = list.a;
-		var xs = list.b;
-		return A2(
-			elm$core$List$cons,
-			_Utils_Tuple2(x, xs),
-			A2(
-				elm$core$List$map,
-				function (_n1) {
-					var y = _n1.a;
-					var ys = _n1.b;
-					return _Utils_Tuple2(
-						y,
-						A2(elm$core$List$cons, x, ys));
-				},
-				elm_community$list_extra$List$Extra$select(xs)));
-	}
-};
-var elm_community$list_extra$List$Extra$permutations = function (xs_) {
-	if (!xs_.b) {
-		return _List_fromArray(
-			[_List_Nil]);
-	} else {
-		var xs = xs_;
-		var f = function (_n1) {
-			var y = _n1.a;
-			var ys = _n1.b;
-			return A2(
-				elm$core$List$map,
-				elm$core$List$cons(y),
-				elm_community$list_extra$List$Extra$permutations(ys));
-		};
-		return A2(
-			elm$core$List$concatMap,
-			f,
-			elm_community$list_extra$List$Extra$select(xs));
-	}
-};
-var author$project$SmallTreeView$view = function () {
-	var makeRow = function (list) {
-		var stats = author$project$DictHelper$listToStats(list);
-		var listCell = A2(
-			elm$html$Html$td,
-			_List_Nil,
-			elm$core$List$singleton(
-				elm$html$Html$text(
-					elm$core$Debug$toString(list))));
-		var diagramCell = A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					A2(elm$html$Html$Attributes$style, 'width', '300px')
-				]),
-			elm$core$List$singleton(
-				author$project$StatsTreeDiagram$treeDiagram(stats)));
-		return A2(
-			elm$html$Html$tr,
-			_List_Nil,
-			_List_fromArray(
-				[listCell, diagramCell]));
-	};
-	var lists = elm_community$list_extra$List$Extra$permutations(
-		A2(elm$core$List$range, 1, 4));
-	return A2(
-		elm$html$Html$table,
-		_List_Nil,
-		A2(elm$core$List$map, makeRow, lists));
-}();
 var author$project$Main$view = function (model) {
 	var bodyContents = function () {
 		var _n0 = model.page;
-		if (_n0.$ === 'Explorer') {
-			var rangeSpec = _n0.a;
-			return author$project$ExplorerView$view(rangeSpec);
-		} else {
-			return author$project$SmallTreeView$view;
-		}
+		var rangeSpec = _n0.a;
+		return author$project$ExplorerView$view(rangeSpec);
 	}();
 	return {
 		body: _List_fromArray(
