@@ -5670,52 +5670,33 @@ var author$project$View$subTreeButtons = function (spec) {
 		elm$html$Html$text('Subtrees: '),
 		_Utils_ap(buttons, breakDowns));
 };
-var author$project$TreeDiagram$toCoordsTree = function (tree) {
-	if (tree.$ === 'Node') {
-		var data = tree.a;
-		var left_ = tree.b;
-		var right_ = tree.c;
-		var xOffset = author$project$BinaryTree$size(left_) + 1;
-		var coordNode = {
-			coord: _Utils_Tuple2(xOffset, 0),
-			data: data
-		};
-		var adjustRight = function (_n2) {
-			var x = _n2.a;
-			var y = _n2.b;
-			return _Utils_Tuple2(x + xOffset, y + 1);
-		};
-		var adjustRightNode = function (node) {
-			return _Utils_update(
-				node,
-				{
-					coord: adjustRight(node.coord)
-				});
-		};
-		var right = A2(
-			author$project$BinaryTree$map,
-			adjustRightNode,
-			author$project$TreeDiagram$toCoordsTree(right_));
-		var adjustLeft = function (_n1) {
-			var x = _n1.a;
-			var y = _n1.b;
-			return _Utils_Tuple2(x, y + 1);
-		};
-		var adjustLeftNode = function (node) {
-			return _Utils_update(
-				node,
-				{
-					coord: adjustLeft(node.coord)
-				});
-		};
-		var left = A2(
-			author$project$BinaryTree$map,
-			adjustLeftNode,
-			author$project$TreeDiagram$toCoordsTree(left_));
-		return A3(author$project$BinaryTree$Node, coordNode, left, right);
-	} else {
-		return author$project$BinaryTree$Empty;
-	}
+var author$project$TreeDiagram$toCoordsTree = function (fullTree) {
+	var makeTree = F5(
+		function (fullWidth, ratioFactor, xOffset, yOffset, tree) {
+			if (tree.$ === 'Node') {
+				var data = tree.a;
+				var left_ = tree.b;
+				var right_ = tree.c;
+				var halfWidth = fullWidth / 2;
+				var r = ratioFactor * halfWidth;
+				var cy = yOffset + r;
+				var cx = xOffset + halfWidth;
+				var lxOffset = cx - halfWidth;
+				var rxOffset = cx;
+				var coordNode = {
+					coord: _Utils_Tuple3(cx, cy, r),
+					data: data
+				};
+				var childYOffset = yOffset + (2.2 * r);
+				var childRatioFactor = A2(elm$core$Basics$min, 0.9, ratioFactor * 1.8);
+				var left = A5(makeTree, halfWidth, childRatioFactor, lxOffset, childYOffset, left_);
+				var right = A5(makeTree, halfWidth, childRatioFactor, rxOffset, childYOffset, right_);
+				return A3(author$project$BinaryTree$Node, coordNode, left, right);
+			} else {
+				return author$project$BinaryTree$Empty;
+			}
+		});
+	return A5(makeTree, 100, 8.0e-2, 0, 0, fullTree);
 };
 var author$project$TreeDiagram$diagramData = function (tree) {
 	var edges = F3(
@@ -5776,26 +5757,16 @@ var elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
 var author$project$TreeDiagram$diagramView = F3(
 	function (getNodeColor, getNodeText, tree) {
-		var size = author$project$BinaryTree$size(tree);
-		var w = 100.0 / (size + 2);
-		var r = w / 2.5;
-		var scaleCoord = function (_n3) {
-			var x = _n3.a;
-			var y = _n3.b;
-			var yy = (w * y) + r;
-			var xx = (w * x) + r;
-			return _Utils_Tuple2(xx, yy);
-		};
-		var strokeWidth = r / 30.0;
-		var fontSize = r * 0.7;
 		var drawEdge = function (edge) {
 			var stroke = 'gray';
-			var _n1 = scaleCoord(edge.child.coord);
+			var _n1 = edge.child.coord;
 			var x2 = _n1.a;
 			var y2 = _n1.b;
-			var _n2 = scaleCoord(edge.parent.coord);
+			var _n2 = edge.parent.coord;
 			var x1 = _n2.a;
 			var y1 = _n2.b;
+			var r = _n2.c;
+			var strokeWidth = r / 30.0;
 			return A2(
 				elm$svg$Svg$line,
 				_List_fromArray(
@@ -5819,9 +5790,10 @@ var author$project$TreeDiagram$diagramView = F3(
 			var textAnchor = 'middle';
 			var text = getNodeText(coordNode.data);
 			var fill = getNodeColor(coordNode.data);
-			var _n0 = scaleCoord(coordNode.coord);
+			var _n0 = coordNode.coord;
 			var cx = _n0.a;
 			var cy = _n0.b;
+			var r = _n0.c;
 			var x = cx;
 			var circle = A2(
 				elm$svg$Svg$circle,
@@ -5836,7 +5808,9 @@ var author$project$TreeDiagram$diagramView = F3(
 						elm$svg$Svg$Attributes$fill(fill)
 					]),
 				_List_Nil);
+			var fontSize = r * 0.7;
 			var y = cy + (fontSize / 4);
+			var strokeWidth = r / 30.0;
 			var label = A2(
 				elm$svg$Svg$text_,
 				_List_fromArray(
@@ -5870,7 +5844,7 @@ var author$project$TreeDiagram$diagramView = F3(
 			_List_fromArray(
 				[
 					elm$svg$Svg$Attributes$width('100%'),
-					elm$svg$Svg$Attributes$viewBox('0 0 100 75')
+					elm$svg$Svg$Attributes$viewBox('0 0 100 100')
 				]),
 			_Utils_ap(drawEdges, drawCoordNodes));
 	});
