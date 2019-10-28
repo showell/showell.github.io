@@ -4324,9 +4324,10 @@ var author$project$Type$Explorer = function (a) {
 	return {$: 'Explorer', a: a};
 };
 var author$project$Type$InsertForward = {$: 'InsertForward'};
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
+var author$project$Main$initExplorer = function () {
+	var rangeSpec = {insertionMode: author$project$Type$InsertForward, n: 16};
+	return author$project$Type$Explorer(rangeSpec);
+}();
 var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
@@ -4805,8 +4806,7 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$init = function (_n0) {
-	var rangeSpec = {insertionMode: author$project$Type$InsertForward, n: 16};
-	var page = author$project$Type$Explorer(rangeSpec);
+	var page = author$project$Main$initExplorer;
 	var model = {page: page};
 	return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 };
@@ -4818,12 +4818,19 @@ var author$project$Main$subscriptions = function (_n0) {
 var author$project$Main$update = F2(
 	function (msg, model) {
 		var model_ = function () {
-			var rangeSpec = msg.a;
-			return _Utils_update(
-				model,
-				{
-					page: author$project$Type$Explorer(rangeSpec)
-				});
+			if (msg.$ === 'ShowTree') {
+				var rangeSpec = msg.a;
+				return _Utils_update(
+					model,
+					{
+						page: author$project$Type$Explorer(rangeSpec)
+					});
+			} else {
+				var page = msg.a;
+				return _Utils_update(
+					model,
+					{page: page});
+			}
 		}();
 		return _Utils_Tuple2(model_, elm$core$Platform$Cmd$none);
 	});
@@ -5314,6 +5321,9 @@ var elm$core$List$concat = function (lists) {
 var elm$core$List$singleton = function (value) {
 	return _List_fromArray(
 		[value]);
+};
+var elm$core$Basics$identity = function (x) {
+	return x;
 };
 var elm$json$Json$Decode$map = _Json_map1;
 var elm$json$Json$Decode$map2 = _Json_map2;
@@ -5938,17 +5948,249 @@ var author$project$ExplorerView$view = function (rangeSpec) {
 		]);
 	return A2(elm$html$Html$div, css, contents);
 };
-var author$project$Main$view = function (model) {
-	var bodyContents = function () {
-		var _n0 = model.page;
-		var rangeSpec = _n0.a;
-		return author$project$ExplorerView$view(rangeSpec);
+var author$project$Type$SetPage = function (a) {
+	return {$: 'SetPage', a: a};
+};
+var author$project$Type$SmallTree = {$: 'SmallTree'};
+var author$project$Main$pageTabs = function (activePage) {
+	var smallTreesLabel = 'Small trees';
+	var explorerLabel = 'Explorer';
+	var tabConfigs = _List_fromArray(
+		[
+			_Utils_Tuple2(
+			explorerLabel,
+			author$project$Type$SetPage(author$project$Main$initExplorer)),
+			_Utils_Tuple2(
+			smallTreesLabel,
+			author$project$Type$SetPage(author$project$Type$SmallTree))
+		]);
+	var activeLabel = function () {
+		if (activePage.$ === 'Explorer') {
+			return explorerLabel;
+		} else {
+			return smallTreesLabel;
+		}
 	}();
-	return {
-		body: _List_fromArray(
-			[bodyContents]),
-		title: 'RedBlack Trees from Elm'
+	var makeTab = function (_n0) {
+		var label = _n0.a;
+		var cmd = _n0.b;
+		var disabled = _Utils_eq(label, activeLabel);
+		return A2(
+			elm$html$Html$button,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$disabled(disabled),
+					elm$html$Html$Events$onClick(cmd)
+				]),
+			_List_fromArray(
+				[
+					elm$html$Html$text(label)
+				]));
 	};
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2(elm$html$Html$Attributes$style, 'padding', '10px')
+			]),
+		A2(elm$core$List$map, makeTab, tabConfigs));
+};
+var author$project$DictHelper$eqStatsTree = F2(
+	function (tree1, tree2) {
+		if (tree1.$ === 'Empty') {
+			if (tree2.$ === 'Empty') {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			var data1 = tree1.a;
+			if (tree2.$ === 'Empty') {
+				return false;
+			} else {
+				var data2 = tree2.a;
+				return _Utils_eq(data1.sig, data2.sig);
+			}
+		}
+	});
+var author$project$DictHelper$listToDict = function (lst) {
+	return author$project$MyDict$fromList(
+		A2(
+			elm$core$List$map,
+			function (k) {
+				return _Utils_Tuple2(k, '');
+			},
+			lst));
+};
+var author$project$DictHelper$listToStats = function (lst) {
+	return author$project$DictHelper$dictToStats(
+		author$project$DictHelper$listToDict(lst));
+};
+var author$project$ListUtil$combineEqual = F2(
+	function (eq, tups) {
+		var accum = F2(
+			function (_n0, acc) {
+				var k = _n0.a;
+				var v = _n0.b;
+				if (!acc.b) {
+					return _List_fromArray(
+						[
+							_Utils_Tuple2(
+							_List_fromArray(
+								[k]),
+							v)
+						]);
+				} else {
+					var head = acc.a;
+					var rest = acc.b;
+					var _n2 = head;
+					var keys = _n2.a;
+					var vHead = _n2.b;
+					return A2(eq, vHead, v) ? A2(
+						elm$core$List$cons,
+						_Utils_Tuple2(
+							A2(elm$core$List$cons, k, keys),
+							v),
+						rest) : A2(
+						elm$core$List$cons,
+						head,
+						A2(
+							accum,
+							_Utils_Tuple2(k, v),
+							rest));
+				}
+			});
+		return A3(elm$core$List$foldl, accum, _List_Nil, tups);
+	});
+var elm$core$Debug$toString = _Debug_toString;
+var elm$html$Html$table = _VirtualDom_node('table');
+var elm$html$Html$td = _VirtualDom_node('td');
+var elm$html$Html$tr = _VirtualDom_node('tr');
+var elm$core$List$concatMap = F2(
+	function (f, list) {
+		return elm$core$List$concat(
+			A2(elm$core$List$map, f, list));
+	});
+var elm_community$list_extra$List$Extra$select = function (list) {
+	if (!list.b) {
+		return _List_Nil;
+	} else {
+		var x = list.a;
+		var xs = list.b;
+		return A2(
+			elm$core$List$cons,
+			_Utils_Tuple2(x, xs),
+			A2(
+				elm$core$List$map,
+				function (_n1) {
+					var y = _n1.a;
+					var ys = _n1.b;
+					return _Utils_Tuple2(
+						y,
+						A2(elm$core$List$cons, x, ys));
+				},
+				elm_community$list_extra$List$Extra$select(xs)));
+	}
+};
+var elm_community$list_extra$List$Extra$permutations = function (xs_) {
+	if (!xs_.b) {
+		return _List_fromArray(
+			[_List_Nil]);
+	} else {
+		var xs = xs_;
+		var f = function (_n1) {
+			var y = _n1.a;
+			var ys = _n1.b;
+			return A2(
+				elm$core$List$map,
+				elm$core$List$cons(y),
+				elm_community$list_extra$List$Extra$permutations(ys));
+		};
+		return A2(
+			elm$core$List$concatMap,
+			f,
+			elm_community$list_extra$List$Extra$select(xs));
+	}
+};
+var author$project$SmallTreeView$view = function () {
+	var makeRow = function (_n0) {
+		var lists = _n0.a;
+		var stats = _n0.b;
+		var listDiv = function (lst) {
+			return A2(
+				elm$html$Html$div,
+				_List_Nil,
+				elm$core$List$singleton(
+					elm$html$Html$text(
+						elm$core$Debug$toString(lst))));
+		};
+		var listCell = A2(
+			elm$html$Html$td,
+			_List_fromArray(
+				[
+					A2(elm$html$Html$Attributes$style, 'padding', '7px')
+				]),
+			A2(elm$core$List$map, listDiv, lists));
+		var diagramCell = A2(
+			elm$html$Html$td,
+			_List_fromArray(
+				[
+					A2(elm$html$Html$Attributes$style, 'border-top', '1px solid blue'),
+					A2(elm$html$Html$Attributes$style, 'border-bottom', '1px solid blue')
+				]),
+			elm$core$List$singleton(
+				A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							A2(elm$html$Html$Attributes$style, 'max-width', '500px')
+						]),
+					elm$core$List$singleton(
+						author$project$StatsTreeDiagram$treeDiagram(stats)))));
+		return A2(
+			elm$html$Html$tr,
+			_List_fromArray(
+				[
+					A2(elm$html$Html$Attributes$style, 'vertical-align', 'center')
+				]),
+			_List_fromArray(
+				[listCell, diagramCell]));
+	};
+	var allLists = elm_community$list_extra$List$Extra$permutations(
+		A2(elm$core$List$range, 1, 4));
+	var treeTups = A2(
+		elm$core$List$map,
+		function (lst) {
+			return _Utils_Tuple2(
+				lst,
+				author$project$DictHelper$listToStats(lst));
+		},
+		allLists);
+	var groupTups = A2(author$project$ListUtil$combineEqual, author$project$DictHelper$eqStatsTree, treeTups);
+	return A2(
+		elm$html$Html$table,
+		_List_fromArray(
+			[
+				A2(elm$html$Html$Attributes$style, 'border-collapse', 'collapse')
+			]),
+		A2(elm$core$List$map, makeRow, groupTups));
+}();
+var author$project$Main$view = function (model) {
+	var subView = function () {
+		var _n0 = model.page;
+		if (_n0.$ === 'Explorer') {
+			var rangeSpec = _n0.a;
+			return author$project$ExplorerView$view(rangeSpec);
+		} else {
+			return author$project$SmallTreeView$view;
+		}
+	}();
+	var body = _List_fromArray(
+		[
+			author$project$Main$pageTabs(model.page),
+			subView
+		]);
+	return {body: body, title: 'RedBlack Trees from Elm'};
 };
 var elm$browser$Browser$External = function (a) {
 	return {$: 'External', a: a};
