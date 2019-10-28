@@ -6003,6 +6003,40 @@ var author$project$Main$pageTabs = function (activePage) {
 	}();
 	return A2(author$project$Main$makeTabs, tabConfigs, activeLabel);
 };
+var elm$html$Html$p = _VirtualDom_node('p');
+var author$project$SmallTreeView$introText = function (text) {
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2(elm$html$Html$Attributes$style, 'max-width', '500px')
+			]),
+		A2(
+			elm$core$List$map,
+			elm$html$Html$p(_List_Nil),
+			A2(
+				elm$core$List$map,
+				elm$core$List$singleton,
+				A2(
+					elm$core$List$map,
+					elm$html$Html$text,
+					A2(elm$core$String$split, '\n\n', text)))));
+};
+var author$project$SmallTreeView$nextButton = function (lesson) {
+	return A2(
+		elm$html$Html$button,
+		_List_fromArray(
+			[
+				elm$html$Html$Events$onClick(
+				author$project$Type$SetPage(
+					author$project$Type$SmallTree(lesson))),
+				A2(elm$html$Html$Attributes$style, 'margin-bottom', '5px')
+			]),
+		_List_fromArray(
+			[
+				elm$html$Html$text('Next')
+			]));
+};
 var author$project$DictHelper$eqStatsTree = F2(
 	function (tree1, tree2) {
 		if (tree1.$ === 'Empty') {
@@ -6136,6 +6170,7 @@ var author$project$SmallTreeView$viewTreeTable = function (allLists) {
 			]),
 		A2(elm$core$List$map, makeRow, groupTups));
 };
+var author$project$Type$SimplifiedFourTrees = {$: 'SimplifiedFourTrees'};
 var elm$core$List$concatMap = F2(
 	function (f, list) {
 		return elm$core$List$concat(
@@ -6183,11 +6218,21 @@ var elm_community$list_extra$List$Extra$permutations = function (xs_) {
 	}
 };
 var author$project$SmallTreeView$viewAllFourTrees = function () {
+	var text = '\n            When you create RedBlack trees, the order that you add\n            elements to the tree will influence the shape of the tree,\n            depending on the algorithm.  In this app we are using the\n            Elm implementation of Dict to generate the trees.\n\n            Even though there are N! different ways to insert N\n            elements into a search tree, you generally only get one\n            or two possibilities.  Below we demonstrate this for\n            the N=4 case. Let\'s simplify...\n        ';
 	var allLists = elm_community$list_extra$List$Extra$permutations(
 		A2(elm$core$List$range, 1, 4));
-	return author$project$SmallTreeView$viewTreeTable(allLists);
+	return A2(
+		elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				author$project$SmallTreeView$introText(text),
+				author$project$SmallTreeView$nextButton(author$project$Type$SimplifiedFourTrees),
+				author$project$SmallTreeView$viewTreeTable(allLists)
+			]));
 }();
 var author$project$SmallTreeView$viewSimplifiedFourTrees = function () {
+	var text = '\n            At least for N=4, we can ignore all but two\n            permutations of how we add elements to the list.\n            Before inserting a fifth element, let\'s just\n            consider the lists below (forward insertion and\n            reverse insertion).\n\n            (under construction)\n            ';
 	var allLists = _List_fromArray(
 		[
 			_List_fromArray(
@@ -6195,7 +6240,14 @@ var author$project$SmallTreeView$viewSimplifiedFourTrees = function () {
 			_List_fromArray(
 			[4, 3, 2, 1])
 		]);
-	return author$project$SmallTreeView$viewTreeTable(allLists);
+	return A2(
+		elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				author$project$SmallTreeView$introText(text),
+				author$project$SmallTreeView$viewTreeTable(allLists)
+			]));
 }();
 var author$project$SmallTreeView$view = function (lesson) {
 	if (lesson.$ === 'AllFourTrees') {
