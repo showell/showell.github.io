@@ -5948,10 +5948,40 @@ var author$project$ExplorerView$view = function (rangeSpec) {
 		]);
 	return A2(elm$html$Html$div, css, contents);
 };
+var author$project$Type$AllFourTrees = {$: 'AllFourTrees'};
+var author$project$Type$SmallTree = function (a) {
+	return {$: 'SmallTree', a: a};
+};
+var author$project$Main$initSmallTree = author$project$Type$SmallTree(author$project$Type$AllFourTrees);
+var author$project$Main$makeTabs = F2(
+	function (tabConfigs, activeLabel) {
+		var makeTab = function (_n0) {
+			var label = _n0.a;
+			var cmd = _n0.b;
+			var disabled = _Utils_eq(label, activeLabel);
+			return A2(
+				elm$html$Html$button,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$disabled(disabled),
+						elm$html$Html$Events$onClick(cmd)
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text(label)
+					]));
+		};
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2(elm$html$Html$Attributes$style, 'padding', '10px')
+				]),
+			A2(elm$core$List$map, makeTab, tabConfigs));
+	});
 var author$project$Type$SetPage = function (a) {
 	return {$: 'SetPage', a: a};
 };
-var author$project$Type$SmallTree = {$: 'SmallTree'};
 var author$project$Main$pageTabs = function (activePage) {
 	var smallTreesLabel = 'Small trees';
 	var explorerLabel = 'Explorer';
@@ -5962,7 +5992,7 @@ var author$project$Main$pageTabs = function (activePage) {
 			author$project$Type$SetPage(author$project$Main$initExplorer)),
 			_Utils_Tuple2(
 			smallTreesLabel,
-			author$project$Type$SetPage(author$project$Type$SmallTree))
+			author$project$Type$SetPage(author$project$Main$initSmallTree))
 		]);
 	var activeLabel = function () {
 		if (activePage.$ === 'Explorer') {
@@ -5971,29 +6001,7 @@ var author$project$Main$pageTabs = function (activePage) {
 			return smallTreesLabel;
 		}
 	}();
-	var makeTab = function (_n0) {
-		var label = _n0.a;
-		var cmd = _n0.b;
-		var disabled = _Utils_eq(label, activeLabel);
-		return A2(
-			elm$html$Html$button,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$disabled(disabled),
-					elm$html$Html$Events$onClick(cmd)
-				]),
-			_List_fromArray(
-				[
-					elm$html$Html$text(label)
-				]));
-	};
-	return A2(
-		elm$html$Html$div,
-		_List_fromArray(
-			[
-				A2(elm$html$Html$Attributes$style, 'padding', '10px')
-			]),
-		A2(elm$core$List$map, makeTab, tabConfigs));
+	return A2(author$project$Main$makeTabs, tabConfigs, activeLabel);
 };
 var author$project$DictHelper$eqStatsTree = F2(
 	function (tree1, tree2) {
@@ -6066,6 +6074,68 @@ var elm$core$Debug$toString = _Debug_toString;
 var elm$html$Html$table = _VirtualDom_node('table');
 var elm$html$Html$td = _VirtualDom_node('td');
 var elm$html$Html$tr = _VirtualDom_node('tr');
+var author$project$SmallTreeView$viewTreeTable = function (allLists) {
+	var treeTups = A2(
+		elm$core$List$map,
+		function (lst) {
+			return _Utils_Tuple2(
+				lst,
+				author$project$DictHelper$listToStats(lst));
+		},
+		allLists);
+	var makeRow = function (_n0) {
+		var lists = _n0.a;
+		var stats = _n0.b;
+		var listDiv = function (lst) {
+			return A2(
+				elm$html$Html$div,
+				_List_Nil,
+				elm$core$List$singleton(
+					elm$html$Html$text(
+						elm$core$Debug$toString(lst))));
+		};
+		var listCell = A2(
+			elm$html$Html$td,
+			_List_fromArray(
+				[
+					A2(elm$html$Html$Attributes$style, 'padding', '7px')
+				]),
+			A2(elm$core$List$map, listDiv, lists));
+		var diagramCell = A2(
+			elm$html$Html$td,
+			_List_fromArray(
+				[
+					A2(elm$html$Html$Attributes$style, 'border-top', '1px solid blue'),
+					A2(elm$html$Html$Attributes$style, 'border-bottom', '1px solid blue'),
+					A2(elm$html$Html$Attributes$style, 'padding-top', '10px')
+				]),
+			elm$core$List$singleton(
+				A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							A2(elm$html$Html$Attributes$style, 'max-width', '500px')
+						]),
+					elm$core$List$singleton(
+						author$project$StatsTreeDiagram$treeDiagram(stats)))));
+		return A2(
+			elm$html$Html$tr,
+			_List_fromArray(
+				[
+					A2(elm$html$Html$Attributes$style, 'vertical-align', 'center')
+				]),
+			_List_fromArray(
+				[listCell, diagramCell]));
+	};
+	var groupTups = A2(author$project$ListUtil$combineEqual, author$project$DictHelper$eqStatsTree, treeTups);
+	return A2(
+		elm$html$Html$table,
+		_List_fromArray(
+			[
+				A2(elm$html$Html$Attributes$style, 'border-collapse', 'collapse')
+			]),
+		A2(elm$core$List$map, makeRow, groupTups));
+};
 var elm$core$List$concatMap = F2(
 	function (f, list) {
 		return elm$core$List$concat(
@@ -6112,69 +6182,28 @@ var elm_community$list_extra$List$Extra$permutations = function (xs_) {
 			elm_community$list_extra$List$Extra$select(xs));
 	}
 };
-var author$project$SmallTreeView$view = function () {
-	var makeRow = function (_n0) {
-		var lists = _n0.a;
-		var stats = _n0.b;
-		var listDiv = function (lst) {
-			return A2(
-				elm$html$Html$div,
-				_List_Nil,
-				elm$core$List$singleton(
-					elm$html$Html$text(
-						elm$core$Debug$toString(lst))));
-		};
-		var listCell = A2(
-			elm$html$Html$td,
-			_List_fromArray(
-				[
-					A2(elm$html$Html$Attributes$style, 'padding', '7px')
-				]),
-			A2(elm$core$List$map, listDiv, lists));
-		var diagramCell = A2(
-			elm$html$Html$td,
-			_List_fromArray(
-				[
-					A2(elm$html$Html$Attributes$style, 'border-top', '1px solid blue'),
-					A2(elm$html$Html$Attributes$style, 'border-bottom', '1px solid blue')
-				]),
-			elm$core$List$singleton(
-				A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							A2(elm$html$Html$Attributes$style, 'max-width', '500px')
-						]),
-					elm$core$List$singleton(
-						author$project$StatsTreeDiagram$treeDiagram(stats)))));
-		return A2(
-			elm$html$Html$tr,
-			_List_fromArray(
-				[
-					A2(elm$html$Html$Attributes$style, 'vertical-align', 'center')
-				]),
-			_List_fromArray(
-				[listCell, diagramCell]));
-	};
+var author$project$SmallTreeView$viewAllFourTrees = function () {
 	var allLists = elm_community$list_extra$List$Extra$permutations(
 		A2(elm$core$List$range, 1, 4));
-	var treeTups = A2(
-		elm$core$List$map,
-		function (lst) {
-			return _Utils_Tuple2(
-				lst,
-				author$project$DictHelper$listToStats(lst));
-		},
-		allLists);
-	var groupTups = A2(author$project$ListUtil$combineEqual, author$project$DictHelper$eqStatsTree, treeTups);
-	return A2(
-		elm$html$Html$table,
-		_List_fromArray(
-			[
-				A2(elm$html$Html$Attributes$style, 'border-collapse', 'collapse')
-			]),
-		A2(elm$core$List$map, makeRow, groupTups));
+	return author$project$SmallTreeView$viewTreeTable(allLists);
 }();
+var author$project$SmallTreeView$viewSimplifiedFourTrees = function () {
+	var allLists = _List_fromArray(
+		[
+			_List_fromArray(
+			[1, 2, 3, 4]),
+			_List_fromArray(
+			[4, 3, 2, 1])
+		]);
+	return author$project$SmallTreeView$viewTreeTable(allLists);
+}();
+var author$project$SmallTreeView$view = function (lesson) {
+	if (lesson.$ === 'AllFourTrees') {
+		return author$project$SmallTreeView$viewAllFourTrees;
+	} else {
+		return author$project$SmallTreeView$viewSimplifiedFourTrees;
+	}
+};
 var author$project$Main$view = function (model) {
 	var subView = function () {
 		var _n0 = model.page;
@@ -6182,7 +6211,8 @@ var author$project$Main$view = function (model) {
 			var rangeSpec = _n0.a;
 			return author$project$ExplorerView$view(rangeSpec);
 		} else {
-			return author$project$SmallTreeView$view;
+			var lesson = _n0.a;
+			return author$project$SmallTreeView$view(lesson);
 		}
 	}();
 	var body = _List_fromArray(
