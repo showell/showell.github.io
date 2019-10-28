@@ -6231,8 +6231,94 @@ var author$project$SmallTreeView$viewAllFourTrees = function () {
 				author$project$SmallTreeView$viewTreeTable(allLists)
 			]));
 }();
+var elm$core$List$sortBy = _List_sortBy;
+var elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var elm$core$Tuple$second = function (_n0) {
+	var y = _n0.b;
+	return y;
+};
+var author$project$SmallTreeView$normalizedList = function (list) {
+	return A2(
+		elm$core$List$map,
+		elm$core$Basics$add(1),
+		A2(
+			elm$core$List$map,
+			elm$core$Tuple$first,
+			A2(
+				elm$core$List$sortBy,
+				elm$core$Tuple$second,
+				A2(
+					elm$core$List$indexedMap,
+					elm$core$Tuple$pair,
+					A2(
+						elm$core$List$map,
+						elm$core$Tuple$first,
+						A2(
+							elm$core$List$sortBy,
+							elm$core$Tuple$second,
+							A2(elm$core$List$indexedMap, elm$core$Tuple$pair, list)))))));
+};
+var elm$core$List$sort = function (xs) {
+	return A2(elm$core$List$sortBy, elm$core$Basics$identity, xs);
+};
+var author$project$SmallTreeView$permuteIntList = function (startList) {
+	var startFloatList = A2(elm$core$List$map, elm$core$Basics$toFloat, startList);
+	var newElements = A2(
+		elm$core$List$cons,
+		0.5,
+		A2(
+			elm$core$List$map,
+			elm$core$Basics$add(0.5),
+			A2(
+				elm$core$List$map,
+				elm$core$Basics$toFloat,
+				elm$core$List$sort(startList))));
+	return A2(
+		elm$core$List$map,
+		elm$core$Basics$append(startFloatList),
+		A2(elm$core$List$map, elm$core$List$singleton, newElements));
+};
+var elm$html$Html$li = _VirtualDom_node('li');
+var elm$html$Html$ul = _VirtualDom_node('ul');
+var author$project$SmallTreeView$showLists = function (lists) {
+	var listItem = function (lst) {
+		return A2(
+			elm$html$Html$li,
+			_List_Nil,
+			elm$core$List$singleton(
+				elm$html$Html$text(
+					elm$core$Debug$toString(lst))));
+	};
+	return A2(
+		elm$html$Html$ul,
+		_List_Nil,
+		A2(elm$core$List$map, listItem, lists));
+};
+var author$project$SmallTreeView$viewExtendList = function () {
+	var text2 = '\n            Let\'s just normalize them, though:\n            ';
+	var text1 = '\n            If we want to extend our search trees from N=4\n            to N=5, here is one way to make all possible extended\n            lists, starting from [4, 3, 2, 1]:\n            ';
+	var startList = elm$core$List$reverse(
+		A2(elm$core$List$range, 1, 4));
+	var newLists = author$project$SmallTreeView$permuteIntList(startList);
+	var niceLists = A2(elm$core$List$map, author$project$SmallTreeView$normalizedList, newLists);
+	return A2(
+		elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				author$project$SmallTreeView$introText(text1),
+				author$project$SmallTreeView$showLists(newLists),
+				author$project$SmallTreeView$introText(text2),
+				author$project$SmallTreeView$showLists(niceLists),
+				elm$html$Html$text('(under construction)')
+			]));
+}();
+var author$project$Type$ExtendList = {$: 'ExtendList'};
 var author$project$SmallTreeView$viewSimplifiedFourTrees = function () {
-	var text = '\n            At least for N=4, we can ignore all but two\n            permutations of how we add elements to the list.\n            Before inserting a fifth element, let\'s just\n            consider the lists below (forward insertion and\n            reverse insertion).\n\n            (under construction)\n            ';
+	var text = '\n            At least for N=4, we can ignore all but two\n            permutations of how we add elements to the list.\n            Before inserting a fifth element, let\'s just\n            consider the lists below (forward insertion and\n            reverse insertion).\n            ';
 	var allLists = _List_fromArray(
 		[
 			_List_fromArray(
@@ -6246,14 +6332,18 @@ var author$project$SmallTreeView$viewSimplifiedFourTrees = function () {
 		_List_fromArray(
 			[
 				author$project$SmallTreeView$introText(text),
+				author$project$SmallTreeView$nextButton(author$project$Type$ExtendList),
 				author$project$SmallTreeView$viewTreeTable(allLists)
 			]));
 }();
 var author$project$SmallTreeView$view = function (lesson) {
-	if (lesson.$ === 'AllFourTrees') {
-		return author$project$SmallTreeView$viewAllFourTrees;
-	} else {
-		return author$project$SmallTreeView$viewSimplifiedFourTrees;
+	switch (lesson.$) {
+		case 'AllFourTrees':
+			return author$project$SmallTreeView$viewAllFourTrees;
+		case 'SimplifiedFourTrees':
+			return author$project$SmallTreeView$viewSimplifiedFourTrees;
+		default:
+			return author$project$SmallTreeView$viewExtendList;
 	}
 };
 var author$project$Main$view = function (model) {
