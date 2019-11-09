@@ -5176,7 +5176,37 @@ var $author$project$Main$about = A2(
 	$elm$html$Html$p,
 	_List_Nil,
 	$elm$core$List$singleton(
-		$elm$html$Html$text('\n    Welcome to the demo!\n\n    This is a demo of the showell/binary-tree-diagram package.\n\n    All it really does is draw binary trees.\n\n    The colors here are just randomly chosen.\n    ')));
+		$elm$html$Html$text('\n    Welcome to the demo!\n\n    This is a demo of the showell/binary-tree-diagram package.\n\n    All it really does is draw binary trees.\n\n    The colors here are just randomly chosen.\n\n    ')));
+var $elm$html$Html$a = _VirtualDom_node('a');
+var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
+var $author$project$Main$aboutLink = A2(
+	$elm$html$Html$div,
+	_List_Nil,
+	$elm$core$List$singleton(
+		A2(
+			$elm$html$Html$a,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$href('https://showell.github.io/')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('Steve Howell')
+				]))));
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
@@ -5396,7 +5426,6 @@ var $author$project$BinaryTreeDiagram$diagramView = F3(
 				]),
 			_Utils_ap(drawEdges, drawCoordNodes));
 	});
-var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $elm$random$Random$Seed = F2(
 	function (a, b) {
@@ -5536,6 +5565,20 @@ var $author$project$Main$makeTree = F2(
 			});
 		return A3(f, startSeed, 1, num).a;
 	});
+var $author$project$Main$repoLink = A2(
+	$elm$html$Html$div,
+	_List_Nil,
+	$elm$core$List$singleton(
+		A2(
+			$elm$html$Html$a,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$href('https://github.com/showell/binary-tree-diagram')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('repo')
+				]))));
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Main$view = function (model) {
@@ -5588,6 +5631,8 @@ var $author$project$Main$view = function (model) {
 			_List_fromArray(
 				[
 					$author$project$Main$about,
+					$author$project$Main$repoLink,
+					$author$project$Main$aboutLink,
 					A2(example, 15, true),
 					A2(example, 20, true),
 					A2(example, 31, true),
