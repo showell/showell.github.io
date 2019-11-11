@@ -5296,6 +5296,15 @@ var $author$project$Type$SimplifiedFourTrees = {$: 'SimplifiedFourTrees'};
 var $author$project$Type$SmallTree = function (a) {
 	return {$: 'SmallTree', a: a};
 };
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $author$project$Type$InsertReverse = {$: 'InsertReverse'};
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
@@ -5790,8 +5799,18 @@ var $author$project$RangeList$fromSlug = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $author$project$Main$oneOf = F2(
-	function (arg, fList) {
+	function (fList, arg) {
 		oneOf:
 		while (true) {
 			if (!fList.b) {
@@ -5804,10 +5823,10 @@ var $author$project$Main$oneOf = F2(
 					var v = _v1.a;
 					return $elm$core$Maybe$Just(v);
 				} else {
-					var $temp$arg = arg,
-						$temp$fList = rest;
-					arg = $temp$arg;
+					var $temp$fList = rest,
+						$temp$arg = arg;
 					fList = $temp$fList;
+					arg = $temp$arg;
 					continue oneOf;
 				}
 			}
@@ -5815,14 +5834,10 @@ var $author$project$Main$oneOf = F2(
 	});
 var $author$project$Main$pageFromUrl = function (url) {
 	var parseTree = function (frag) {
-		var _v2 = A2($author$project$RangeList$fromSlug, 'tree', frag);
-		if (_v2.$ === 'Just') {
-			var spec = _v2.a;
-			return $elm$core$Maybe$Just(
-				$author$project$Type$Explorer(spec));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
+		return A2(
+			$elm$core$Maybe$map,
+			$author$project$Type$Explorer,
+			A2($author$project$RangeList$fromSlug, 'tree', frag));
 	};
 	var parsePage = function (frag) {
 		switch (frag) {
@@ -5842,17 +5857,12 @@ var $author$project$Main$pageFromUrl = function (url) {
 				return $elm$core$Maybe$Nothing;
 		}
 	};
-	var _v0 = url.fragment;
-	if (_v0.$ === 'Just') {
-		var frag = _v0.a;
-		return A2(
-			$author$project$Main$oneOf,
-			frag,
+	return A2(
+		$elm$core$Maybe$andThen,
+		$author$project$Main$oneOf(
 			_List_fromArray(
-				[parseTree, parsePage]));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
+				[parseTree, parsePage])),
+		url.fragment);
 };
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
@@ -5887,7 +5897,7 @@ var $author$project$Main$onUrlChange = function (url) {
 	return $author$project$Type$UrlChanged(url);
 };
 var $author$project$Type$UrlRequested = {$: 'UrlRequested'};
-var $author$project$Main$onUrlRequest = function (req) {
+var $author$project$Main$onUrlRequest = function (_v0) {
 	return $author$project$Type$UrlRequested;
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -8297,22 +8307,25 @@ var $author$project$SmallTreeView$viewTreeTable = function (allLists) {
 		A2($elm$core$List$map, makeRow, groupTups));
 };
 var $author$project$SmallTreeView$viewAllFiveTrees = function () {
-	var text = '\n            Note that for n=5, we get two possible trees again.\n            This time they aren\'t even exactly symmetrical, but\n            they\'re both the same depth.\n        ';
-	var allLists = $author$project$SmallTreeView$nextGeneration(
-		_List_fromArray(
-			[
-				_List_fromArray(
-				[1, 2, 3, 4]),
-				_List_fromArray(
-				[4, 3, 2, 1])
-			]));
+	var topText = '\n            Note that for n=5, we get two possible trees again.\n            This time they aren\'t exactly symmetrical, but\n            they\'re both the same depth.\n        ';
+	var fourLists = _List_fromArray(
+		[
+			_List_fromArray(
+			[1, 2, 3, 4]),
+			_List_fromArray(
+			[4, 3, 2, 1])
+		]);
+	var fiveLists = $author$project$SmallTreeView$nextGeneration(fourLists);
+	var bottomText = '\n            If you look at the trees for n=4, maybe you can see which\n            "missing" spots get filled in above.  (Don\'t be too\n            distracted by red vs. black at this point.)\n            The algorithm that we are looking at generally tries to\n            lean trees toward the left.\n        ';
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
 			[
-				$author$project$SmallTreeView$introText(text),
-				$author$project$SmallTreeView$viewTreeTable(allLists)
+				$author$project$SmallTreeView$introText(topText),
+				$author$project$SmallTreeView$viewTreeTable(fiveLists),
+				$author$project$SmallTreeView$introText(bottomText),
+				$author$project$SmallTreeView$viewTreeTable(fourLists)
 			]));
 }();
 var $author$project$SmallTreeView$nextButton = function (lesson) {
@@ -8404,16 +8417,6 @@ var $stil4m$elm_syntax$Elm$Syntax$Range$emptyRange = {
 var $the_sett$elm_syntax_dsl$Elm$CodeGen$nodify = function (exp) {
 	return A2($stil4m$elm_syntax$Elm$Syntax$Node$Node, $stil4m$elm_syntax$Elm$Syntax$Range$emptyRange, exp);
 };
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $the_sett$elm_syntax_dsl$Elm$CodeGen$nodifyMaybe = $elm$core$Maybe$map($the_sett$elm_syntax_dsl$Elm$CodeGen$nodify);
 var $the_sett$elm_syntax_dsl$Elm$CodeGen$function = F3(
 	function (docs, sig, decl) {
