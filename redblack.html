@@ -7061,19 +7061,18 @@ var $author$project$SmallTreeView$introText = function (text) {
 var $showell$meta_elm$MeType$ComputedValue = function (a) {
 	return {$: 'ComputedValue', a: a};
 };
-var $showell$meta_elm$MeType$F1 = F2(
-	function (a, b) {
-		return {$: 'F1', a: a, b: b};
-	});
 var $showell$meta_elm$MeType$FuncCall = F3(
 	function (a, b, c) {
 		return {$: 'FuncCall', a: a, b: b, c: c};
 	});
-var $showell$meta_elm$MeType$SimpleValue = function (a) {
-	return {$: 'SimpleValue', a: a};
-};
 var $showell$meta_elm$MeType$VError = function (a) {
 	return {$: 'VError', a: a};
+};
+var $showell$meta_elm$MeType$VList = function (a) {
+	return {$: 'VList', a: a};
+};
+var $showell$meta_elm$MeType$VTuple = function (a) {
+	return {$: 'VTuple', a: a};
 };
 var $showell$meta_elm$MeRunTime$error = function (s) {
 	return $showell$meta_elm$MeType$ComputedValue(
@@ -7245,15 +7244,27 @@ var $elm$core$Tuple$pair = F2(
 	});
 var $showell$meta_elm$MeRunTime$getArgDict = F2(
 	function (args, expr) {
-		if (expr.$ === 'Function') {
-			var params = expr.a;
+		var getDict = function (params) {
 			return _Utils_eq(
 				$elm$core$List$length(params),
 				$elm$core$List$length(args)) ? $elm$core$Result$Ok(
 				$elm$core$Dict$fromList(
 					A3($elm$core$List$map2, $elm$core$Tuple$pair, params, args))) : $elm$core$Result$Err('wrong number of arguments');
-		} else {
-			return $elm$core$Result$Err('you must call a function');
+		};
+		switch (expr.$) {
+			case 'F2':
+				var name1 = expr.a;
+				var name0 = expr.b;
+				return getDict(
+					_List_fromArray(
+						[name1, name0]));
+			case 'F1':
+				var name0 = expr.a;
+				return getDict(
+					_List_fromArray(
+						[name0]));
+			default:
+				return $elm$core$Result$Err('you must call a function');
 		}
 	});
 var $elm$core$Dict$foldl = F3(
@@ -7289,6 +7300,43 @@ var $showell$meta_elm$MeRunTime$union = F2(
 	function (_new, old) {
 		return A2($elm$core$Dict$union, _new, old);
 	});
+var $showell$meta_elm$MeRunTime$applyArgsToFunction = F4(
+	function (c, firstExpr, exprs, finalExpr) {
+		var fvInit = A2($showell$meta_elm$MeRunTime$getFuncV, c, firstExpr);
+		var apply = F2(
+			function (arg, fv) {
+				var _v25 = A2(fv, c, arg);
+				if (_v25.$ === 'ComputedFunc') {
+					var newF = _v25.a;
+					return newF;
+				} else {
+					return F2(
+						function (_v26, _v27) {
+							return $showell$meta_elm$MeRunTime$error('could not compute function');
+						});
+				}
+			});
+		var partial = A3($elm$core$List$foldl, apply, fvInit, exprs);
+		return A2(partial, c, finalExpr);
+	});
+var $showell$meta_elm$MeRunTime$callF = F4(
+	function (c, names, exprs, impl) {
+		var argDict = $elm$core$Dict$fromList(
+			A3(
+				$elm$core$List$map2,
+				F2(
+					function (name, expr) {
+						return _Utils_Tuple2(
+							name,
+							A2($showell$meta_elm$MeRunTime$compute, c, expr));
+					}),
+				names,
+				exprs));
+		return A2(
+			$showell$meta_elm$MeRunTime$compute,
+			A2($showell$meta_elm$MeRunTime$union, argDict, c),
+			impl);
+	});
 var $showell$meta_elm$MeRunTime$compute = F2(
 	function (context, expr) {
 		compute:
@@ -7312,7 +7360,7 @@ var $showell$meta_elm$MeRunTime$compute = F2(
 					context = $temp$context;
 					expr = $temp$expr;
 					continue compute;
-				case 'Function':
+				case 'F1':
 					var v = expr.b;
 					var $temp$context = context,
 						$temp$expr = v;
@@ -7321,9 +7369,9 @@ var $showell$meta_elm$MeRunTime$compute = F2(
 					continue compute;
 				case 'VarName':
 					var vname = expr.a;
-					var _v8 = A2($showell$meta_elm$MeRunTime$get, vname, context);
-					if (_v8.$ === 'Just') {
-						var v = _v8.a;
+					var _v18 = A2($showell$meta_elm$MeRunTime$get, vname, context);
+					if (_v18.$ === 'Just') {
+						var v = _v18.a;
 						var $temp$context = context,
 							$temp$expr = v;
 						context = $temp$context;
@@ -7337,7 +7385,27 @@ var $showell$meta_elm$MeRunTime$compute = F2(
 					return $showell$meta_elm$MeType$ComputedValue(v);
 				case 'SimpleValue':
 					var v = expr.a;
-					return $showell$meta_elm$MeType$SimpleValue(v);
+					switch (v.$) {
+						case 'VList':
+							var lst = v.a;
+							return $showell$meta_elm$MeType$ComputedValue(
+								$showell$meta_elm$MeType$VList(
+									A2(
+										$elm$core$List$map,
+										$showell$meta_elm$MeRunTime$compute(context),
+										lst)));
+						case 'VTuple':
+							var _v20 = v.a;
+							var a = _v20.a;
+							var b = _v20.b;
+							return $showell$meta_elm$MeType$ComputedValue(
+								$showell$meta_elm$MeType$VTuple(
+									_Utils_Tuple2(
+										A2($showell$meta_elm$MeRunTime$compute, context, a),
+										A2($showell$meta_elm$MeRunTime$compute, context, b))));
+						default:
+							return $showell$meta_elm$MeType$ComputedValue(v);
+					}
 				case 'PipeLine':
 					var topExpr = expr.a;
 					var lst = expr.b;
@@ -7355,23 +7423,23 @@ var $showell$meta_elm$MeRunTime$compute = F2(
 					var funcName = expr.b;
 					var args = expr.c;
 					var newContext = A2($showell$meta_elm$MeRunTime$union, ns, context);
-					var _v9 = A2($showell$meta_elm$MeRunTime$get, funcName, newContext);
-					if (_v9.$ === 'Just') {
-						var impl = _v9.a;
+					var _v21 = A2($showell$meta_elm$MeRunTime$get, funcName, newContext);
+					if (_v21.$ === 'Just') {
+						var impl = _v21.a;
 						var computedArgs = A2(
 							$elm$core$List$map,
 							$showell$meta_elm$MeRunTime$compute(newContext),
 							args);
-						var _v10 = A2($showell$meta_elm$MeRunTime$getArgDict, computedArgs, impl);
-						if (_v10.$ === 'Ok') {
-							var argDict = _v10.a;
+						var _v22 = A2($showell$meta_elm$MeRunTime$getArgDict, computedArgs, impl);
+						if (_v22.$ === 'Ok') {
+							var argDict = _v22.a;
 							var $temp$context = A2($showell$meta_elm$MeRunTime$union, argDict, newContext),
 								$temp$expr = impl;
 							context = $temp$context;
 							expr = $temp$expr;
 							continue compute;
 						} else {
-							var s = _v10.a;
+							var s = _v22.a;
 							return $showell$meta_elm$MeRunTime$error('bad args for ' + (funcName + (': ' + s)));
 						}
 					} else {
@@ -7381,10 +7449,10 @@ var $showell$meta_elm$MeRunTime$compute = F2(
 					var cond = expr.a;
 					var ifExpr = expr.b;
 					var elseExpr = expr.c;
-					var _v11 = A2($showell$meta_elm$MeRunTime$getValue, context, cond);
-					switch (_v11.$) {
+					var _v23 = A2($showell$meta_elm$MeRunTime$getValue, context, cond);
+					switch (_v23.$) {
 						case 'VBool':
-							var b = _v11.a;
+							var b = _v23.a;
 							if (b) {
 								var $temp$context = context,
 									$temp$expr = ifExpr;
@@ -7399,7 +7467,7 @@ var $showell$meta_elm$MeRunTime$compute = F2(
 								continue compute;
 							}
 						case 'VError':
-							var s = _v11.a;
+							var s = _v23.a;
 							return $showell$meta_elm$MeRunTime$error('error with if conditional: ' + s);
 						default:
 							return $showell$meta_elm$MeRunTime$error('if needs a conditional');
@@ -7408,96 +7476,88 @@ var $showell$meta_elm$MeRunTime$compute = F2(
 					var opLeft = expr.a;
 					var binOp = expr.b;
 					var opRight = expr.c;
-					if (binOp.$ === 'BinOp') {
-						var fvv = binOp.b;
-						return A3(fvv, context, opLeft, opRight);
+					if (binOp.$ === 'OpFunc') {
+						return A5($showell$meta_elm$MeRunTime$getFuncVV, context, binOp, context, opLeft, opRight);
 					} else {
 						return $showell$meta_elm$MeRunTime$error('infix needs a binary operator: ');
 					}
-				case 'F2':
-					var fv = expr.a;
-					var arg1 = expr.b;
-					var arg2 = expr.c;
-					var $temp$context = context,
-						$temp$expr = A2(
-						$showell$meta_elm$MeType$F1,
-						A2($showell$meta_elm$MeType$F1, fv, arg1),
-						arg2);
-					context = $temp$context;
-					expr = $temp$expr;
-					continue compute;
-				case 'F1':
-					var fv = expr.a;
-					var arg1 = expr.b;
-					return A4($showell$meta_elm$MeRunTime$getFuncV, context, fv, context, arg1);
+				case 'A5':
+					var e5 = expr.a;
+					var e4 = expr.b;
+					var e3 = expr.c;
+					var e2 = expr.d;
+					var e1 = expr.e;
+					var e0 = expr.f;
+					return A8($showell$meta_elm$MeRunTime$getFuncVVVVV, context, e5, context, e4, e3, e2, e1, e0);
+				case 'A4':
+					var e4 = expr.a;
+					var e3 = expr.b;
+					var e2 = expr.c;
+					var e1 = expr.d;
+					var e0 = expr.e;
+					return A7($showell$meta_elm$MeRunTime$getFuncVVVV, context, e4, context, e3, e2, e1, e0);
+				case 'A3':
+					var e3 = expr.a;
+					var e2 = expr.b;
+					var e1 = expr.c;
+					var e0 = expr.d;
+					return A6($showell$meta_elm$MeRunTime$getFuncVVV, context, e3, context, e2, e1, e0);
+				case 'A2':
+					var e2 = expr.a;
+					var e1 = expr.b;
+					var e0 = expr.c;
+					return A5($showell$meta_elm$MeRunTime$getFuncVV, context, e2, context, e1, e0);
+				case 'A1':
+					var e1 = expr.a;
+					var e0 = expr.b;
+					return A4($showell$meta_elm$MeRunTime$getFuncV, context, e1, context, e0);
 				default:
 					return $showell$meta_elm$MeRunTime$error('cannot evaluate this type as a value yet');
 			}
 		}
 	});
 var $showell$meta_elm$MeRunTime$evalPipeLine = F3(
-	function (context, v, lst) {
-		evalPipeLine:
-		while (true) {
-			if (!lst.b) {
-				return A2($showell$meta_elm$MeRunTime$compute, context, v);
-			} else {
-				var head = lst.a;
-				var rest = lst.b;
-				var fv = A2($showell$meta_elm$MeRunTime$getFuncV, context, head);
-				var newV = A2(fv, context, v);
-				var $temp$context = context,
-					$temp$v = newV,
-					$temp$lst = rest;
-				context = $temp$context;
-				v = $temp$v;
-				lst = $temp$lst;
-				continue evalPipeLine;
-			}
-		}
+	function (context, initVal, fList) {
+		var accum = F2(
+			function (fexpr, val) {
+				return A4($showell$meta_elm$MeRunTime$getFuncV, context, fexpr, context, val);
+			});
+		var accVal = A2($showell$meta_elm$MeRunTime$compute, context, initVal);
+		return A3($elm$core$List$foldl, accum, accVal, fList);
 	});
 var $showell$meta_elm$MeRunTime$getFuncV = F2(
-	function (context, expr) {
+	function (c, expr) {
 		var err = function (s) {
 			return F2(
-				function (_v4, _v5) {
+				function (_v15, _v16) {
 					return $showell$meta_elm$MeType$ComputedValue(
 						$showell$meta_elm$MeType$VError(s));
 				});
 		};
 		switch (expr.$) {
+			case 'F1':
+				var name = expr.a;
+				var impl = expr.b;
+				return F2(
+					function (_v14, e) {
+						return A4(
+							$showell$meta_elm$MeRunTime$callF,
+							c,
+							_List_fromArray(
+								[name]),
+							_List_fromArray(
+								[e]),
+							impl);
+					});
+			case 'OpFunc':
+				var f = expr.b;
+				return f;
 			case 'NamedFunc':
 				var f = expr.b;
 				return f;
 			case 'ComputedFunc':
 				var f = expr.a;
 				return f;
-			case 'LambdaLeft':
-				var binOp = expr.b;
-				var opRight = expr.c;
-				if (binOp.$ === 'BinOp') {
-					var fvv = binOp.b;
-					var fv = F2(
-						function (c, opLeft) {
-							return A3(fvv, c, opLeft, opRight);
-						});
-					return fv;
-				} else {
-					return err('lambda left needs a binary operator');
-				}
-			case 'LambdaRight':
-				var opLeft = expr.a;
-				var binOp = expr.b;
-				if (binOp.$ === 'BinOp') {
-					var fvv = binOp.b;
-					var fv = F2(
-						function (c, opRight) {
-							return A3(fvv, c, opLeft, opRight);
-						});
-					return fv;
-				} else {
-					return err('lambda right needs a binary operator');
-				}
 			case 'ComputedValue':
 				return err('not a function');
 			case 'SimpleValue':
@@ -7505,8 +7565,134 @@ var $showell$meta_elm$MeRunTime$getFuncV = F2(
 			default:
 				return A2(
 					$showell$meta_elm$MeRunTime$getFuncV,
-					context,
-					A2($showell$meta_elm$MeRunTime$compute, context, expr));
+					c,
+					A2($showell$meta_elm$MeRunTime$compute, c, expr));
+		}
+	});
+var $showell$meta_elm$MeRunTime$getFuncVV = F2(
+	function (c, expr) {
+		if (expr.$ === 'F2') {
+			var name1 = expr.a;
+			var name0 = expr.b;
+			var impl = expr.c;
+			return F3(
+				function (_v11, e1, e0) {
+					return A4(
+						$showell$meta_elm$MeRunTime$callF,
+						c,
+						_List_fromArray(
+							[name1, name0]),
+						_List_fromArray(
+							[e1, e0]),
+						impl);
+				});
+		} else {
+			return F3(
+				function (_v12, e1, e0) {
+					return A4(
+						$showell$meta_elm$MeRunTime$applyArgsToFunction,
+						c,
+						expr,
+						_List_fromArray(
+							[e1]),
+						e0);
+				});
+		}
+	});
+var $showell$meta_elm$MeRunTime$getFuncVVV = F2(
+	function (c, expr) {
+		if (expr.$ === 'F3') {
+			var name2 = expr.a;
+			var name1 = expr.b;
+			var name0 = expr.c;
+			var impl = expr.d;
+			return F4(
+				function (_v8, e2, e1, e0) {
+					return A4(
+						$showell$meta_elm$MeRunTime$callF,
+						c,
+						_List_fromArray(
+							[name2, name1, name0]),
+						_List_fromArray(
+							[e2, e1, e0]),
+						impl);
+				});
+		} else {
+			return F4(
+				function (_v9, e2, e1, e0) {
+					return A4(
+						$showell$meta_elm$MeRunTime$applyArgsToFunction,
+						c,
+						expr,
+						_List_fromArray(
+							[e2, e1]),
+						e0);
+				});
+		}
+	});
+var $showell$meta_elm$MeRunTime$getFuncVVVV = F2(
+	function (c, expr) {
+		if (expr.$ === 'F4') {
+			var name3 = expr.a;
+			var name2 = expr.b;
+			var name1 = expr.c;
+			var name0 = expr.d;
+			var impl = expr.e;
+			return F5(
+				function (_v5, e3, e2, e1, e0) {
+					return A4(
+						$showell$meta_elm$MeRunTime$callF,
+						c,
+						_List_fromArray(
+							[name3, name2, name1, name0]),
+						_List_fromArray(
+							[e3, e2, e1, e0]),
+						impl);
+				});
+		} else {
+			return F5(
+				function (_v6, e3, e2, e1, e0) {
+					return A4(
+						$showell$meta_elm$MeRunTime$applyArgsToFunction,
+						c,
+						expr,
+						_List_fromArray(
+							[e3, e2, e1]),
+						e0);
+				});
+		}
+	});
+var $showell$meta_elm$MeRunTime$getFuncVVVVV = F2(
+	function (c, expr) {
+		if (expr.$ === 'F5') {
+			var name4 = expr.a;
+			var name3 = expr.b;
+			var name2 = expr.c;
+			var name1 = expr.d;
+			var name0 = expr.e;
+			var impl = expr.f;
+			return F6(
+				function (_v2, e4, e3, e2, e1, e0) {
+					return A4(
+						$showell$meta_elm$MeRunTime$callF,
+						c,
+						_List_fromArray(
+							[name4, name3, name2, name1, name0]),
+						_List_fromArray(
+							[e4, e3, e2, e1, e0]),
+						impl);
+				});
+		} else {
+			return F6(
+				function (_v3, e4, e3, e2, e1, e0) {
+					return A4(
+						$showell$meta_elm$MeRunTime$applyArgsToFunction,
+						c,
+						expr,
+						_List_fromArray(
+							[e4, e3, e2, e1]),
+						e0);
+				});
 		}
 	});
 var $showell$meta_elm$MeRunTime$getValue = F2(
@@ -7535,8 +7721,8 @@ var $showell$meta_elm$MeRunTime$getFinalValue = function (expr) {
 			return $showell$meta_elm$MeType$VError('final values were never computed with computeExpr');
 	}
 };
-var $showell$meta_elm$MeType$VList = function (a) {
-	return {$: 'VList', a: a};
+var $showell$meta_elm$MeType$SimpleValue = function (a) {
+	return {$: 'SimpleValue', a: a};
 };
 var $showell$meta_elm$MeType$VInt = function (a) {
 	return {$: 'VInt', a: a};
@@ -7550,17 +7736,17 @@ var $showell$meta_elm$MeList$initInts = function (nums) {
 		$showell$meta_elm$MeType$VList(
 			A2($elm$core$List$map, $showell$meta_elm$MeInt$init, nums)));
 };
-var $showell$meta_elm$MeType$Function = F2(
+var $showell$meta_elm$MeType$A1 = F2(
 	function (a, b) {
-		return {$: 'Function', a: a, b: b};
+		return {$: 'A1', a: a, b: b};
 	});
-var $showell$meta_elm$MeType$LambdaLeft = F3(
-	function (a, b, c) {
-		return {$: 'LambdaLeft', a: a, b: b, c: c};
+var $showell$meta_elm$MeType$F1 = F2(
+	function (a, b) {
+		return {$: 'F1', a: a, b: b};
 	});
-var $showell$meta_elm$MeType$LambdaRight = F3(
+var $showell$meta_elm$MeType$Infix = F3(
 	function (a, b, c) {
-		return {$: 'LambdaRight', a: a, b: b, c: c};
+		return {$: 'Infix', a: a, b: b, c: c};
 	});
 var $showell$meta_elm$MeType$LetIn = F2(
 	function (a, b) {
@@ -7573,35 +7759,35 @@ var $showell$meta_elm$MeType$PipeLine = F2(
 var $showell$meta_elm$MeType$VarName = function (a) {
 	return {$: 'VarName', a: a};
 };
-var $showell$meta_elm$MeType$BinOp = F2(
-	function (a, b) {
-		return {$: 'BinOp', a: a, b: b};
+var $showell$meta_elm$MeType$ComputedFunc = function (a) {
+	return {$: 'ComputedFunc', a: a};
+};
+var $showell$meta_elm$MeType$OpFunc = F3(
+	function (a, b, c) {
+		return {$: 'OpFunc', a: a, b: b, c: c};
 	});
 var $showell$meta_elm$MeList$cons = function () {
-	var f = F3(
-		function (c, expr1, expr2) {
-			var _v0 = _Utils_Tuple2(
-				A2($showell$meta_elm$MeRunTime$getValue, c, expr1),
-				A2($showell$meta_elm$MeRunTime$getValue, c, expr2));
-			if (_v0.a.$ === 'VError') {
-				var s = _v0.a.a;
-				return $showell$meta_elm$MeRunTime$error('bad arg to :: - ' + s);
-			} else {
-				if (_v0.b.$ === 'VList') {
-					var h = _v0.a;
-					var lst = _v0.b.a;
+	var cons1 = function (h) {
+		return F2(
+			function (c, restExpr) {
+				var _v0 = A2($showell$meta_elm$MeRunTime$getValue, c, restExpr);
+				if (_v0.$ === 'VList') {
+					var rest = _v0.a;
 					return $showell$meta_elm$MeType$ComputedValue(
 						$showell$meta_elm$MeType$VList(
-							A2(
-								$elm$core$List$cons,
-								$showell$meta_elm$MeType$ComputedValue(h),
-								lst)));
+							A2($elm$core$List$cons, h, rest)));
 				} else {
 					return $showell$meta_elm$MeRunTime$error('need list to cons to');
 				}
-			}
+			});
+	};
+	var cons0 = F2(
+		function (c, hExpr) {
+			return $showell$meta_elm$MeType$ComputedFunc(
+				cons1(
+					A2($showell$meta_elm$MeRunTime$compute, c, hExpr)));
 		});
-	return A2($showell$meta_elm$MeType$BinOp, '::', f);
+	return A3($showell$meta_elm$MeType$OpFunc, 'List.cons', cons0, '::');
 }();
 var $showell$meta_elm$MeType$VFloat = function (a) {
 	return {$: 'VFloat', a: a};
@@ -7609,9 +7795,6 @@ var $showell$meta_elm$MeType$VFloat = function (a) {
 var $showell$meta_elm$MeFloat$init = function (num) {
 	return $showell$meta_elm$MeType$SimpleValue(
 		$showell$meta_elm$MeType$VFloat(num));
-};
-var $showell$meta_elm$MeType$ComputedFunc = function (a) {
-	return {$: 'ComputedFunc', a: a};
 };
 var $showell$meta_elm$MeType$NamedFunc = F2(
 	function (a, b) {
@@ -7627,7 +7810,7 @@ var $showell$meta_elm$MeList$map = function () {
 						mapper(c),
 						lst)));
 		});
-	var map1 = function (mapper) {
+	var map_1 = function (mapper) {
 		return F2(
 			function (c, lstExpr) {
 				var _v0 = A2($showell$meta_elm$MeRunTime$getValue, c, lstExpr);
@@ -7643,99 +7826,73 @@ var $showell$meta_elm$MeList$map = function () {
 				}
 			});
 	};
-	var map0 = F2(
+	var map_0 = F2(
 		function (c, mapperExpr) {
-			var mapper = A2($showell$meta_elm$MeRunTime$getFuncV, c, mapperExpr);
 			return $showell$meta_elm$MeType$ComputedFunc(
-				map1(mapper));
+				map_1(
+					A2($showell$meta_elm$MeRunTime$getFuncV, c, mapperExpr)));
 		});
-	return A2($showell$meta_elm$MeType$NamedFunc, 'List.map', map0);
-}();
-var $showell$meta_elm$MeList$plus = function () {
-	var f = F3(
-		function (c, expr1, expr2) {
-			var _v0 = _Utils_Tuple2(
-				A2($showell$meta_elm$MeRunTime$getValue, c, expr1),
-				A2($showell$meta_elm$MeRunTime$getValue, c, expr2));
-			if ((_v0.a.$ === 'VList') && (_v0.b.$ === 'VList')) {
-				var lst1 = _v0.a.a;
-				var lst2 = _v0.b.a;
-				return $showell$meta_elm$MeType$ComputedValue(
-					$showell$meta_elm$MeType$VList(
-						_Utils_ap(lst1, lst2)));
-			} else {
-				return $showell$meta_elm$MeRunTime$error('need lists in ++');
-			}
-		});
-	return A2($showell$meta_elm$MeType$BinOp, '++', f);
+	return A2($showell$meta_elm$MeType$NamedFunc, 'List.map', map_0);
 }();
 var $showell$meta_elm$MeNumber$binOp = F2(
 	function (impl, name) {
-		var f = F3(
-			function (c, expr1, expr2) {
-				var _v0 = _Utils_Tuple2(
-					A2($showell$meta_elm$MeRunTime$getValue, c, expr1),
-					A2($showell$meta_elm$MeRunTime$getValue, c, expr2));
-				_v0$5:
-				while (true) {
-					_v0$6:
-					while (true) {
-						switch (_v0.a.$) {
-							case 'VInt':
-								switch (_v0.b.$) {
-									case 'VInt':
-										var a = _v0.a.a;
-										var b = _v0.b.a;
-										return $showell$meta_elm$MeType$ComputedValue(
-											$showell$meta_elm$MeType$VInt(
-												A2(impl.fII, a, b)));
-									case 'VFloat':
-										var a = _v0.a.a;
-										var b = _v0.b.a;
-										return $showell$meta_elm$MeType$ComputedValue(
-											$showell$meta_elm$MeType$VFloat(
-												A2(impl.fIF, a, b)));
-									case 'VError':
-										break _v0$5;
-									default:
-										break _v0$6;
-								}
-							case 'VFloat':
-								switch (_v0.b.$) {
-									case 'VInt':
-										var a = _v0.a.a;
-										var b = _v0.b.a;
-										return $showell$meta_elm$MeType$ComputedValue(
-											$showell$meta_elm$MeType$VFloat(
-												A2(impl.fFI, a, b)));
-									case 'VFloat':
-										var a = _v0.a.a;
-										var b = _v0.b.a;
-										return $showell$meta_elm$MeType$ComputedValue(
-											$showell$meta_elm$MeType$VFloat(
-												A2(impl.fFF, a, b)));
-									case 'VError':
-										break _v0$5;
-									default:
-										break _v0$6;
-								}
-							case 'VError':
-								var s = _v0.a.a;
-								return $showell$meta_elm$MeRunTime$error(s + ' (first arg)');
-							default:
-								if (_v0.b.$ === 'VError') {
-									break _v0$5;
-								} else {
-									break _v0$6;
-								}
-						}
+		var f1Int = function (a) {
+			return F2(
+				function (c, expr2) {
+					var _v2 = A2($showell$meta_elm$MeRunTime$getValue, c, expr2);
+					switch (_v2.$) {
+						case 'VInt':
+							var b = _v2.a;
+							return $showell$meta_elm$MeType$ComputedValue(
+								$showell$meta_elm$MeType$VInt(
+									A2(impl.fII, a, b)));
+						case 'VFloat':
+							var b = _v2.a;
+							return $showell$meta_elm$MeType$ComputedValue(
+								$showell$meta_elm$MeType$VFloat(
+									A2(impl.fIF, a, b)));
+						default:
+							return $showell$meta_elm$MeRunTime$error('not a number');
 					}
-					return $showell$meta_elm$MeRunTime$error('need numbers here');
+				});
+		};
+		var f1Float = function (a) {
+			return F2(
+				function (c, expr2) {
+					var _v1 = A2($showell$meta_elm$MeRunTime$getValue, c, expr2);
+					switch (_v1.$) {
+						case 'VInt':
+							var b = _v1.a;
+							return $showell$meta_elm$MeType$ComputedValue(
+								$showell$meta_elm$MeType$VFloat(
+									A2(impl.fFI, a, b)));
+						case 'VFloat':
+							var b = _v1.a;
+							return $showell$meta_elm$MeType$ComputedValue(
+								$showell$meta_elm$MeType$VFloat(
+									A2(impl.fFF, a, b)));
+						default:
+							return $showell$meta_elm$MeRunTime$error('not a number');
+					}
+				});
+		};
+		var f0 = F2(
+			function (c, expr1) {
+				var _v0 = A2($showell$meta_elm$MeRunTime$getValue, c, expr1);
+				switch (_v0.$) {
+					case 'VInt':
+						var a = _v0.a;
+						return $showell$meta_elm$MeType$ComputedFunc(
+							f1Int(a));
+					case 'VFloat':
+						var a = _v0.a;
+						return $showell$meta_elm$MeType$ComputedFunc(
+							f1Float(a));
+					default:
+						return $showell$meta_elm$MeRunTime$error('not a number');
 				}
-				var s = _v0.b.a;
-				return $showell$meta_elm$MeRunTime$error(s + ' (second arg)');
 			});
-		return A2($showell$meta_elm$MeType$BinOp, name, f);
+		return A3($showell$meta_elm$MeType$OpFunc, '(' + (name + ')'), f0, name);
 	});
 var $showell$meta_elm$MeNumber$plus = function () {
 	var fII = F2(
@@ -7762,90 +7919,82 @@ var $showell$meta_elm$MeList$singleton = function () {
 		function (c, expr) {
 			return $showell$meta_elm$MeType$ComputedValue(
 				$showell$meta_elm$MeType$VList(
-					_List_fromArray(
-						[
-							$showell$meta_elm$MeType$ComputedValue(
-							A2($showell$meta_elm$MeRunTime$getValue, c, expr))
-						])));
+					$elm$core$List$singleton(
+						A2($showell$meta_elm$MeRunTime$compute, c, expr))));
 		});
 	return A2($showell$meta_elm$MeType$NamedFunc, 'List.singleton', f);
 }();
+var $showell$meta_elm$MeList$compare = F2(
+	function (vExpr1, vExpr2) {
+		var _v0 = _Utils_Tuple2(
+			$showell$meta_elm$MeRunTime$getFinalValue(vExpr1),
+			$showell$meta_elm$MeRunTime$getFinalValue(vExpr2));
+		_v0$2:
+		while (true) {
+			switch (_v0.a.$) {
+				case 'VInt':
+					if (_v0.b.$ === 'VInt') {
+						var n1 = _v0.a.a;
+						var n2 = _v0.b.a;
+						return A2($elm$core$Basics$compare, n1, n2);
+					} else {
+						break _v0$2;
+					}
+				case 'VFloat':
+					if (_v0.b.$ === 'VFloat') {
+						var n1 = _v0.a.a;
+						var n2 = _v0.b.a;
+						return A2($elm$core$Basics$compare, n1, n2);
+					} else {
+						break _v0$2;
+					}
+				default:
+					break _v0$2;
+			}
+		}
+		return $elm$core$Basics$EQ;
+	});
 var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
 	return y;
 };
-var $elm$core$List$sortBy = _List_sortBy;
-var $showell$meta_elm$MeList$transformSort = F4(
-	function (ord, unbox, c, exprLst) {
-		var listOfTups = function (lst) {
-			if (!lst.b) {
-				return $elm$core$Result$Ok(_List_Nil);
-			} else {
-				var head = lst.a;
-				var rest = lst.b;
-				var _v1 = unbox(
-					A2(ord, c, head));
-				if (_v1.$ === 'Ok') {
-					var h = _v1.a;
-					var _v2 = listOfTups(rest);
-					if (_v2.$ === 'Ok') {
-						var others = _v2.a;
-						return $elm$core$Result$Ok(
-							A2(
-								$elm$core$List$cons,
-								_Utils_Tuple2(h, head),
-								others));
-					} else {
-						var s = _v2.a;
-						return $elm$core$Result$Err(s);
-					}
-				} else {
-					var s = _v1.a;
-					return $elm$core$Result$Err(s);
-				}
-			}
-		};
-		var _v3 = listOfTups(exprLst);
-		if (_v3.$ === 'Ok') {
-			var tups = _v3.a;
-			return $showell$meta_elm$MeType$ComputedValue(
-				$showell$meta_elm$MeType$VList(
+var $elm$core$List$sortWith = _List_sortWith;
+var $showell$meta_elm$MeList$transformSort = F3(
+	function (ord, c, lst) {
+		var comp = F2(
+			function (item1, item2) {
+				return A2($showell$meta_elm$MeList$compare, item1.a, item2.a);
+			});
+		return $showell$meta_elm$MeType$ComputedValue(
+			$showell$meta_elm$MeType$VList(
+				A2(
+					$elm$core$List$map,
+					$elm$core$Tuple$second,
 					A2(
-						$elm$core$List$map,
-						$elm$core$Tuple$second,
-						A2($elm$core$List$sortBy, $elm$core$Tuple$first, tups))));
-		} else {
-			var s = _v3.a;
-			return $showell$meta_elm$MeRunTime$error(s);
-		}
+						$elm$core$List$sortWith,
+						comp,
+						A2(
+							$elm$core$List$map,
+							function (item) {
+								return _Utils_Tuple2(
+									A2(ord, c, item),
+									item);
+							},
+							lst)))));
 	});
-var $showell$meta_elm$MeList$sort = function (unbox) {
-	var ord = F2(
-		function (c, expr) {
-			return A2($showell$meta_elm$MeRunTime$compute, c, expr);
-		});
+var $showell$meta_elm$MeList$sort = function () {
 	var sort0 = F2(
 		function (c, lstExpr) {
 			var _v0 = A2($showell$meta_elm$MeRunTime$getValue, c, lstExpr);
 			if (_v0.$ === 'VList') {
 				var lst = _v0.a;
-				return A4($showell$meta_elm$MeList$transformSort, ord, unbox, c, lst);
+				return A3($showell$meta_elm$MeList$transformSort, $showell$meta_elm$MeRunTime$compute, c, lst);
 			} else {
 				return $showell$meta_elm$MeRunTime$error('sort wants a list');
 			}
 		});
 	return A2($showell$meta_elm$MeType$NamedFunc, 'List.sort', sort0);
-};
-var $showell$meta_elm$MeFloat$toFloat = function (vExpr) {
-	var _v0 = $showell$meta_elm$MeRunTime$getFinalValue(vExpr);
-	if (_v0.$ === 'VFloat') {
-		var n = _v0.a;
-		return $elm$core$Result$Ok(n);
-	} else {
-		return $elm$core$Result$Err('not an int');
-	}
-};
-var $showell$meta_elm$MeList$sortFloat = $showell$meta_elm$MeList$sort($showell$meta_elm$MeFloat$toFloat);
+}();
 var $showell$meta_elm$MeInt$toFloat = function () {
 	var f = F2(
 		function (c, expr) {
@@ -7866,32 +8015,37 @@ var $author$project$SmallTreeView$permutedLists = function () {
 		$showell$meta_elm$MeType$VarName('lst'),
 		_List_fromArray(
 			[
-				A2($showell$meta_elm$MeType$F1, $showell$meta_elm$MeList$map, $showell$meta_elm$MeInt$toFloat)
+				A2($showell$meta_elm$MeType$A1, $showell$meta_elm$MeList$map, $showell$meta_elm$MeInt$toFloat)
 			]));
 	var newElements = A2(
 		$showell$meta_elm$MeType$PipeLine,
 		$showell$meta_elm$MeType$VarName('startList'),
 		_List_fromArray(
 			[
-				$showell$meta_elm$MeList$sortFloat,
+				$showell$meta_elm$MeList$sort,
+				A2(
+				$showell$meta_elm$MeType$A1,
+				$showell$meta_elm$MeList$map,
+				A2(
+					$showell$meta_elm$MeType$F1,
+					'n',
+					A3(
+						$showell$meta_elm$MeType$Infix,
+						$showell$meta_elm$MeType$VarName('n'),
+						$showell$meta_elm$MeNumber$plus,
+						$showell$meta_elm$MeFloat$init(0.5)))),
 				A2(
 				$showell$meta_elm$MeType$F1,
-				$showell$meta_elm$MeList$map,
+				'items',
 				A3(
-					$showell$meta_elm$MeType$LambdaLeft,
-					'n',
-					$showell$meta_elm$MeNumber$plus,
-					$showell$meta_elm$MeFloat$init(0.5))),
-				A3(
-				$showell$meta_elm$MeType$LambdaRight,
-				$showell$meta_elm$MeFloat$init(0.5),
-				$showell$meta_elm$MeList$cons,
-				'items')
+					$showell$meta_elm$MeType$Infix,
+					$showell$meta_elm$MeFloat$init(0.5),
+					$showell$meta_elm$MeList$cons,
+					$showell$meta_elm$MeType$VarName('items')))
 			]));
 	return A2(
-		$showell$meta_elm$MeType$Function,
-		_List_fromArray(
-			['lst']),
+		$showell$meta_elm$MeType$F1,
+		'lst',
 		A2(
 			$showell$meta_elm$MeType$LetIn,
 			_List_fromArray(
@@ -7904,28 +8058,40 @@ var $author$project$SmallTreeView$permutedLists = function () {
 				$showell$meta_elm$MeType$VarName('newElements'),
 				_List_fromArray(
 					[
-						A2($showell$meta_elm$MeType$F1, $showell$meta_elm$MeList$map, $showell$meta_elm$MeList$singleton),
+						A2($showell$meta_elm$MeType$A1, $showell$meta_elm$MeList$map, $showell$meta_elm$MeList$singleton),
 						A2(
-						$showell$meta_elm$MeType$F1,
+						$showell$meta_elm$MeType$A1,
 						$showell$meta_elm$MeList$map,
-						A3(
-							$showell$meta_elm$MeType$LambdaRight,
-							$showell$meta_elm$MeType$VarName('startList'),
-							$showell$meta_elm$MeList$plus,
-							'x'))
+						A2(
+							$showell$meta_elm$MeType$F1,
+							'x',
+							A3(
+								$showell$meta_elm$MeType$Infix,
+								$showell$meta_elm$MeType$VarName('startList'),
+								$showell$meta_elm$MeNumber$plus,
+								$showell$meta_elm$MeType$VarName('x'))))
 					]))));
 }();
+var $showell$meta_elm$MeFloat$toFloat = function (vExpr) {
+	var _v0 = $showell$meta_elm$MeRunTime$getFinalValue(vExpr);
+	if (_v0.$ === 'VFloat') {
+		var n = _v0.a;
+		return $elm$core$Result$Ok(n);
+	} else {
+		return $elm$core$Result$Err('not an int');
+	}
+};
 var $showell$meta_elm$MeList$toList = F2(
 	function (convert, vList) {
 		var f = function (lst) {
 			if (!lst.b) {
 				return $elm$core$Result$Ok(_List_Nil);
 			} else {
-				var head = lst.a;
-				var rest = lst.b;
+				var hExpr = lst.a;
+				var rExpr = lst.b;
 				var _v1 = _Utils_Tuple2(
-					convert(head),
-					f(rest));
+					convert(hExpr),
+					f(rExpr));
 				if (_v1.a.$ === 'Ok') {
 					if (_v1.b.$ === 'Ok') {
 						var h = _v1.a.a;
@@ -8004,25 +8170,6 @@ var $showell$meta_elm$MeTuple$fFrom = F2(
 		return A2($showell$meta_elm$MeType$NamedFunc, name, f);
 	});
 var $showell$meta_elm$MeTuple$first = A2($showell$meta_elm$MeTuple$fFrom, 'Tuple.first', $elm$core$Tuple$first);
-var $showell$meta_elm$MeRunTime$getFuncVV = F2(
-	function (c, expr) {
-		if (expr.$ === 'BinOp') {
-			var fvv = expr.b;
-			return fvv;
-		} else {
-			var fv1 = A2($showell$meta_elm$MeRunTime$getFuncV, c, expr);
-			return F3(
-				function (_v1, e1, e2) {
-					var _v2 = A2(fv1, c, e1);
-					if (_v2.$ === 'ComputedFunc') {
-						var fv2 = _v2.a;
-						return A2(fv2, c, e2);
-					} else {
-						return $showell$meta_elm$MeRunTime$error('could not compute function with two args');
-					}
-				});
-		}
-	});
 var $showell$meta_elm$MeList$indexedMap = function () {
 	var indexedMap2 = F2(
 		function (lst, mapper) {
@@ -8063,9 +8210,6 @@ var $showell$meta_elm$MeList$indexedMap = function () {
 		});
 	return A2($showell$meta_elm$MeType$NamedFunc, 'List.indexedMap', indexedMap0);
 }();
-var $showell$meta_elm$MeType$VTuple = function (a) {
-	return {$: 'VTuple', a: a};
-};
 var $showell$meta_elm$MeTuple$pair = function () {
 	var pair1 = function (left) {
 		return F2(
@@ -8085,7 +8229,7 @@ var $showell$meta_elm$MeTuple$pair = function () {
 	return A2($showell$meta_elm$MeType$NamedFunc, 'Tuple.pair', pair0);
 }();
 var $showell$meta_elm$MeTuple$second = A2($showell$meta_elm$MeTuple$fFrom, 'Tuple.second', $elm$core$Tuple$second);
-var $showell$meta_elm$MeList$sortBy = function (unbox) {
+var $showell$meta_elm$MeList$sortBy = function () {
 	var sortBy1 = function (ord) {
 		return F2(
 			function (c, lstExpr) {
@@ -8093,7 +8237,7 @@ var $showell$meta_elm$MeList$sortBy = function (unbox) {
 				switch (_v0.$) {
 					case 'VList':
 						var lst = _v0.a;
-						return A4($showell$meta_elm$MeList$transformSort, ord, unbox, c, lst);
+						return A3($showell$meta_elm$MeList$transformSort, ord, c, lst);
 					case 'VError':
 						var s = _v0.a;
 						return $showell$meta_elm$MeRunTime$error('bad list in sortBy: ' + s);
@@ -8109,8 +8253,33 @@ var $showell$meta_elm$MeList$sortBy = function (unbox) {
 				sortBy1(ord));
 		});
 	return A2($showell$meta_elm$MeType$NamedFunc, 'List.sortBy', sortBy0);
-};
-var $showell$meta_elm$MeList$sortByFloat = $showell$meta_elm$MeList$sortBy($showell$meta_elm$MeFloat$toFloat);
+}();
+var $author$project$SmallTreeView$ranks = function () {
+	var addOne = A2(
+		$showell$meta_elm$MeType$F1,
+		'n',
+		A3(
+			$showell$meta_elm$MeType$Infix,
+			$showell$meta_elm$MeType$VarName('n'),
+			$showell$meta_elm$MeNumber$plus,
+			$showell$meta_elm$MeInt$init(1)));
+	return A2(
+		$showell$meta_elm$MeType$F1,
+		'lst',
+		A2(
+			$showell$meta_elm$MeType$PipeLine,
+			$showell$meta_elm$MeType$VarName('lst'),
+			_List_fromArray(
+				[
+					A2($showell$meta_elm$MeType$A1, $showell$meta_elm$MeList$indexedMap, $showell$meta_elm$MeTuple$pair),
+					A2($showell$meta_elm$MeType$A1, $showell$meta_elm$MeList$sortBy, $showell$meta_elm$MeTuple$second),
+					A2($showell$meta_elm$MeType$A1, $showell$meta_elm$MeList$map, $showell$meta_elm$MeTuple$first),
+					A2($showell$meta_elm$MeType$A1, $showell$meta_elm$MeList$indexedMap, $showell$meta_elm$MeTuple$pair),
+					A2($showell$meta_elm$MeType$A1, $showell$meta_elm$MeList$sortBy, $showell$meta_elm$MeTuple$second),
+					A2($showell$meta_elm$MeType$A1, $showell$meta_elm$MeList$map, $showell$meta_elm$MeTuple$first),
+					A2($showell$meta_elm$MeType$A1, $showell$meta_elm$MeList$map, addOne)
+				])));
+}();
 var $showell$meta_elm$MeInt$toInt = function (vExpr) {
 	var _v0 = $showell$meta_elm$MeRunTime$getFinalValue(vExpr);
 	if (_v0.$ === 'VInt') {
@@ -8120,31 +8289,6 @@ var $showell$meta_elm$MeInt$toInt = function (vExpr) {
 		return $elm$core$Result$Err('not an int');
 	}
 };
-var $showell$meta_elm$MeList$sortByInt = $showell$meta_elm$MeList$sortBy($showell$meta_elm$MeInt$toInt);
-var $author$project$SmallTreeView$ranks = A2(
-	$showell$meta_elm$MeType$Function,
-	_List_fromArray(
-		['lst']),
-	A2(
-		$showell$meta_elm$MeType$PipeLine,
-		$showell$meta_elm$MeType$VarName('lst'),
-		_List_fromArray(
-			[
-				A2($showell$meta_elm$MeType$F1, $showell$meta_elm$MeList$indexedMap, $showell$meta_elm$MeTuple$pair),
-				A2($showell$meta_elm$MeType$F1, $showell$meta_elm$MeList$sortByFloat, $showell$meta_elm$MeTuple$second),
-				A2($showell$meta_elm$MeType$F1, $showell$meta_elm$MeList$map, $showell$meta_elm$MeTuple$first),
-				A2($showell$meta_elm$MeType$F1, $showell$meta_elm$MeList$indexedMap, $showell$meta_elm$MeTuple$pair),
-				A2($showell$meta_elm$MeType$F1, $showell$meta_elm$MeList$sortByInt, $showell$meta_elm$MeTuple$second),
-				A2($showell$meta_elm$MeType$F1, $showell$meta_elm$MeList$map, $showell$meta_elm$MeTuple$first),
-				A2(
-				$showell$meta_elm$MeType$F1,
-				$showell$meta_elm$MeList$map,
-				A3(
-					$showell$meta_elm$MeType$LambdaLeft,
-					'n',
-					$showell$meta_elm$MeNumber$plus,
-					$showell$meta_elm$MeInt$init(1)))
-			])));
 var $showell$meta_elm$MeList$toListInts = function (vList) {
 	return A2($showell$meta_elm$MeList$toList, $showell$meta_elm$MeInt$toInt, vList);
 };
@@ -10898,22 +11042,45 @@ var $showell$meta_elm$MeCodeGen$binOp = F3(
 	function (expr1, op, expr2) {
 		return A4($the_sett$elm_syntax_dsl$Elm$CodeGen$opApply, op, $the_sett$elm_syntax_dsl$Elm$CodeGen$infixNon, expr1, expr2);
 	});
+var $showell$meta_elm$MeRepr$fromList = function (items) {
+	return A3(
+		$elm$core$String$replace,
+		'), ',
+		')\n, ',
+		A3(
+			$elm$core$String$replace,
+			'], ',
+			']\n, ',
+			'[ ' + (A2($elm$core$String$join, ', ', items) + ' ]')));
+};
+var $showell$meta_elm$MeRepr$fromTuple = function (_v0) {
+	var a = _v0.a;
+	var b = _v0.b;
+	return '( ' + (a + (', ' + (b + ' )')));
+};
 var $showell$meta_elm$MeRepr$fromExpr = function (expr) {
 	var _v0 = $showell$meta_elm$MeRunTime$getFinalValue(expr);
 	switch (_v0.$) {
 		case 'VList':
 			var lst = _v0.a;
-			var items = A2($elm$core$List$map, $showell$meta_elm$MeRepr$fromExpr, lst);
-			return A3(
-				$elm$core$String$replace,
-				'], ',
-				']\n,',
-				'[' + (A2($elm$core$String$join, ', ', items) + ']'));
+			return $showell$meta_elm$MeRepr$fromList(
+				A2($elm$core$List$map, $showell$meta_elm$MeRepr$fromExpr, lst));
 		case 'VTuple':
 			var _v1 = _v0.a;
 			var a = _v1.a;
 			var b = _v1.b;
-			return '(' + ($showell$meta_elm$MeRepr$fromExpr(a) + (', ' + ($showell$meta_elm$MeRepr$fromExpr(b) + ')')));
+			return $showell$meta_elm$MeRepr$fromTuple(
+				_Utils_Tuple2(
+					$showell$meta_elm$MeRepr$fromExpr(a),
+					$showell$meta_elm$MeRepr$fromExpr(b)));
+		case 'VMaybe':
+			var m = _v0.a;
+			if (m.$ === 'Just') {
+				var v = m.a;
+				return 'Just ' + $showell$meta_elm$MeRepr$fromExpr(v);
+			} else {
+				return 'Nothing';
+			}
 		case 'VBool':
 			var b = _v0.a;
 			return b ? 'true' : 'false';
@@ -10995,6 +11162,13 @@ var $the_sett$elm_syntax_dsl$Elm$CodeGen$letVal = F2(
 				$the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern(valName)),
 			$the_sett$elm_syntax_dsl$Elm$CodeGen$nodify(expr));
 	});
+var $stil4m$elm_syntax$Elm$Syntax$Expression$ListExpr = function (a) {
+	return {$: 'ListExpr', a: a};
+};
+var $the_sett$elm_syntax_dsl$Elm$CodeGen$list = function (exprs) {
+	return $stil4m$elm_syntax$Elm$Syntax$Expression$ListExpr(
+		$the_sett$elm_syntax_dsl$Elm$CodeGen$nodifyAll(exprs));
+};
 var $the_sett$elm_syntax_dsl$Elm$CodeGen$parens = function (expr) {
 	return $stil4m$elm_syntax$Elm$Syntax$Expression$ParenthesizedExpression(
 		$the_sett$elm_syntax_dsl$Elm$CodeGen$nodify(expr));
@@ -11020,6 +11194,13 @@ var $the_sett$elm_syntax_dsl$Elm$CodeGen$pipe = F2(
 			}
 		}
 	});
+var $stil4m$elm_syntax$Elm$Syntax$Expression$TupledExpression = function (a) {
+	return {$: 'TupledExpression', a: a};
+};
+var $the_sett$elm_syntax_dsl$Elm$CodeGen$tuple = function (exprs) {
+	return $stil4m$elm_syntax$Elm$Syntax$Expression$TupledExpression(
+		$the_sett$elm_syntax_dsl$Elm$CodeGen$nodifyAll(exprs));
+};
 var $the_sett$elm_syntax_dsl$Elm$CodeGen$fqVal = F2(
 	function (moduleName, name) {
 		return A2($stil4m$elm_syntax$Elm$Syntax$Expression$FunctionOrValue, moduleName, name);
@@ -11046,9 +11227,9 @@ var $showell$meta_elm$MeCodeGen$toCG = function (expr) {
 		case 'NamedFunc':
 			var name = expr.a;
 			return $the_sett$elm_syntax_dsl$Elm$CodeGen$val(name);
-		case 'Function':
-			var fexpr = expr.b;
-			return $showell$meta_elm$MeCodeGen$toCG(fexpr);
+		case 'OpFunc':
+			var name = expr.a;
+			return $the_sett$elm_syntax_dsl$Elm$CodeGen$val(name);
 		case 'LetIn':
 			var lets = expr.a;
 			var vexpr = expr.b;
@@ -11074,8 +11255,26 @@ var $showell$meta_elm$MeCodeGen$toCG = function (expr) {
 					$the_sett$elm_syntax_dsl$Elm$CodeGen$fun(funcName),
 					A2($elm$core$List$map, $showell$meta_elm$MeCodeGen$toCG, args)));
 		case 'SimpleValue':
-			return $the_sett$elm_syntax_dsl$Elm$CodeGen$val(
-				$showell$meta_elm$MeRepr$fromExpr(expr));
+			var v = expr.a;
+			switch (v.$) {
+				case 'VList':
+					var lst = v.a;
+					return $the_sett$elm_syntax_dsl$Elm$CodeGen$list(
+						A2($elm$core$List$map, $showell$meta_elm$MeCodeGen$toCG, lst));
+				case 'VTuple':
+					var _v2 = v.a;
+					var a = _v2.a;
+					var b = _v2.b;
+					return $the_sett$elm_syntax_dsl$Elm$CodeGen$tuple(
+						_List_fromArray(
+							[
+								$showell$meta_elm$MeCodeGen$toCG(a),
+								$showell$meta_elm$MeCodeGen$toCG(b)
+							]));
+				default:
+					return $the_sett$elm_syntax_dsl$Elm$CodeGen$val(
+						$showell$meta_elm$MeRepr$fromExpr(expr));
+			}
 		case 'PipeLine':
 			var a = expr.a;
 			var lst = expr.b;
@@ -11083,7 +11282,7 @@ var $showell$meta_elm$MeCodeGen$toCG = function (expr) {
 				$the_sett$elm_syntax_dsl$Elm$CodeGen$pipe,
 				$showell$meta_elm$MeCodeGen$toCG(a),
 				A2($elm$core$List$map, $showell$meta_elm$MeCodeGen$toCG, lst));
-		case 'F1':
+		case 'A1':
 			var f = expr.a;
 			var arg1 = expr.b;
 			return $the_sett$elm_syntax_dsl$Elm$CodeGen$apply(
@@ -11092,7 +11291,7 @@ var $showell$meta_elm$MeCodeGen$toCG = function (expr) {
 					$showell$meta_elm$MeCodeGen$toCG,
 					_List_fromArray(
 						[f, arg1])));
-		case 'F2':
+		case 'A2':
 			var f = expr.a;
 			var arg1 = expr.b;
 			var arg2 = expr.c;
@@ -11102,62 +11301,117 @@ var $showell$meta_elm$MeCodeGen$toCG = function (expr) {
 					$showell$meta_elm$MeCodeGen$toCG,
 					_List_fromArray(
 						[f, arg1, arg2])));
-		case 'BinOp':
-			var opname = expr.a;
-			return $the_sett$elm_syntax_dsl$Elm$CodeGen$val(
-				function (s) {
-					return '(' + (s + ')');
-				}(opname));
+		case 'A3':
+			var f = expr.a;
+			var arg1 = expr.b;
+			var arg2 = expr.c;
+			var arg3 = expr.d;
+			return $the_sett$elm_syntax_dsl$Elm$CodeGen$apply(
+				A2(
+					$elm$core$List$map,
+					$showell$meta_elm$MeCodeGen$toCG,
+					_List_fromArray(
+						[f, arg1, arg2, arg3])));
+		case 'A4':
+			var f = expr.a;
+			var arg1 = expr.b;
+			var arg2 = expr.c;
+			var arg3 = expr.d;
+			var arg4 = expr.e;
+			return $the_sett$elm_syntax_dsl$Elm$CodeGen$apply(
+				A2(
+					$elm$core$List$map,
+					$showell$meta_elm$MeCodeGen$toCG,
+					_List_fromArray(
+						[f, arg1, arg2, arg3, arg4])));
+		case 'A5':
+			var f = expr.a;
+			var arg1 = expr.b;
+			var arg2 = expr.c;
+			var arg3 = expr.d;
+			var arg4 = expr.e;
+			var arg5 = expr.f;
+			return $the_sett$elm_syntax_dsl$Elm$CodeGen$apply(
+				A2(
+					$elm$core$List$map,
+					$showell$meta_elm$MeCodeGen$toCG,
+					_List_fromArray(
+						[f, arg1, arg2, arg3, arg4, arg5])));
+		case 'F1':
+			var name1 = expr.a;
+			var lambdaExpr = expr.b;
+			return A2(
+				$the_sett$elm_syntax_dsl$Elm$CodeGen$lambda,
+				A2(
+					$elm$core$List$map,
+					$the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern,
+					_List_fromArray(
+						[name1])),
+				$showell$meta_elm$MeCodeGen$toCG(lambdaExpr));
+		case 'F2':
+			var name1 = expr.a;
+			var name2 = expr.b;
+			var lambdaExpr = expr.c;
+			return A2(
+				$the_sett$elm_syntax_dsl$Elm$CodeGen$lambda,
+				A2(
+					$elm$core$List$map,
+					$the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern,
+					_List_fromArray(
+						[name1, name2])),
+				$showell$meta_elm$MeCodeGen$toCG(lambdaExpr));
+		case 'F3':
+			var name1 = expr.a;
+			var name2 = expr.b;
+			var name3 = expr.c;
+			var lambdaExpr = expr.d;
+			return A2(
+				$the_sett$elm_syntax_dsl$Elm$CodeGen$lambda,
+				A2(
+					$elm$core$List$map,
+					$the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern,
+					_List_fromArray(
+						[name1, name2, name3])),
+				$showell$meta_elm$MeCodeGen$toCG(lambdaExpr));
+		case 'F4':
+			var name1 = expr.a;
+			var name2 = expr.b;
+			var name3 = expr.c;
+			var name4 = expr.d;
+			var lambdaExpr = expr.e;
+			return A2(
+				$the_sett$elm_syntax_dsl$Elm$CodeGen$lambda,
+				A2(
+					$elm$core$List$map,
+					$the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern,
+					_List_fromArray(
+						[name1, name2, name3, name4])),
+				$showell$meta_elm$MeCodeGen$toCG(lambdaExpr));
+		case 'F5':
+			var name1 = expr.a;
+			var name2 = expr.b;
+			var name3 = expr.c;
+			var name4 = expr.d;
+			var name5 = expr.e;
+			var lambdaExpr = expr.f;
+			return A2(
+				$the_sett$elm_syntax_dsl$Elm$CodeGen$lambda,
+				A2(
+					$elm$core$List$map,
+					$the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern,
+					_List_fromArray(
+						[name1, name2, name3, name4, name5])),
+				$showell$meta_elm$MeCodeGen$toCG(lambdaExpr));
 		case 'Infix':
 			var argLeft = expr.a;
 			var opExpr = expr.b;
 			var argRight = expr.c;
-			if (opExpr.$ === 'BinOp') {
-				var opName = opExpr.a;
+			if (opExpr.$ === 'OpFunc') {
+				var opName = opExpr.c;
 				return $the_sett$elm_syntax_dsl$Elm$CodeGen$parens(
 					A3(
 						$showell$meta_elm$MeCodeGen$binOp,
 						$showell$meta_elm$MeCodeGen$toCG(argLeft),
-						opName,
-						$showell$meta_elm$MeCodeGen$toCG(argRight)));
-			} else {
-				return $the_sett$elm_syntax_dsl$Elm$CodeGen$val('?');
-			}
-		case 'LambdaRight':
-			var argLeft = expr.a;
-			var opExpr = expr.b;
-			var vname = expr.c;
-			if (opExpr.$ === 'BinOp') {
-				var opName = opExpr.a;
-				return A2(
-					$the_sett$elm_syntax_dsl$Elm$CodeGen$lambda,
-					_List_fromArray(
-						[
-							$the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern(vname)
-						]),
-					A3(
-						$showell$meta_elm$MeCodeGen$binOp,
-						$showell$meta_elm$MeCodeGen$toCG(argLeft),
-						opName,
-						$the_sett$elm_syntax_dsl$Elm$CodeGen$val(vname)));
-			} else {
-				return $the_sett$elm_syntax_dsl$Elm$CodeGen$val('?');
-			}
-		case 'LambdaLeft':
-			var vname = expr.a;
-			var opExpr = expr.b;
-			var argRight = expr.c;
-			if (opExpr.$ === 'BinOp') {
-				var opName = opExpr.a;
-				return A2(
-					$the_sett$elm_syntax_dsl$Elm$CodeGen$lambda,
-					_List_fromArray(
-						[
-							$the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern(vname)
-						]),
-					A3(
-						$showell$meta_elm$MeCodeGen$binOp,
-						$the_sett$elm_syntax_dsl$Elm$CodeGen$val(vname),
 						opName,
 						$showell$meta_elm$MeCodeGen$toCG(argRight)));
 			} else {
@@ -11173,11 +11427,57 @@ var $showell$meta_elm$MeCodeGen$toCG = function (expr) {
 };
 var $showell$meta_elm$MeCodeGen$fromContext = function (ns) {
 	var paramPatterns = function (expr) {
-		if (expr.$ === 'Function') {
-			var params = expr.a;
-			return A2($elm$core$List$map, $the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern, params);
-		} else {
-			return _List_Nil;
+		switch (expr.$) {
+			case 'F1':
+				var name = expr.a;
+				return A2(
+					$elm$core$List$map,
+					$the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern,
+					_List_fromArray(
+						[name]));
+			case 'F2':
+				var name1 = expr.a;
+				var name0 = expr.b;
+				return A2(
+					$elm$core$List$map,
+					$the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern,
+					_List_fromArray(
+						[name1, name0]));
+			case 'F3':
+				var name2 = expr.a;
+				var name1 = expr.b;
+				var name0 = expr.c;
+				return A2(
+					$elm$core$List$map,
+					$the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern,
+					_List_fromArray(
+						[name2, name1, name0]));
+			case 'F4':
+				var name3 = expr.a;
+				var name2 = expr.b;
+				var name1 = expr.c;
+				var name0 = expr.d;
+				return A2(
+					$elm$core$List$map,
+					$the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern,
+					_List_fromArray(
+						[name3, name2, name1, name0]));
+			case 'F5':
+				var name4 = expr.a;
+				var name3 = expr.b;
+				var name2 = expr.c;
+				var name1 = expr.d;
+				var name0 = expr.e;
+				return A2(
+					$elm$core$List$map,
+					$the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern,
+					_List_fromArray(
+						[name4, name3, name2, name1, name0]));
+			default:
+				return _List_fromArray(
+					[
+						$the_sett$elm_syntax_dsl$Elm$CodeGen$varPattern('?????')
+					]);
 		}
 	};
 	var block = function (_v0) {
