@@ -5294,6 +5294,86 @@ var $showell$meta_elm$MeType$ComputedValue = function (a) {
 var $showell$meta_elm$MeType$VError = function (a) {
 	return {$: 'VError', a: a};
 };
+var $author$project$AstHelper$indent = function (lst) {
+	return A2(
+		$elm$core$String$join,
+		'\n',
+		A2(
+			$elm$core$List$map,
+			function (s) {
+				return '    ' + s;
+			},
+			A2(
+				$elm$core$String$split,
+				'\n',
+				A2($elm$core$String$join, '\n', lst))));
+};
+var $author$project$AstHelper$toString = function (ast) {
+	switch (ast.$) {
+		case 'Var':
+			var _var = ast.a;
+			var _v1 = _var.module_;
+			if (_v1.$ === 'Just') {
+				var mname = _v1.a;
+				return 'Var: ' + (mname + ('.' + _var.name));
+			} else {
+				return 'Var: ' + _var.name;
+			}
+		case 'Call':
+			var rec = ast.a;
+			return 'Call\n' + $author$project$AstHelper$indent(
+				_List_fromArray(
+					[
+						$author$project$AstHelper$toString(rec.fn),
+						$author$project$AstHelper$toString(rec.argument)
+					]));
+		case 'Argument':
+			var name = ast.a;
+			return 'Argument: ' + name;
+		case 'Lambda':
+			var rec = ast.a;
+			return 'Lambda ' + (A2($elm$core$String$join, ' ', rec._arguments) + ('\n' + $author$project$AstHelper$indent(
+				_List_fromArray(
+					[
+						$author$project$AstHelper$toString(rec.body)
+					]))));
+		case 'List':
+			var items = ast.a;
+			return 'List\n' + $author$project$AstHelper$indent(
+				A2($elm$core$List$map, $author$project$AstHelper$toString, items));
+		case 'Cons':
+			var a = ast.a;
+			var b = ast.b;
+			return 'Cons\n' + $author$project$AstHelper$indent(
+				_List_fromArray(
+					[
+						$author$project$AstHelper$toString(a),
+						$author$project$AstHelper$toString(b)
+					]));
+		case 'Plus':
+			var a = ast.a;
+			var b = ast.b;
+			return 'Plus\n' + $author$project$AstHelper$indent(
+				_List_fromArray(
+					[
+						$author$project$AstHelper$toString(a),
+						$author$project$AstHelper$toString(b)
+					]));
+		case 'Int':
+			var n = ast.a;
+			return 'Int: ' + $elm$core$String$fromInt(n);
+		default:
+			return '???';
+	}
+};
+var $author$project$Example$astToString = function (astResult) {
+	if (astResult.$ === 'Ok') {
+		var ast = astResult.a;
+		return $author$project$AstHelper$toString(ast);
+	} else {
+		return 'cannot compile';
+	}
+};
 var $showell$meta_elm$MeType$FuncCall = F3(
 	function (a, b, c) {
 		return {$: 'FuncCall', a: a, b: b, c: c};
@@ -10566,7 +10646,7 @@ var $author$project$Example$runExample = function (code) {
 		$elm$core$Result$map,
 		$elm_in_elm$compiler$Elm$AST$Frontend$unwrap,
 		$elm_in_elm$compiler$Elm$Compiler$parseExpr(code));
-	var elmInElmSide = $elm$core$Debug$toString(astResult);
+	var elmInElmSide = $author$project$Example$astToString(astResult);
 	var expr = function () {
 		if (astResult.$ === 'Ok') {
 			var ast = astResult.a;
@@ -10627,8 +10707,13 @@ var $author$project$Example$evaluate = function (code) {
 				$showell$meta_elm$MeType$VError('cannot compile'));
 		}
 	}();
-	var computedExpr = $showell$meta_elm$MeRunTime$computeExpr(expr);
-	return $showell$meta_elm$MeRepr$fromExpr(computedExpr);
+	var computedExpr = A3(
+		$elm$core$String$replace,
+		'\n',
+		'',
+		$showell$meta_elm$MeRepr$fromExpr(
+			$showell$meta_elm$MeRunTime$computeExpr(expr)));
+	return computedExpr + ('\n\n\n' + $author$project$Example$astToString(astResult));
 };
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
@@ -10689,6 +10774,13 @@ var $author$project$Example$viewRepl = function (model) {
 			A2($elm$html$Html$Attributes$style, 'height', '150px'),
 			$elm$html$Html$Events$onInput($author$project$Type$UpdateInputCode)
 		]);
+	var showResult = function (s) {
+		return $author$project$Example$divify(
+			A2(
+				$elm$html$Html$pre,
+				_List_Nil,
+				$elm$core$List$singleton(s)));
+	};
 	var introText = A2(
 		$elm$html$Html$p,
 		_List_fromArray(
@@ -10724,7 +10816,7 @@ var $author$project$Example$viewRepl = function (model) {
 						[
 							$elm$html$Html$text('compile')
 						]))),
-				$author$project$Example$divify(
+				showResult(
 				$elm$html$Html$text(
 					$author$project$Example$evaluate(model.code)))
 			]));
