@@ -7766,6 +7766,34 @@ var $showell$meta_elm$MeType$OpFunc = F3(
 	function (a, b, c) {
 		return {$: 'OpFunc', a: a, b: b, c: c};
 	});
+var $showell$meta_elm$MeList$append = function () {
+	var append1 = function (lst1) {
+		return F2(
+			function (c, lstExpr2) {
+				var v2 = A2($showell$meta_elm$MeRunTime$getValue, c, lstExpr2);
+				if (v2.$ === 'VList') {
+					var lst2 = v2.a;
+					return $showell$meta_elm$MeType$ComputedValue(
+						$showell$meta_elm$MeType$VList(
+							_Utils_ap(lst1, lst2)));
+				} else {
+					return $showell$meta_elm$MeRunTime$error('second arg to append should be a list');
+				}
+			});
+	};
+	var append0 = F2(
+		function (c, lstExpr1) {
+			var _v0 = A2($showell$meta_elm$MeRunTime$getValue, c, lstExpr1);
+			if (_v0.$ === 'VList') {
+				var lst = _v0.a;
+				return $showell$meta_elm$MeType$ComputedFunc(
+					append1(lst));
+			} else {
+				return $showell$meta_elm$MeRunTime$error('first arg to append should be a list');
+			}
+		});
+	return A3($showell$meta_elm$MeType$OpFunc, 'List.append', append0, '++');
+}();
 var $showell$meta_elm$MeList$cons = function () {
 	var cons1 = function (h) {
 		return F2(
@@ -8068,7 +8096,7 @@ var $author$project$SmallTreeView$permutedLists = function () {
 							A3(
 								$showell$meta_elm$MeType$Infix,
 								$showell$meta_elm$MeType$VarName('startList'),
-								$showell$meta_elm$MeNumber$plus,
+								$showell$meta_elm$MeList$append,
 								$showell$meta_elm$MeType$VarName('x'))))
 					]))));
 }();
