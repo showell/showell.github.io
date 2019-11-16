@@ -5292,10 +5292,10 @@ var $author$project$Main$initPage = $author$project$Main$initExplorer;
 var $author$project$Type$AllFiveTrees = {$: 'AllFiveTrees'};
 var $author$project$Type$AllFourTrees = {$: 'AllFourTrees'};
 var $author$project$Type$ExtendList = {$: 'ExtendList'};
-var $author$project$Type$SimplifiedFourTrees = {$: 'SimplifiedFourTrees'};
-var $author$project$Type$SmallTree = function (a) {
-	return {$: 'SmallTree', a: a};
+var $author$project$Type$Lesson = function (a) {
+	return {$: 'Lesson', a: a};
 };
+var $author$project$Type$SimplifiedFourTrees = {$: 'SimplifiedFourTrees'};
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
 		if (maybeValue.$ === 'Just') {
@@ -5809,7 +5809,7 @@ var $elm$core$Maybe$map = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$Main$oneOf = F2(
+var $author$project$Route$oneOf = F2(
 	function (fList, arg) {
 		oneOf:
 		while (true) {
@@ -5832,7 +5832,7 @@ var $author$project$Main$oneOf = F2(
 			}
 		}
 	});
-var $author$project$Main$pageFromUrl = function (url) {
+var $author$project$Route$pageFromUrl = function (url) {
 	var parseTree = function (frag) {
 		return A2(
 			$elm$core$Maybe$map,
@@ -5843,23 +5843,23 @@ var $author$project$Main$pageFromUrl = function (url) {
 		switch (frag) {
 			case 'allfour':
 				return $elm$core$Maybe$Just(
-					$author$project$Type$SmallTree($author$project$Type$AllFourTrees));
+					$author$project$Type$Lesson($author$project$Type$AllFourTrees));
 			case 'simple4':
 				return $elm$core$Maybe$Just(
-					$author$project$Type$SmallTree($author$project$Type$SimplifiedFourTrees));
+					$author$project$Type$Lesson($author$project$Type$SimplifiedFourTrees));
 			case 'extend':
 				return $elm$core$Maybe$Just(
-					$author$project$Type$SmallTree($author$project$Type$ExtendList));
+					$author$project$Type$Lesson($author$project$Type$ExtendList));
 			case 'allfive':
 				return $elm$core$Maybe$Just(
-					$author$project$Type$SmallTree($author$project$Type$AllFiveTrees));
+					$author$project$Type$Lesson($author$project$Type$AllFiveTrees));
 			default:
 				return $elm$core$Maybe$Nothing;
 		}
 	};
 	return A2(
 		$elm$core$Maybe$andThen,
-		$author$project$Main$oneOf(
+		$author$project$Route$oneOf(
 			_List_fromArray(
 				[parseTree, parsePage])),
 		url.fragment);
@@ -5878,7 +5878,7 @@ var $author$project$Main$initModel = F2(
 		var page = A2(
 			$elm$core$Maybe$withDefault,
 			$author$project$Main$initPage,
-			$author$project$Main$pageFromUrl(url));
+			$author$project$Route$pageFromUrl(url));
 		var model = {key: key, page: page};
 		return model;
 	});
@@ -5905,8 +5905,8 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
-var $author$project$Main$modelFromUrl = F2(
-	function (url, model) {
+var $author$project$Route$modelFromUrl = F3(
+	function (url, initPage, model) {
 		return function (p) {
 			return _Utils_update(
 				model,
@@ -5914,8 +5914,8 @@ var $author$project$Main$modelFromUrl = F2(
 		}(
 			A2(
 				$elm$core$Maybe$withDefault,
-				$author$project$Main$initPage,
-				$author$project$Main$pageFromUrl(url)));
+				initPage,
+				$author$project$Route$pageFromUrl(url)));
 	});
 var $author$project$RangeList$toSlug = function (spec) {
 	var num = $elm$core$String$fromInt(spec.n);
@@ -5926,7 +5926,7 @@ var $author$project$RangeList$toSlug = function (spec) {
 		return num + '/reverse';
 	}
 };
-var $author$project$Main$pageSlug = function (page) {
+var $author$project$Route$pageSlug = function (page) {
 	if (page.$ === 'Explorer') {
 		var rangeSpec = page.a;
 		return 'tree/' + $author$project$RangeList$toSlug(rangeSpec);
@@ -5951,7 +5951,7 @@ var $author$project$Main$update = F2(
 			case 'ShowTree':
 				var rangeSpec = msg.a;
 				var page = $author$project$Type$Explorer(rangeSpec);
-				var route = '#' + $author$project$Main$pageSlug(page);
+				var route = '#' + $author$project$Route$pageSlug(page);
 				var pushCmd = A2($elm$browser$Browser$Navigation$pushUrl, model.key, route);
 				var model_ = _Utils_update(
 					model,
@@ -5959,7 +5959,7 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(model_, pushCmd);
 			case 'SetPage':
 				var page = msg.a;
-				var route = '#' + $author$project$Main$pageSlug(page);
+				var route = '#' + $author$project$Route$pageSlug(page);
 				var pushCmd = A2($elm$browser$Browser$Navigation$pushUrl, model.key, route);
 				var model_ = _Utils_update(
 					model,
@@ -5970,24 +5970,11 @@ var $author$project$Main$update = F2(
 			default:
 				var url = msg.a;
 				return _Utils_Tuple2(
-					A2($author$project$Main$modelFromUrl, url, model),
+					A3($author$project$Route$modelFromUrl, url, $author$project$Main$initPage, model),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$Type$SetPage = function (a) {
-	return {$: 'SetPage', a: a};
-};
-var $author$project$Main$initSmallTree = $author$project$Type$SmallTree($author$project$Type$AllFourTrees);
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$json$Json$Encode$bool = _Json_wrap;
-var $elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$bool(bool));
-	});
-var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
@@ -6010,53 +5997,42 @@ var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Main$makeTabs = F2(
-	function (tabConfigs, activeLabel) {
-		var makeTab = function (_v0) {
-			var label = _v0.a;
-			var cmd = _v0.b;
-			var disabled = _Utils_eq(label, activeLabel);
-			return A2(
-				$elm$html$Html$button,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$disabled(disabled),
-						$elm$html$Html$Events$onClick(cmd)
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(label)
-					]));
-		};
+var $author$project$PageTabs$makeTabs = function (tabConfigs) {
+	var makeTab = function (_v0) {
+		var label = _v0.a;
+		var cmd = _v0.b;
 		return A2(
-			$elm$html$Html$div,
+			$elm$html$Html$button,
 			_List_fromArray(
 				[
-					A2($elm$html$Html$Attributes$style, 'padding', '10px')
+					$elm$html$Html$Events$onClick(cmd)
 				]),
-			A2($elm$core$List$map, makeTab, tabConfigs));
-	});
-var $author$project$Main$pageTabs = function (activePage) {
-	var smallTreesLabel = 'Small trees';
-	var explorerLabel = 'Explorer';
-	var tabConfigs = _List_fromArray(
-		[
-			_Utils_Tuple2(
-			explorerLabel,
-			$author$project$Type$SetPage($author$project$Main$initExplorer)),
-			_Utils_Tuple2(
-			smallTreesLabel,
-			$author$project$Type$SetPage($author$project$Main$initSmallTree))
-		]);
-	var activeLabel = function () {
-		if (activePage.$ === 'Explorer') {
-			return explorerLabel;
-		} else {
-			return smallTreesLabel;
-		}
-	}();
-	return A2($author$project$Main$makeTabs, tabConfigs, activeLabel);
+			_List_fromArray(
+				[
+					$elm$html$Html$text(label)
+				]));
+	};
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'padding', '10px')
+			]),
+		A2($elm$core$List$map, makeTab, tabConfigs));
 };
+var $author$project$Type$SetPage = function (a) {
+	return {$: 'SetPage', a: a};
+};
+var $author$project$Main$initLesson = $author$project$Type$Lesson($author$project$Type$AllFourTrees);
+var $author$project$Main$tabConfigs = _List_fromArray(
+	[
+		_Utils_Tuple2(
+		'Explorer',
+		$author$project$Type$SetPage($author$project$Main$initExplorer)),
+		_Utils_Tuple2(
+		'Lesson',
+		$author$project$Type$SetPage($author$project$Main$initLesson))
+	]);
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $author$project$TreeSummary$coloredText = F2(
 	function (color, text) {
@@ -6419,6 +6395,15 @@ var $author$project$RangeList$decr = function (spec) {
 		spec,
 		{n: spec.n - 1});
 };
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
+	});
+var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
 var $author$project$RangeList$incr = function (spec) {
 	return _Utils_update(
 		spec,
@@ -7040,7 +7025,7 @@ var $author$project$ExplorerView$view = function (rangeSpec) {
 	return A2($elm$html$Html$div, css, contents);
 };
 var $elm$html$Html$p = _VirtualDom_node('p');
-var $author$project$SmallTreeView$introText = function (text) {
+var $author$project$Lesson$introText = function (text) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -8037,7 +8022,7 @@ var $showell$meta_elm$MeInt$toFloat = function () {
 		});
 	return A2($showell$meta_elm$MeType$NamedFunc, 'toFloat', f);
 }();
-var $author$project$SmallTreeView$permutedLists = function () {
+var $author$project$Lesson$permutedLists = function () {
 	var startList = A2(
 		$showell$meta_elm$MeType$PipeLine,
 		$showell$meta_elm$MeType$VarName('lst'),
@@ -8152,7 +8137,7 @@ var $elm$core$Result$withDefault = F2(
 			return def;
 		}
 	});
-var $author$project$SmallTreeView$getPermutedLists = function (lst) {
+var $author$project$Lesson$getPermutedLists = function (lst) {
 	var toFloatList = function (lstExpr) {
 		return A2(
 			$showell$meta_elm$MeList$toList,
@@ -8173,7 +8158,7 @@ var $author$project$SmallTreeView$getPermutedLists = function (lst) {
 			$showell$meta_elm$MeList$toList,
 			toFloatList,
 			$showell$meta_elm$MeRunTime$getFinalValue(
-				A2($showell$meta_elm$MeRunTime$compute, context, $author$project$SmallTreeView$permutedLists))));
+				A2($showell$meta_elm$MeRunTime$compute, context, $author$project$Lesson$permutedLists))));
 };
 var $showell$meta_elm$MeList$initFloats = function (nums) {
 	return $showell$meta_elm$MeType$SimpleValue(
@@ -8282,7 +8267,7 @@ var $showell$meta_elm$MeList$sortBy = function () {
 		});
 	return A2($showell$meta_elm$MeType$NamedFunc, 'List.sortBy', sortBy0);
 }();
-var $author$project$SmallTreeView$ranks = function () {
+var $author$project$Lesson$ranks = function () {
 	var addOne = A2(
 		$showell$meta_elm$MeType$F1,
 		'n',
@@ -8320,7 +8305,7 @@ var $showell$meta_elm$MeInt$toInt = function (vExpr) {
 var $showell$meta_elm$MeList$toListInts = function (vList) {
 	return A2($showell$meta_elm$MeList$toList, $showell$meta_elm$MeInt$toInt, vList);
 };
-var $author$project$SmallTreeView$getRanks = function (lst) {
+var $author$project$Lesson$getRanks = function (lst) {
 	var context = $elm$core$Dict$fromList(
 		_List_fromArray(
 			[
@@ -8333,14 +8318,14 @@ var $author$project$SmallTreeView$getRanks = function (lst) {
 		_List_Nil,
 		$showell$meta_elm$MeList$toListInts(
 			$showell$meta_elm$MeRunTime$getFinalValue(
-				A2($showell$meta_elm$MeRunTime$compute, context, $author$project$SmallTreeView$ranks))));
+				A2($showell$meta_elm$MeRunTime$compute, context, $author$project$Lesson$ranks))));
 };
-var $author$project$SmallTreeView$nextGeneration = function (lsts) {
+var $author$project$Lesson$nextGeneration = function (lsts) {
 	var f = function (lst) {
 		return A2(
 			$elm$core$List$map,
-			$author$project$SmallTreeView$getRanks,
-			$author$project$SmallTreeView$getPermutedLists(lst));
+			$author$project$Lesson$getRanks,
+			$author$project$Lesson$getPermutedLists(lst));
 	};
 	return $elm$core$List$concat(
 		A2($elm$core$List$map, f, lsts));
@@ -8416,7 +8401,7 @@ var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$html$Html$td = _VirtualDom_node('td');
 var $elm$core$Debug$toString = _Debug_toString;
 var $elm$html$Html$tr = _VirtualDom_node('tr');
-var $author$project$SmallTreeView$viewTreeTable = function (allLists) {
+var $author$project$Lesson$viewTreeTable = function (allLists) {
 	var treeTups = A2(
 		$elm$core$List$map,
 		function (lst) {
@@ -8478,7 +8463,7 @@ var $author$project$SmallTreeView$viewTreeTable = function (allLists) {
 			]),
 		A2($elm$core$List$map, makeRow, groupTups));
 };
-var $author$project$SmallTreeView$viewAllFiveTrees = function () {
+var $author$project$Lesson$viewAllFiveTrees = function () {
 	var topText = '\n            Note that for n=5, we get two possible trees again.\n            This time they aren\'t exactly symmetrical, but\n            they\'re both the same depth.\n        ';
 	var fourLists = _List_fromArray(
 		[
@@ -8487,27 +8472,27 @@ var $author$project$SmallTreeView$viewAllFiveTrees = function () {
 			_List_fromArray(
 			[4, 3, 2, 1])
 		]);
-	var fiveLists = $author$project$SmallTreeView$nextGeneration(fourLists);
+	var fiveLists = $author$project$Lesson$nextGeneration(fourLists);
 	var bottomText = '\n            If you look at the trees for n=4, maybe you can see which\n            "missing" spots get filled in above.  (Don\'t be too\n            distracted by red vs. black at this point.)\n            The algorithm that we are looking at generally tries to\n            lean trees toward the left.\n        ';
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
 			[
-				$author$project$SmallTreeView$introText(topText),
-				$author$project$SmallTreeView$viewTreeTable(fiveLists),
-				$author$project$SmallTreeView$introText(bottomText),
-				$author$project$SmallTreeView$viewTreeTable(fourLists)
+				$author$project$Lesson$introText(topText),
+				$author$project$Lesson$viewTreeTable(fiveLists),
+				$author$project$Lesson$introText(bottomText),
+				$author$project$Lesson$viewTreeTable(fourLists)
 			]));
 }();
-var $author$project$SmallTreeView$nextButton = function (lesson) {
+var $author$project$Lesson$nextButton = function (lesson) {
 	return A2(
 		$elm$html$Html$button,
 		_List_fromArray(
 			[
 				$elm$html$Html$Events$onClick(
 				$author$project$Type$SetPage(
-					$author$project$Type$SmallTree(lesson))),
+					$author$project$Type$Lesson(lesson))),
 				A2($elm$html$Html$Attributes$style, 'margin-bottom', '5px')
 			]),
 		_List_fromArray(
@@ -8561,7 +8546,7 @@ var $elm_community$list_extra$List$Extra$permutations = function (xs_) {
 			$elm_community$list_extra$List$Extra$select(xs));
 	}
 };
-var $author$project$SmallTreeView$viewAllFourTrees = function () {
+var $author$project$Lesson$viewAllFourTrees = function () {
 	var text = '\n            When you create RedBlack trees, the order that you add\n            elements to the tree will influence the shape of the tree,\n            depending on the algorithm.  In this app we are using the\n            Elm implementation of Dict to generate the trees.\n\n            Even though there are N! different ways to insert N\n            elements into a search tree, you generally only get one\n            or two possibilities.  Below we demonstrate this for\n            the N=4 case. Let\'s simplify...\n        ';
 	var allLists = $elm_community$list_extra$List$Extra$permutations(
 		A2($elm$core$List$range, 1, 4));
@@ -8570,9 +8555,9 @@ var $author$project$SmallTreeView$viewAllFourTrees = function () {
 		_List_Nil,
 		_List_fromArray(
 			[
-				$author$project$SmallTreeView$introText(text),
-				$author$project$SmallTreeView$nextButton($author$project$Type$SimplifiedFourTrees),
-				$author$project$SmallTreeView$viewTreeTable(allLists)
+				$author$project$Lesson$introText(text),
+				$author$project$Lesson$nextButton($author$project$Type$SimplifiedFourTrees),
+				$author$project$Lesson$viewTreeTable(allLists)
 			]));
 }();
 var $stil4m$elm_syntax$Elm$Syntax$Declaration$FunctionDeclaration = function (a) {
@@ -11532,7 +11517,7 @@ var $showell$meta_elm$MeCodeGen$fromContext = function (ns) {
 var $elm$html$Html$pre = _VirtualDom_node('pre');
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $author$project$SmallTreeView$showLists = function (lists) {
+var $author$project$Lesson$showLists = function (lists) {
 	var listItem = function (lst) {
 		return A2(
 			$elm$html$Html$li,
@@ -11546,13 +11531,13 @@ var $author$project$SmallTreeView$showLists = function (lists) {
 		_List_Nil,
 		A2($elm$core$List$map, listItem, lists));
 };
-var $author$project$SmallTreeView$viewExtendList = function () {
+var $author$project$Lesson$viewExtendList = function () {
 	var text2 = '\n            Let\'s just convert them to equivalent "ranked" lists:\n            ';
 	var text1 = '\n            If we want to extend our search trees from N=4\n            to N=5, here is one way to make all possible extended\n            lists, starting from [4, 3, 2, 1]:\n            ';
 	var startList = $elm$core$List$reverse(
 		A2($elm$core$List$range, 1, 4));
-	var newLists = $author$project$SmallTreeView$getPermutedLists(startList);
-	var niceLists = A2($elm$core$List$map, $author$project$SmallTreeView$getRanks, newLists);
+	var newLists = $author$project$Lesson$getPermutedLists(startList);
+	var niceLists = A2($elm$core$List$map, $author$project$Lesson$getRanks, newLists);
 	var codeSamples = A2(
 		$elm$html$Html$pre,
 		_List_Nil,
@@ -11562,25 +11547,25 @@ var $author$project$SmallTreeView$viewExtendList = function () {
 					$elm$core$Dict$fromList(
 						_List_fromArray(
 							[
-								_Utils_Tuple2('permutedLists', $author$project$SmallTreeView$permutedLists),
-								_Utils_Tuple2('ranks', $author$project$SmallTreeView$ranks)
+								_Utils_Tuple2('permutedLists', $author$project$Lesson$permutedLists),
+								_Utils_Tuple2('ranks', $author$project$Lesson$ranks)
 							]))))));
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
 			[
-				$author$project$SmallTreeView$introText(text1),
-				$author$project$SmallTreeView$showLists(newLists),
-				$author$project$SmallTreeView$introText(text2),
-				$author$project$SmallTreeView$showLists(niceLists),
-				$author$project$SmallTreeView$nextButton($author$project$Type$AllFiveTrees),
+				$author$project$Lesson$introText(text1),
+				$author$project$Lesson$showLists(newLists),
+				$author$project$Lesson$introText(text2),
+				$author$project$Lesson$showLists(niceLists),
+				$author$project$Lesson$nextButton($author$project$Type$AllFiveTrees),
 				A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 				$elm$html$Html$text('The above lists were produced with code like below:'),
 				codeSamples
 			]));
 }();
-var $author$project$SmallTreeView$viewSimplifiedFourTrees = function () {
+var $author$project$Lesson$viewSimplifiedFourTrees = function () {
 	var text = '\n            At least for N=4, we can ignore all but two\n            permutations of how we add elements to the list.\n            Before inserting a fifth element, let\'s just\n            consider the lists below (forward insertion and\n            reverse insertion).\n            ';
 	var allLists = _List_fromArray(
 		[
@@ -11594,21 +11579,21 @@ var $author$project$SmallTreeView$viewSimplifiedFourTrees = function () {
 		_List_Nil,
 		_List_fromArray(
 			[
-				$author$project$SmallTreeView$introText(text),
-				$author$project$SmallTreeView$nextButton($author$project$Type$ExtendList),
-				$author$project$SmallTreeView$viewTreeTable(allLists)
+				$author$project$Lesson$introText(text),
+				$author$project$Lesson$nextButton($author$project$Type$ExtendList),
+				$author$project$Lesson$viewTreeTable(allLists)
 			]));
 }();
-var $author$project$SmallTreeView$view = function (lesson) {
+var $author$project$Lesson$view = function (lesson) {
 	switch (lesson.$) {
 		case 'AllFourTrees':
-			return $author$project$SmallTreeView$viewAllFourTrees;
+			return $author$project$Lesson$viewAllFourTrees;
 		case 'SimplifiedFourTrees':
-			return $author$project$SmallTreeView$viewSimplifiedFourTrees;
+			return $author$project$Lesson$viewSimplifiedFourTrees;
 		case 'ExtendList':
-			return $author$project$SmallTreeView$viewExtendList;
+			return $author$project$Lesson$viewExtendList;
 		default:
-			return $author$project$SmallTreeView$viewAllFiveTrees;
+			return $author$project$Lesson$viewAllFiveTrees;
 	}
 };
 var $author$project$Main$view = function (model) {
@@ -11619,12 +11604,12 @@ var $author$project$Main$view = function (model) {
 			return $author$project$ExplorerView$view(rangeSpec);
 		} else {
 			var lesson = _v0.a;
-			return $author$project$SmallTreeView$view(lesson);
+			return $author$project$Lesson$view(lesson);
 		}
 	}();
 	var body = _List_fromArray(
 		[
-			$author$project$Main$pageTabs(model.page),
+			$author$project$PageTabs$makeTabs($author$project$Main$tabConfigs),
 			subView
 		]);
 	return {body: body, title: 'RedBlack Trees from Elm'};
