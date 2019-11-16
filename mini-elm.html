@@ -5294,6 +5294,7 @@ var $showell$meta_elm$MeType$ComputedValue = function (a) {
 var $showell$meta_elm$MeType$VError = function (a) {
 	return {$: 'VError', a: a};
 };
+var $elm$core$String$fromFloat = _String_fromNumber;
 var $author$project$AstHelper$indent = function (lst) {
 	return A2(
 		$elm$core$String$join,
@@ -5310,6 +5311,15 @@ var $author$project$AstHelper$indent = function (lst) {
 };
 var $author$project$AstHelper$toString = function (ast) {
 	switch (ast.$) {
+		case 'If':
+			var rec = ast.a;
+			return 'If\n' + $author$project$AstHelper$indent(
+				_List_fromArray(
+					[
+						$author$project$AstHelper$toString(rec.test),
+						$author$project$AstHelper$toString(rec.test),
+						$author$project$AstHelper$toString(rec.else_)
+					]));
 		case 'Var':
 			var _var = ast.a;
 			var _v1 = _var.module_;
@@ -5362,6 +5372,12 @@ var $author$project$AstHelper$toString = function (ast) {
 		case 'Int':
 			var n = ast.a;
 			return 'Int: ' + $elm$core$String$fromInt(n);
+		case 'Float':
+			var n = ast.a;
+			return 'Float: ' + $elm$core$String$fromFloat(n);
+		case 'Bool':
+			var b = ast.a;
+			return 'Float: ' + (b ? 'True' : 'False');
 		default:
 			return '???';
 	}
@@ -6024,7 +6040,6 @@ var $showell$meta_elm$MeRunTime$computeExpr = function (expr) {
 	var context = $elm$core$Dict$empty;
 	return A2($showell$meta_elm$MeRunTime$compute, context, expr);
 };
-var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$core$String$replace = F3(
 	function (before, after, string) {
 		return A2(
