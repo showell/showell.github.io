@@ -7025,7 +7025,7 @@ var $author$project$ExplorerView$view = function (rangeSpec) {
 	return A2($elm$html$Html$div, css, contents);
 };
 var $elm$html$Html$p = _VirtualDom_node('p');
-var $author$project$Lesson$introText = function (text) {
+var $author$project$Widget$introText = function (text) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -8022,7 +8022,7 @@ var $showell$meta_elm$MeInt$toFloat = function () {
 		});
 	return A2($showell$meta_elm$MeType$NamedFunc, 'toFloat', f);
 }();
-var $author$project$Lesson$permutedLists = function () {
+var $author$project$GenerateLists$permutedLists = function () {
 	var startList = A2(
 		$showell$meta_elm$MeType$PipeLine,
 		$showell$meta_elm$MeType$VarName('lst'),
@@ -8137,7 +8137,7 @@ var $elm$core$Result$withDefault = F2(
 			return def;
 		}
 	});
-var $author$project$Lesson$getPermutedLists = function (lst) {
+var $author$project$GenerateLists$getPermutedLists = function (lst) {
 	var toFloatList = function (lstExpr) {
 		return A2(
 			$showell$meta_elm$MeList$toList,
@@ -8158,7 +8158,7 @@ var $author$project$Lesson$getPermutedLists = function (lst) {
 			$showell$meta_elm$MeList$toList,
 			toFloatList,
 			$showell$meta_elm$MeRunTime$getFinalValue(
-				A2($showell$meta_elm$MeRunTime$compute, context, $author$project$Lesson$permutedLists))));
+				A2($showell$meta_elm$MeRunTime$compute, context, $author$project$GenerateLists$permutedLists))));
 };
 var $showell$meta_elm$MeList$initFloats = function (nums) {
 	return $showell$meta_elm$MeType$SimpleValue(
@@ -8267,7 +8267,7 @@ var $showell$meta_elm$MeList$sortBy = function () {
 		});
 	return A2($showell$meta_elm$MeType$NamedFunc, 'List.sortBy', sortBy0);
 }();
-var $author$project$Lesson$ranks = function () {
+var $author$project$GenerateLists$ranks = function () {
 	var addOne = A2(
 		$showell$meta_elm$MeType$F1,
 		'n',
@@ -8305,7 +8305,7 @@ var $showell$meta_elm$MeInt$toInt = function (vExpr) {
 var $showell$meta_elm$MeList$toListInts = function (vList) {
 	return A2($showell$meta_elm$MeList$toList, $showell$meta_elm$MeInt$toInt, vList);
 };
-var $author$project$Lesson$getRanks = function (lst) {
+var $author$project$GenerateLists$getRanks = function (lst) {
 	var context = $elm$core$Dict$fromList(
 		_List_fromArray(
 			[
@@ -8318,14 +8318,14 @@ var $author$project$Lesson$getRanks = function (lst) {
 		_List_Nil,
 		$showell$meta_elm$MeList$toListInts(
 			$showell$meta_elm$MeRunTime$getFinalValue(
-				A2($showell$meta_elm$MeRunTime$compute, context, $author$project$Lesson$ranks))));
+				A2($showell$meta_elm$MeRunTime$compute, context, $author$project$GenerateLists$ranks))));
 };
-var $author$project$Lesson$nextGeneration = function (lsts) {
+var $author$project$GenerateLists$nextGeneration = function (lsts) {
 	var f = function (lst) {
 		return A2(
 			$elm$core$List$map,
-			$author$project$Lesson$getRanks,
-			$author$project$Lesson$getPermutedLists(lst));
+			$author$project$GenerateLists$getRanks,
+			$author$project$GenerateLists$getPermutedLists(lst));
 	};
 	return $elm$core$List$concat(
 		A2($elm$core$List$map, f, lsts));
@@ -8401,7 +8401,7 @@ var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$html$Html$td = _VirtualDom_node('td');
 var $elm$core$Debug$toString = _Debug_toString;
 var $elm$html$Html$tr = _VirtualDom_node('tr');
-var $author$project$Lesson$viewTreeTable = function (allLists) {
+var $author$project$TreeTable$view = function (allLists) {
 	var treeTups = A2(
 		$elm$core$List$map,
 		function (lst) {
@@ -8472,20 +8472,20 @@ var $author$project$Lesson$viewAllFiveTrees = function () {
 			_List_fromArray(
 			[4, 3, 2, 1])
 		]);
-	var fiveLists = $author$project$Lesson$nextGeneration(fourLists);
+	var fiveLists = $author$project$GenerateLists$nextGeneration(fourLists);
 	var bottomText = '\n            If you look at the trees for n=4, maybe you can see which\n            "missing" spots get filled in above.  (Don\'t be too\n            distracted by red vs. black at this point.)\n            The algorithm that we are looking at generally tries to\n            lean trees toward the left.\n        ';
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
 			[
-				$author$project$Lesson$introText(topText),
-				$author$project$Lesson$viewTreeTable(fiveLists),
-				$author$project$Lesson$introText(bottomText),
-				$author$project$Lesson$viewTreeTable(fourLists)
+				$author$project$Widget$introText(topText),
+				$author$project$TreeTable$view(fiveLists),
+				$author$project$Widget$introText(bottomText),
+				$author$project$TreeTable$view(fourLists)
 			]));
 }();
-var $author$project$Lesson$nextButton = function (lesson) {
+var $author$project$Widget$nextButton = function (lesson) {
 	return A2(
 		$elm$html$Html$button,
 		_List_fromArray(
@@ -8555,9 +8555,9 @@ var $author$project$Lesson$viewAllFourTrees = function () {
 		_List_Nil,
 		_List_fromArray(
 			[
-				$author$project$Lesson$introText(text),
-				$author$project$Lesson$nextButton($author$project$Type$SimplifiedFourTrees),
-				$author$project$Lesson$viewTreeTable(allLists)
+				$author$project$Widget$introText(text),
+				$author$project$Widget$nextButton($author$project$Type$SimplifiedFourTrees),
+				$author$project$TreeTable$view(allLists)
 			]));
 }();
 var $stil4m$elm_syntax$Elm$Syntax$Declaration$FunctionDeclaration = function (a) {
@@ -11515,9 +11515,21 @@ var $showell$meta_elm$MeCodeGen$fromContext = function (ns) {
 			$elm$core$Dict$toList(ns)));
 };
 var $elm$html$Html$pre = _VirtualDom_node('pre');
+var $author$project$GenerateLists$codeSamples = A2(
+	$elm$html$Html$pre,
+	_List_Nil,
+	$elm$core$List$singleton(
+		$elm$html$Html$text(
+			$showell$meta_elm$MeCodeGen$fromContext(
+				$elm$core$Dict$fromList(
+					_List_fromArray(
+						[
+							_Utils_Tuple2('permutedLists', $author$project$GenerateLists$permutedLists),
+							_Utils_Tuple2('ranks', $author$project$GenerateLists$ranks)
+						]))))));
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $author$project$Lesson$showLists = function (lists) {
+var $author$project$GenerateLists$showLists = function (lists) {
 	var listItem = function (lst) {
 		return A2(
 			$elm$html$Html$li,
@@ -11536,33 +11548,21 @@ var $author$project$Lesson$viewExtendList = function () {
 	var text1 = '\n            If we want to extend our search trees from N=4\n            to N=5, here is one way to make all possible extended\n            lists, starting from [4, 3, 2, 1]:\n            ';
 	var startList = $elm$core$List$reverse(
 		A2($elm$core$List$range, 1, 4));
-	var newLists = $author$project$Lesson$getPermutedLists(startList);
-	var niceLists = A2($elm$core$List$map, $author$project$Lesson$getRanks, newLists);
-	var codeSamples = A2(
-		$elm$html$Html$pre,
-		_List_Nil,
-		$elm$core$List$singleton(
-			$elm$html$Html$text(
-				$showell$meta_elm$MeCodeGen$fromContext(
-					$elm$core$Dict$fromList(
-						_List_fromArray(
-							[
-								_Utils_Tuple2('permutedLists', $author$project$Lesson$permutedLists),
-								_Utils_Tuple2('ranks', $author$project$Lesson$ranks)
-							]))))));
+	var newLists = $author$project$GenerateLists$getPermutedLists(startList);
+	var niceLists = A2($elm$core$List$map, $author$project$GenerateLists$getRanks, newLists);
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
 			[
-				$author$project$Lesson$introText(text1),
-				$author$project$Lesson$showLists(newLists),
-				$author$project$Lesson$introText(text2),
-				$author$project$Lesson$showLists(niceLists),
-				$author$project$Lesson$nextButton($author$project$Type$AllFiveTrees),
+				$author$project$Widget$introText(text1),
+				$author$project$GenerateLists$showLists(newLists),
+				$author$project$Widget$introText(text2),
+				$author$project$GenerateLists$showLists(niceLists),
+				$author$project$Widget$nextButton($author$project$Type$AllFiveTrees),
 				A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 				$elm$html$Html$text('The above lists were produced with code like below:'),
-				codeSamples
+				$author$project$GenerateLists$codeSamples
 			]));
 }();
 var $author$project$Lesson$viewSimplifiedFourTrees = function () {
@@ -11579,9 +11579,9 @@ var $author$project$Lesson$viewSimplifiedFourTrees = function () {
 		_List_Nil,
 		_List_fromArray(
 			[
-				$author$project$Lesson$introText(text),
-				$author$project$Lesson$nextButton($author$project$Type$ExtendList),
-				$author$project$Lesson$viewTreeTable(allLists)
+				$author$project$Widget$introText(text),
+				$author$project$Widget$nextButton($author$project$Type$ExtendList),
+				$author$project$TreeTable$view(allLists)
 			]));
 }();
 var $author$project$Lesson$view = function (lesson) {
