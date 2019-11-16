@@ -5245,8 +5245,9 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$document = _Browser_document;
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $elm$core$String$trim = _String_trim;
 var $author$project$Main$init = function (_v0) {
-	var code = '\nList.tail\n    [ 5\n    , List.map\n        (\\x -> x + 3.1)\n        (5 :: [(\\x -> x + 1)(8)])\n    , 30 + 20 + 10\n    , if True then 7 else 13\n    ]';
+	var code = $elm$core$String$trim('\nlet\n    y = 7\nin\nList.tail\n    [ 5\n    , y\n    , List.map\n        (\\x -> x + 3.1)\n        (5 :: [(\\x -> x + 1)(8)])\n    , 30 + 20 + 10\n    , if True then 7 else 13\n    ]');
 	var model = {code: code, inputCode: code, title: 'simple demo'};
 	return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 };
@@ -5311,6 +5312,23 @@ var $author$project$AstHelper$indent = function (lst) {
 };
 var $author$project$AstHelper$toString = function (ast) {
 	switch (ast.$) {
+		case 'Let':
+			var rec = ast.a;
+			var bindingToString = function (b) {
+				return b.name + ('\n' + $author$project$AstHelper$indent(
+					_List_fromArray(
+						[
+							$author$project$AstHelper$toString(b.body)
+						])));
+			};
+			var bindings = $author$project$AstHelper$indent(
+				A2($elm$core$List$map, bindingToString, rec.bindings));
+			return 'Let\n' + $author$project$AstHelper$indent(
+				_List_fromArray(
+					[
+						bindings,
+						$author$project$AstHelper$toString(rec.body)
+					]));
 		case 'If':
 			var rec = ast.a;
 			return 'If\n' + $author$project$AstHelper$indent(
@@ -6146,6 +6164,10 @@ var $showell$meta_elm$MeType$IfElse = F3(
 var $showell$meta_elm$MeType$Infix = F3(
 	function (a, b, c) {
 		return {$: 'Infix', a: a, b: b, c: c};
+	});
+var $showell$meta_elm$MeType$LetIn = F2(
+	function (a, b) {
+		return {$: 'LetIn', a: a, b: b};
 	});
 var $showell$meta_elm$MeType$SimpleValue = function (a) {
 	return {$: 'SimpleValue', a: a};
@@ -7987,6 +8009,20 @@ var $author$project$Example$getBuiltin = function (_var) {
 };
 var $author$project$Example$meExpr = function (ast) {
 	switch (ast.$) {
+		case 'Let':
+			var rec = ast.a;
+			var bindings = A2(
+				$elm$core$List$map,
+				function (r) {
+					return _Utils_Tuple2(
+						r.name,
+						$author$project$Example$meExpr(r.body));
+				},
+				rec.bindings);
+			return A2(
+				$showell$meta_elm$MeType$LetIn,
+				bindings,
+				$author$project$Example$meExpr(rec.body));
 		case 'If':
 			var rec = ast.a;
 			return A3(
@@ -8001,7 +8037,7 @@ var $author$project$Example$meExpr = function (ast) {
 				var expr = _v1.a;
 				return expr;
 			} else {
-				return $author$project$Example$exprError(ast);
+				return $showell$meta_elm$MeType$VarName(rec.name);
 			}
 		case 'Call':
 			var rec = ast.a;
@@ -10805,7 +10841,7 @@ var $author$project$Example$viewRepl = function (model) {
 	var textAreaAttrs = _List_fromArray(
 		[
 			A2($elm$html$Html$Attributes$style, 'width', '350px'),
-			A2($elm$html$Html$Attributes$style, 'height', '150px'),
+			A2($elm$html$Html$Attributes$style, 'height', '200px'),
 			$elm$html$Html$Events$onInput($author$project$Type$UpdateInputCode)
 		]);
 	var showResult = function (s) {
