@@ -5247,7 +5247,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$String$trim = _String_trim;
 var $author$project$Main$init = function (_v0) {
-	var code = $elm$core$String$trim('\nlet\n    y = 7\nin\nList.tail\n    [ 5\n    , y\n    , List.map\n        (\\x -> x + 3.1)\n        (5 :: [(\\x -> x + 1)(8)])\n    , 30 + 20 + 10\n    , if True then 7 else 13\n    ]');
+	var code = $elm$core$String$trim('\nlet\n    y = 7\nin\nList.tail\n    [ 5\n    , y\n    , False\n    , List.map\n        (\\x -> x + 3.1)\n        (5 :: [(\\x -> x + 1)(8)])\n    , 30 + 20 + 10\n    , if True then 7 else 13\n    ]');
 	var model = {code: code, inputCode: code, title: 'simple demo'};
 	return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 };
@@ -5335,7 +5335,7 @@ var $author$project$AstHelper$toString = function (ast) {
 				_List_fromArray(
 					[
 						$author$project$AstHelper$toString(rec.test),
-						$author$project$AstHelper$toString(rec.test),
+						$author$project$AstHelper$toString(rec.then_),
 						$author$project$AstHelper$toString(rec.else_)
 					]));
 		case 'Var':
@@ -5395,7 +5395,7 @@ var $author$project$AstHelper$toString = function (ast) {
 			return 'Float: ' + $elm$core$String$fromFloat(n);
 		case 'Bool':
 			var b = ast.a;
-			return 'Float: ' + (b ? 'True' : 'False');
+			return 'Bool: ' + (b ? 'True' : 'False');
 		default:
 			return '???';
 	}
