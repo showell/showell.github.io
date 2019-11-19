@@ -35,7 +35,7 @@ Here are some packages that I have published:
 
 This is hosted via Github pages:
 
-- main page: https://showell.github.io/
-- repo: https://github.com/showell/showell.github.io
+- [main page](https://showell.github.io/)
+- [repo](https://github.com/showell/showell.github.io)
 
 -- Steve (showell @ github)
