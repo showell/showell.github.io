@@ -18,6 +18,9 @@ Here are some packages that I have published:
 
 ##### Hosting
 
-This is hosted via Github pages: https://github.com/showell/showell.github.io
+This is hosted via Github pages:
+
+- main page: https://showell.github.io/
+- repo: https://github.com/showell/showell.github.io
 
 -- Steve (showell @ github)
