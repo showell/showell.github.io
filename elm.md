@@ -1,5 +1,20 @@
 Hi, I like the Elm programming language.
 
+### Game programming
+
+I don't do a ton of game programming, but building games is a really good
+way to learn programming languages.  My Fast Track 
+[implementation](https://github.com/showell/elm-fasttrack) is about 4k lines
+of Elm code.  It gave me practice on lots of fundamentals:
+
+* The Elm Architecture
+* basic data structures
+* recursion/graph algorithms
+* managing state transitions
+* using SVG to draw the board
+
+You can see it [here](https://showell.github.io/ft.html).
+
 ### Packages
 
 Here are some packages that I have published:
