@@ -7793,7 +7793,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
 	var hacks = $author$project$Builtin$hacks;
-	var code = $elm$core$String$trim('\nlet\n    y = 7\nin\nList.tail\n    [ 5\n    , y\n    , False\n    , Tuple.pair 10 20\n    , List.map\n        (\\x -> x + 3.1)\n        (5 :: [(\\x -> x + 1)(8)])\n    , 30 + 20 + 10\n    , if True then 7 else 13\n    ]');
+	var code = $elm$core$String$trim('\nlet\n    y = 7\nin\nList.tail\n    [ 5\n    , y\n    , False\n    , (\\a b c -> a + b + c + y) 300 20 1\n    , Tuple.pair 10 20\n    , List.map\n        (\\x -> x + 3.1)\n        (5 :: [(\\x -> x + 1)(8)])\n    , 30 + 20 + 10\n    , if True then 7 else 13\n    ]');
 	var model = {code: code, inputCode: code, title: 'simple demo'};
 	return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 };
@@ -7948,6 +7948,34 @@ var $author$project$Example$astToString = function (astResult) {
 		return 'cannot compile';
 	}
 };
+var $showell$meta_elm$MeType$A1F2 = F4(
+	function (a, b, c, d) {
+		return {$: 'A1F2', a: a, b: b, c: c, d: d};
+	});
+var $showell$meta_elm$MeType$A1F3 = F5(
+	function (a, b, c, d, e) {
+		return {$: 'A1F3', a: a, b: b, c: c, d: d, e: e};
+	});
+var $showell$meta_elm$MeType$A2 = F3(
+	function (a, b, c) {
+		return {$: 'A2', a: a, b: b, c: c};
+	});
+var $showell$meta_elm$MeType$A2F3 = F6(
+	function (a, b, c, d, e, f) {
+		return {$: 'A2F3', a: a, b: b, c: c, d: d, e: e, f: f};
+	});
+var $showell$meta_elm$MeType$A3 = F4(
+	function (a, b, c, d) {
+		return {$: 'A3', a: a, b: b, c: c, d: d};
+	});
+var $showell$meta_elm$MeType$F2 = F3(
+	function (a, b, c) {
+		return {$: 'F2', a: a, b: b, c: c};
+	});
+var $showell$meta_elm$MeType$F3 = F4(
+	function (a, b, c, d) {
+		return {$: 'F3', a: a, b: b, c: c, d: d};
+	});
 var $showell$meta_elm$MeType$FuncCall = F3(
 	function (a, b, c) {
 		return {$: 'FuncCall', a: a, b: b, c: c};
@@ -7994,6 +8022,7 @@ var $showell$meta_elm$MeRunTime$getArgDict = F2(
 				return $elm$core$Result$Err('you must call a function');
 		}
 	});
+var $elm$core$Debug$log = _Debug_log;
 var $showell$meta_elm$MeRunTime$union = F2(
 	function (_new, old) {
 		return A2(elmCore.Dict.union, _new, old);
@@ -8003,13 +8032,13 @@ var $showell$meta_elm$MeRunTime$applyArgsToFunction = F4(
 		var fvInit = A2($showell$meta_elm$MeRunTime$getFuncV, c, firstExpr);
 		var apply = F2(
 			function (arg, fv) {
-				var _v25 = A2(fv, c, arg);
-				if (_v25.$ === 'ComputedFunc') {
-					var newF = _v25.a;
+				var _v32 = A2(fv, c, arg);
+				if (_v32.$ === 'ComputedFunc') {
+					var newF = _v32.a;
 					return newF;
 				} else {
 					return F2(
-						function (_v26, _v27) {
+						function (_v33, _v34) {
 							return $showell$meta_elm$MeRunTime$error('could not compute function');
 						});
 				}
@@ -8067,9 +8096,9 @@ var $showell$meta_elm$MeRunTime$compute = F2(
 					continue compute;
 				case 'VarName':
 					var vname = expr.a;
-					var _v18 = A2($showell$meta_elm$MeRunTime$get, vname, context);
-					if (_v18.$ === 'Just') {
-						var v = _v18.a;
+					var _v23 = A2($showell$meta_elm$MeRunTime$get, vname, context);
+					if (_v23.$ === 'Just') {
+						var v = _v23.a;
 						var $temp$context = context,
 							$temp$expr = v;
 						context = $temp$context;
@@ -8093,9 +8122,9 @@ var $showell$meta_elm$MeRunTime$compute = F2(
 										$showell$meta_elm$MeRunTime$compute(context),
 										lst)));
 						case 'VTuple':
-							var _v20 = v.a;
-							var a = _v20.a;
-							var b = _v20.b;
+							var _v25 = v.a;
+							var a = _v25.a;
+							var b = _v25.b;
 							return $showell$meta_elm$MeType$ComputedValue(
 								$showell$meta_elm$MeType$VTuple(
 									_Utils_Tuple2(
@@ -8121,23 +8150,23 @@ var $showell$meta_elm$MeRunTime$compute = F2(
 					var funcName = expr.b;
 					var args = expr.c;
 					var newContext = A2($showell$meta_elm$MeRunTime$union, ns, context);
-					var _v21 = A2($showell$meta_elm$MeRunTime$get, funcName, newContext);
-					if (_v21.$ === 'Just') {
-						var impl = _v21.a;
+					var _v26 = A2($showell$meta_elm$MeRunTime$get, funcName, newContext);
+					if (_v26.$ === 'Just') {
+						var impl = _v26.a;
 						var computedArgs = A2(
 							elmCore.List.map,
 							$showell$meta_elm$MeRunTime$compute(newContext),
 							args);
-						var _v22 = A2($showell$meta_elm$MeRunTime$getArgDict, computedArgs, impl);
-						if (_v22.$ === 'Ok') {
-							var argDict = _v22.a;
+						var _v27 = A2($showell$meta_elm$MeRunTime$getArgDict, computedArgs, impl);
+						if (_v27.$ === 'Ok') {
+							var argDict = _v27.a;
 							var $temp$context = A2($showell$meta_elm$MeRunTime$union, argDict, newContext),
 								$temp$expr = impl;
 							context = $temp$context;
 							expr = $temp$expr;
 							continue compute;
 						} else {
-							var s = _v22.a;
+							var s = _v27.a;
 							return $showell$meta_elm$MeRunTime$error('bad args for ' + (funcName + (': ' + s)));
 						}
 					} else {
@@ -8147,10 +8176,10 @@ var $showell$meta_elm$MeRunTime$compute = F2(
 					var cond = expr.a;
 					var ifExpr = expr.b;
 					var elseExpr = expr.c;
-					var _v23 = A2($showell$meta_elm$MeRunTime$getValue, context, cond);
-					switch (_v23.$) {
+					var _v28 = A2($showell$meta_elm$MeRunTime$getValue, context, cond);
+					switch (_v28.$) {
 						case 'VBool':
-							var b = _v23.a;
+							var b = _v28.a;
 							if (b) {
 								var $temp$context = context,
 									$temp$expr = ifExpr;
@@ -8165,7 +8194,7 @@ var $showell$meta_elm$MeRunTime$compute = F2(
 								continue compute;
 							}
 						case 'VError':
-							var s = _v23.a;
+							var s = _v28.a;
 							return $showell$meta_elm$MeRunTime$error('error with if conditional: ' + s);
 						default:
 							return $showell$meta_elm$MeRunTime$error('if needs a conditional');
@@ -8204,11 +8233,33 @@ var $showell$meta_elm$MeRunTime$compute = F2(
 					var e2 = expr.a;
 					var e1 = expr.b;
 					var e0 = expr.c;
-					return A5($showell$meta_elm$MeRunTime$getFuncVV, context, e2, context, e1, e0);
+					if (e2.$ === 'F3') {
+						var name2 = e2.a;
+						var name1 = e2.b;
+						var name0 = e2.c;
+						var impl = e2.d;
+						return A6($showell$meta_elm$MeType$A2F3, e1, e0, name2, name1, name0, impl);
+					} else {
+						return A5($showell$meta_elm$MeRunTime$getFuncVV, context, e2, context, e1, e0);
+					}
 				case 'A1':
 					var e1 = expr.a;
 					var e0 = expr.b;
-					return A4($showell$meta_elm$MeRunTime$getFuncV, context, e1, context, e0);
+					switch (e1.$) {
+						case 'F3':
+							var name2 = e1.a;
+							var name1 = e1.b;
+							var name0 = e1.c;
+							var impl = e1.d;
+							return A5($showell$meta_elm$MeType$A1F3, e0, name2, name1, name0, impl);
+						case 'F2':
+							var name1 = e1.a;
+							var name0 = e1.b;
+							var impl = e1.c;
+							return A4($showell$meta_elm$MeType$A1F2, e0, name1, name0, impl);
+						default:
+							return A4($showell$meta_elm$MeRunTime$getFuncV, context, e1, context, e0);
+					}
 				default:
 					return $showell$meta_elm$MeRunTime$error('cannot evaluate this type as a value yet');
 			}
@@ -8226,18 +8277,89 @@ var $showell$meta_elm$MeRunTime$evalPipeLine = F3(
 var $showell$meta_elm$MeRunTime$getFuncV = F2(
 	function (c, expr) {
 		var err = function (s) {
+			var _v19 = A2($elm$core$Debug$log, 'getFuncV problem', expr);
 			return F2(
-				function (_v15, _v16) {
+				function (_v20, _v21) {
 					return $showell$meta_elm$MeType$ComputedValue(
 						$showell$meta_elm$MeType$VError(s));
 				});
 		};
+		var computeFirst = function (_v18) {
+			return A2(
+				$showell$meta_elm$MeRunTime$getFuncV,
+				c,
+				A2($showell$meta_elm$MeRunTime$compute, c, expr));
+		};
 		switch (expr.$) {
+			case 'A2F3':
+				var arg2 = expr.a;
+				var arg1 = expr.b;
+				var name2 = expr.c;
+				var name1 = expr.d;
+				var name0 = expr.e;
+				var impl = expr.f;
+				return F2(
+					function (_v14, e0) {
+						return A2(
+							$showell$meta_elm$MeRunTime$compute,
+							c,
+							A4(
+								$showell$meta_elm$MeType$A3,
+								A4($showell$meta_elm$MeType$F3, name2, name1, name0, impl),
+								arg2,
+								arg1,
+								e0));
+					});
+			case 'A1F3':
+				var arg1 = expr.a;
+				var name2 = expr.b;
+				var name1 = expr.c;
+				var name0 = expr.d;
+				var impl = expr.e;
+				return F2(
+					function (_v15, e0) {
+						return A2(
+							$showell$meta_elm$MeRunTime$compute,
+							c,
+							A3(
+								$showell$meta_elm$MeType$A2,
+								A4($showell$meta_elm$MeType$F3, name2, name1, name0, impl),
+								arg1,
+								e0));
+					});
+			case 'A1F2':
+				var arg1 = expr.a;
+				var name1 = expr.b;
+				var name0 = expr.c;
+				var impl = expr.d;
+				return F2(
+					function (_v16, e0) {
+						return A2(
+							$showell$meta_elm$MeRunTime$compute,
+							c,
+							A3(
+								$showell$meta_elm$MeType$A2,
+								A3($showell$meta_elm$MeType$F2, name1, name0, impl),
+								arg1,
+								e0));
+					});
+			case 'A1':
+				return computeFirst(_Utils_Tuple0);
+			case 'A2':
+				return computeFirst(_Utils_Tuple0);
+			case 'A3':
+				return computeFirst(_Utils_Tuple0);
+			case 'A4':
+				return computeFirst(_Utils_Tuple0);
+			case 'A5':
+				return computeFirst(_Utils_Tuple0);
+			case 'Var':
+				return computeFirst(_Utils_Tuple0);
 			case 'F1':
 				var name = expr.a;
 				var impl = expr.b;
 				return F2(
-					function (_v14, e) {
+					function (_v17, e) {
 						return A4(
 							$showell$meta_elm$MeRunTime$callF,
 							c,
@@ -8257,14 +8379,11 @@ var $showell$meta_elm$MeRunTime$getFuncV = F2(
 				var f = expr.a;
 				return f;
 			case 'ComputedValue':
-				return err('not a function');
+				return err('not a function (computed value)');
 			case 'SimpleValue':
-				return err('not a function');
+				return err('not a function (simple value)');
 			default:
-				return A2(
-					$showell$meta_elm$MeRunTime$getFuncV,
-					c,
-					A2($showell$meta_elm$MeRunTime$compute, c, expr));
+				return err('unsupported type for getFuncV');
 		}
 	});
 var $showell$meta_elm$MeRunTime$getFuncVV = F2(
@@ -8484,14 +8603,6 @@ var $showell$meta_elm$MeType$F1 = F2(
 	function (a, b) {
 		return {$: 'F1', a: a, b: b};
 	});
-var $showell$meta_elm$MeType$F2 = F3(
-	function (a, b, c) {
-		return {$: 'F2', a: a, b: b, c: c};
-	});
-var $showell$meta_elm$MeType$F3 = F4(
-	function (a, b, c, d) {
-		return {$: 'F3', a: a, b: b, c: c, d: d};
-	});
 var $showell$meta_elm$MeType$IfElse = F3(
 	function (a, b, c) {
 		return {$: 'IfElse', a: a, b: b, c: c};
@@ -8549,7 +8660,6 @@ var $showell$meta_elm$MeList$cons = function () {
 		});
 	return A3($showell$meta_elm$MeType$OpFunc, 'List.cons', cons0, '::');
 }();
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Example$exprError = function (ast) {
 	var _v0 = A2($elm$core$Debug$log, 'unsupported ast', ast);
 	return $showell$meta_elm$MeType$SimpleValue(
@@ -8670,10 +8780,6 @@ var $showell$meta_elm$MeList$append = function () {
 		});
 	return A3($showell$meta_elm$MeType$OpFunc, 'List.append', append0, '++');
 }();
-var $showell$meta_elm$MeType$A2 = F3(
-	function (a, b, c) {
-		return {$: 'A2', a: a, b: b, c: c};
-	});
 var $showell$meta_elm$MeType$Var = F2(
 	function (a, b) {
 		return {$: 'Var', a: a, b: b};
@@ -12718,8 +12824,9 @@ return (function () {
             }
         }
 
+        console.log("bad context?", c, name);
         return function() {
-            return "cannot find List function: " + name;
+            return "cannot find function: " + name;
         }
     }
 
@@ -12730,6 +12837,7 @@ return (function () {
 
         switch (expr.$) {
             case 'Call':
+                console.info('incoming context for Call', c);
                 var rec = expr.a;
                 var f = e(rec.fn);
 
@@ -12759,6 +12867,7 @@ return (function () {
 
             case 'Lambda':
                 function lambda(context, params, body) {
+                    console.info('incoming context for Lambda', context);
                     return function (arg) {
                         var newContext = [
                             { name: params[0], val: arg }
@@ -12776,7 +12885,7 @@ return (function () {
                 }
                 var rec = expr.a;
                 var initParams = _List_toArray(rec._arguments);
-                return lambda([], initParams, rec.body);
+                return lambda(c, initParams, rec.body);
 
             case 'If':
                 var rec = expr.a;
@@ -12825,9 +12934,7 @@ return (function () {
     }
 
     function result(expr) {
-        let context = [
-            { name: 'n', val: 55 }
-        ];
+        let context = [];
         if (expr.$ === 'Ok') {
             return ev(context, expr.a);
         } else {
