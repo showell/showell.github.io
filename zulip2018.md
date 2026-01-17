@@ -55,8 +55,8 @@ Zulip used ES6.
 But the essential code survives.
 
 You can see my initial version of `padded_widget.js` below.
-It's the same code module syntax sugar and explicit type
-definitions:
+It's the same code apart from missing some syntax sugar and
+explicit type definitions:
 
 ~~~ js
 var padded_widget = (function () {
