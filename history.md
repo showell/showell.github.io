@@ -22,9 +22,9 @@ the interview questions in the new language, even if it's a question I have answ
 times before.  Usually there's just the syntax in my way, but sometimes the new language actually
 provides a better way to solve it. (boy do I wish I had an example handy, haha)
 
-See https://github.com/showell/InterviewPrep (2012)
+See [InterviewPrep on GH](https://github.com/showell/InterviewPrep) (2012)
 
-Most examples are for CoffeeScript. That language seems mostly dead now. I don't use it any more,
+Most of my examples are for CoffeeScript. That language seems mostly dead now. I don't use it any more,
 to be clear. It had some good ideas, and I genuinely enjoyed just the syntax, but it was unfairly
 maligned as being just pure syntax sugar, which I don't think is fair. It undoubtedly influenced
 the evolution of other languages, including of course its transpilation target (JS).
