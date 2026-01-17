@@ -14,6 +14,8 @@ Some Elm programs:
 
 ## Code samples
 
+### C Programming Language
+
 I know how to program in C. Unfortunately, most of my C code samples are lost to time, since most were written pre-web (late 80s
 and early 90s mostly).
 
