@@ -1,5 +1,9 @@
+Obligatory:
+* [Conway's Game of Life (in CoffeeScript)](https://github.com/showell/Game-Of-Life/game.coffee) (2011) [run it!](http://showell.github.io/Game-Of-Life/game.html)
+* [same program in JS, more comments](https://gist.github.com/showell/908317#file-game_of_life-html) (2011)
+
 Some YouTube content:
-* [CoffeeScript Programming Tutorial](https://www.youtube.com/watch?v=TlERmDaEjJo&list=PLLwiAE7l6YhK94qx5-vIpDvSwyV2dCWr8) (2011!)
+* [CoffeeScript Programming Tutorial](https://www.youtube.com/watch?v=TlERmDaEjJo&list=PLLwiAE7l6YhK94qx5-vIpDvSwyV2dCWr8) (2011)
 * [Spicy Recursion](https://www.youtube.com/watch?v=CFIauRH9TUQ&list=PLLwiAE7l6YhLvgFp24MYLDJDA3AYpoy9Y&index=1) (2024) - kinda strange
 
 Some Elm programs:
