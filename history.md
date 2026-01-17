@@ -25,7 +25,7 @@ provides a better way to solve it. (boy do I wish I had an example handy, haha)
 See [InterviewPrep on GH](https://github.com/showell/InterviewPrep) (2012)
 
 Most of my examples are for CoffeeScript. That language seems mostly dead now. I don't use it any more,
-to be clear. It had some good ideas, and I genuinely enjoyed just the syntax, but it was unfairly
+to be clear. It had some good ideas, and I genuinely enjoyed just the syntax alone, but it was unfairly
 maligned as being just pure syntax sugar, which I don't think is fair. It undoubtedly influenced
 the evolution of other languages, including of course its transpilation target (JS).
 
