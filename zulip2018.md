@@ -2,7 +2,61 @@
 
 Those were simpler times.
 
-See my initial version of `padded_widget.js` here:
+## padded widget
+
+Consider the following piece of code that still exists in the
+Zulip codebase as of 2026.
+
+~~~ ts
+import $ from "jquery";
+
+export function update_padding(opts: {
+    content_selector: string;
+    padding_selector: string;
+    total_rows: number;
+    shown_rows: number;
+}): void {
+    const $content = $(opts.content_selector);
+    const $padding = $(opts.padding_selector);
+    const total_rows = opts.total_rows;
+    const shown_rows = opts.shown_rows;
+    const hidden_rows = total_rows - shown_rows;
+
+    if (shown_rows === 0) {
+        $padding.height(0);
+        return;
+    }
+
+    const ratio = hidden_rows / shown_rows;
+
+    const content_height = $content.height();
+    if (content_height === undefined) {
+        return;
+    }
+
+    const new_padding_height = ratio * content_height;
+
+    $padding.height(new_padding_height);
+    $padding.width(1);
+}
+~~~
+
+This code seems pretty simple on the surface.  It makes
+a simple geometry calculation and updates some kind of
+padding-related DOM element (via jQuery) to have a new
+height and width. I will put that into context later.
+
+It's written in TypeScript.
+
+I actually wrote the initial version of this function
+not only before Zulip used TypeScript but also before
+Zulip used ES6.
+
+But the essential code survives.
+
+You can see my initial version of `padded_widget.js` below.
+It's the same code module syntax sugar and explicit type
+definitions:
 
 ~~~ js
 var padded_widget = (function () {
@@ -40,7 +94,24 @@ if (typeof module !== 'undefined') {
 window.padded_widget = padded_widget;
 ~~~
 
-And here was `buddy_list.js`:
+The context of the above code is that we needed to progressively
+render our buddy list.  At the time (2018), it was considered
+too expensive to render the entire contents of a buddy list until
+the user scrolled to the bottom of the list.  We sometimes had
+up to 20k users on a single realm, so there could indeed be lots
+to render.
+
+In order to make progressive scrolling not mess with the scrollbar,
+we wanted a little off-screen part of the buddy list to be the
+"padding" that the user couldn't see, but which made the scrollbar
+not put the thumb bar at the wrong place.
+
+The above code was the gist of the solution, but you also needed
+the list itself to have some extra logic.
+
+That logic resided in `buddy_list.js`. Here is the 2018 version for
+full context. Again, please excuse the 2018 lack of syntax sugar
+and explicit typing:
 
 ~~~ js
 /* eslint indent: "off" */
