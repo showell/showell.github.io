@@ -683,3 +683,7 @@ isLocFree pieceMap pieceColor loc =
         Just color ->
             color /= pieceColor
 ~~~
+
+## Zulip
+
+I plan to write more about Zulip.  See [Zulip 2018](zulip2018.html) for now.
