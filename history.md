@@ -1,5 +1,5 @@
 Obligatory:
-* [Conway's Game of Life (in CoffeeScript)](https://github.com/showell/Game-Of-Life/blob/master/game.coffee) (2011) [run it!](http://showell.github.io/Game-Of-Life/game.html)
+* [Conway's Game of Life (in CoffeeScript)](https://github.com/showell/Game-Of-Life/blob/master/game.coffee) (2011) [run it!](http://showell.github.io/Game-Of-Life/game.html) -- this is overengineered by design :smile: with inline unit tests
 * [same program in JS, more comments](https://gist.github.com/showell/908317#file-game_of_life-html) (2011)
 
 Some YouTube content:
