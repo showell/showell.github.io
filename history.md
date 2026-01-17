@@ -128,6 +128,9 @@ six years later (and I actually know the rules of the actual board game).
 
 I just present it as an illustration that I could get my head around the beauty of ELM.
 
+See the code in more context at the [repo](https://github.com/showell/elm-fasttrack/blob/master/src/LegalMove.elm)
+and see the [game in action](https://showell.github.io/ft.html).
+
 ~~~ elm
 module LegalMove exposing
     ( endLocations
