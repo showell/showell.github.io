@@ -17,99 +17,90 @@ Some Elm programs:
 I know how to program in C. Unfortunately, most of my C code samples are lost to time, since most were written pre-web (late 80s
 and early 90s mostly).
 
-I also wrote some interesting C code in 2013 while working for DomainTools in Seattle, but it's not open source.  Here is a small sample from 2012:
+I also wrote some interesting C code in 2013 while working for DomainTools in Seattle, but it's not open source.
+
+Here is some C code from an [interview-prep repo](https://github.com/showell/c_interview/blob/master/nth_biggest.c) that I worked on during 2012.  It finds the nth biggest item from a binary tree, and it includes assertions.
 
 ~~~ c
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
 
-unsigned long MAX = 10000000;
+struct Node {
+    int val;
+    struct Node *left;
+    struct Node *right;
+};
+typedef struct Node Node;
 
-struct factorization {
-    unsigned long small;
-    unsigned long other;
+struct search_result {
+    int need;
+    struct Node *node;
 };
 
-unsigned long small_factor(
-    unsigned long n,
-    unsigned long *primes,
-    unsigned long num_primes
-)
-{
-    unsigned long i;
-    for (i = 0; i < num_primes; ++i) {
-        unsigned long p = primes[i];
-        if (p * p > n) {
-            break;
-        }
-        if (n % p == 0) {
-            return p;
-        }
+struct search_result kth_biggest_result(Node *root, int k) {
+    struct search_result sr;
+    sr.need = k;
+    sr.node = NULL;
+    if (!root) {
+        return sr;
     }
-    return 1;
+    if (root->right) {
+        sr = kth_biggest_result(root->right, k);
+        if (sr.need == 0) return sr;
+    }
+    sr.need -= 1; // root
+    if (sr.need == 0) {
+        sr.node = root;
+        return sr;
+    }
+    return kth_biggest_result(root->left, sr.need);
 }
 
-void factor_old(
-    unsigned long n,
-    struct factorization * factorizations
-)
-{
-    if (factorizations[n].small == 1) {
-        printf(" x %lu\n", n);
-    }
-    else {
-        printf(" x %lu", factorizations[n].small);
-        factor_old(factorizations[n].other, factorizations);
-    }
+Node *kth_biggest(Node *root, int k) {
+    struct search_result sr;
+    sr = kth_biggest_result(root, k);
+    return sr.node;
 }
 
-void factor_new(
-    unsigned long n,
-    struct factorization *factorizations,
-    unsigned long *primes,
-    unsigned long *num_primes
-)
-{
-    unsigned long f = small_factor(n, primes, *num_primes);
-    unsigned long other = n / f;
-    factorizations[n].small = f;
-    factorizations[n].other = other;
-    printf("%lu = %lu", n, f);
-    if (f == 1) {
-        // new prime
-        primes[*num_primes] = n;
-        *num_primes += 1;
-        printf(" x %lu\n", other);
-    }
-    else {
-        // composite
-        factor_old(other, factorizations);
-    }
+Node *make_node(int n) {
+    Node *Node = malloc(sizeof(struct Node));
+    Node->left = NULL;
+    Node->right = NULL;
+    Node->val = n;
+    return Node;
 }
 
-void count_primes() {
-    unsigned long i;
-    struct factorization *factorizations;
-    unsigned long *primes;
-    unsigned long num_primes = 0;
+int main(int argc, char **argv) {
+    Node *node;
+    Node *t1 = make_node(1);
+    Node *t2 = make_node(2);
+    Node *t3 = make_node(3);
+    Node *t4 = make_node(4);
+    Node *t5 = make_node(5);
+    Node *t6 = make_node(6);
+    t2->left = t1;
+    t2->right = t3;
+    t4->left = t2;
+    t4->right = t5;
+    t5->right = t6;
+    node = kth_biggest(t4, 1);
+    assert(node->val == 6);
+    node = kth_biggest(t4, 2);
+    assert(node->val == 5);
+    node = kth_biggest(t4, 3);
+    assert(node->val == 4);
+    node = kth_biggest(t4, 4);
+    assert(node->val == 3);
+    node = kth_biggest(t4, 5);
+    assert(node->val == 2);
+    node = kth_biggest(t4, 6);
+    assert(node->val == 1);
+    node = kth_biggest(t4, 7);
+    assert(!node);
+    node = kth_biggest(t4, 8);
+    assert(!node);
 
-    factorizations = malloc((MAX+1) * sizeof(struct factorization));
-
-    // primes is very pessimistically allocated, but memory management
-    // is not the point of this exercise
-    primes = malloc((MAX+1) * sizeof(unsigned long));
-
-    for (i = 2; i <= MAX; ++i) {
-        factor_new(i, factorizations, primes, &num_primes);
-    }
-
-    printf("found %lu primes\n", num_primes);
-
-    free(factorizations);
-    free(primes);
-}
-
-main() {
-    count_primes();
+    return 0;
 }
 ~~~
