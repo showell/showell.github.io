@@ -116,7 +116,7 @@ I encountered it in 2018, I think, and I mostly started using it in 2019.
 I understood the basic proposition of avoiding side effects **long before** I encountered ELM, just to be clear.
 
 And I had dabbled a bit in understanding LISP, Haskell, Clojure, etc. on some level. But I never felt
-to really use them. It's perfectly possible to write pure functions in mainstream languages
+compelled to really use them. It's perfectly possible to write pure functions in mainstream languages
 such as Python and JS, for example, and of course I have been doing that since circa 1986
 (well, then it was C, but you get the point).
 
