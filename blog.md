@@ -1,5 +1,7 @@
 ## Boolean Satisfiability Problem (SAT)
 
+*January 28, 2026*
+
 One of the most interesting problems in computer science
 is whether the Boolean Satisfiability Problem can be
 solved in polynomial time.  It's pretty trivial to
