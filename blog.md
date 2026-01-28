@@ -6,6 +6,8 @@ I was digging through my archives.  Back in 2011 I was really
 into CoffeeScript. I wrote a little program with some math
 widgets: [MathWidgets/client.htm](https://showell.github.io/MathWidgets/client.htm)
 
+The main code is in [client.coffee](https://github.com/showell/MathWidgets/client.coffee).
+
 Unfortunately, it was using a really old version of jQuery.
 I could have simply upgraded jQuery, but there was never
 any reason to have that dependency.  The DOM API is perfectly
