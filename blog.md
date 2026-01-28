@@ -10,6 +10,8 @@ Here is a screenshot from the app:
 
 ![OnlineDrawing](smiley.webp)
 
+You can explore the code at [my OnlineDrawing repo](https://github.com/showell/OnlineDrawing)
+
 The program was able to run 14 years later. I just had to update
 jQuery so that modern browsers like Brave would run it.
 
