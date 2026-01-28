@@ -287,6 +287,19 @@ class SingleVarPoly:
         return SingleVarPoly(math, [math.zero, math.one], var_name)
 ```
 
+What did I conclude from this exercise?
+* rings are interesting
+* Python is pretty good at expressing math concepts
+
+For whatever reason, I have never worked in a job where I got to
+do scientific computing or math-related software.  I got sucked
+into the world of building web apps. I'd like to change that
+some day!
+
+I have dabbled with things like Jupyter notebooks in Python.
+Maybe it's time for a deeper dive.
+
+
 ## Online Drawing (2011)
 
 *January 28, 2026*
