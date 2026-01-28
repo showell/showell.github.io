@@ -8,7 +8,7 @@ I think it's a pretty good language for that particular task.
 
 Here is a screenshot from the app:
 
-![OnlineDrawing](smiley.wbp)
+![OnlineDrawing](smiley.webp)
 
 ## Math Links (YouTube)
 
