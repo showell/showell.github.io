@@ -3,7 +3,7 @@
 *January 28, 2026*
 
 It's always fun to try to reduce a problem to a
-known algorith.  For example, many problems in
+known algorithm.  For example, many problems in
 math reduce themselves to some kind of graph
 traversals.
 
