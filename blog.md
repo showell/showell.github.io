@@ -3,6 +3,8 @@
 Back in 2023 I became fascinated with Abstract Algebra, and I
 used Python to explore some concepts.
 
+You can see my [abstract-algebra repo here](https://github.com/showell/abstract-algebra)
+
 I will start with the end result, where I wanted to generate
 a very large poly-over-poly-over-poly.
 
