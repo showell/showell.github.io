@@ -6,7 +6,7 @@ I was digging through my archives.  Back in 2011 I was really
 into CoffeeScript. I wrote a little program with some math
 widgets:
 
-    https://showell.github.io/MathWidgets/client.htm
+https://showell.github.io/MathWidgets/client.htm
 
 Unfortunately, it was using a really old version of jQuery.
 I could have simply upgraded jQuery, but there was never
