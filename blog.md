@@ -4,13 +4,13 @@ Every now and then it's fun to build a simple
 but not totally trivial app (multiple modules)
 without any kind of build process.
 
-The following code avoids so many moving parts:
+The code from my [table_widget repo](https://github.com/showell/table_widget) avoids so many moving parts:
 * no webpack
 * no compilers or transpilers
 * no jQuery or third party libraries
 * no frameworks
 * no templates
-* external CSS files
+* no external CSS files
 
 Don't get me wrong, it's a pretty small and
 unimpressive project.  I just wanted to build
@@ -234,6 +234,59 @@ I don't claim this programming pattern is completely
 necessary or even highly recommended.  You can certainly
 use webpack. But it's nice to know the minimal approaches
 too.
+
+I also write directly to the browser DOM API. Here's
+a lightweight set of helpers that I created for the
+project (`dom_helpers.js`), but these are all just minimal
+ES6 sugar on top of the regular DOM API. The DOM API
+is tried-and-true!
+
+``` js
+window.dom_helpers = (function () {
+    const { setStyles } = window.style_helpers;
+
+    function dom_empty_table() {
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        table.append(thead);
+
+        const tbody = document.createElement("tbody");
+        table.append(tbody);
+
+        return { table, thead, tbody };
+    }
+
+    function dom_tr(...child_elems) {
+        const tr = document.createElement("tr");
+        tr.append(...child_elems);
+        return tr;
+    }
+
+    function dom_td({ id, elem }) {
+        const td = document.createElement("td");
+        td.id = id;
+        td.append(elem);
+        return td;
+    }
+
+    function maybe_stripe(elem, i, color) {
+        if (i % 2) {
+            setStyles(elem, {
+                background: color,
+            });
+        }
+
+        return elem;
+    }
+
+    return {
+        dom_empty_table,
+        dom_tr,
+        dom_td,
+        maybe_stripe,
+    };
+})();
+```
 
 
 ## Permutations w/breadth-first-search
