@@ -10,6 +10,72 @@ Here is a screenshot from the app:
 
 ![OnlineDrawing](smiley.webp)
 
+The program was able to run 14 years later. I just had to update
+jQuery so that modern browsers like Brave would run it.
+
+~~~ diff
+-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
++    <script src="https://code.jquery.com/jquery-4.0.0.min.js"
++                   integrity="sha256-OaVG6prZf4v69dPg6PhVattBXkcOWQB62pdZ3ORyrao="
++                   crossorigin="anonymous">
++    </script>
+~~~
+
+There are some fun technical details in the program.  For example, I actually run
+the CoffeeScript compiler in the browser:
+
+~~~ coffeescript
+run_code = (code) ->
+  try
+    js = CoffeeScript.compile CHALLENGE.prelude + code
+  catch e
+    console.log e
+    console.log "(problem with compiling CS)"
+  eval js
+~~~
+
+Here is a typical challenge:
+
+~~~ coffeescript
+  {
+    title: "Launch the Ball"
+
+    prelude: '''
+      env = window.helpers()
+      {circle, launch} = env
+      ''' + '\n'
+
+    code: '''
+      # Challenge: Change the angle so that you launch the ball clear over the wall.
+      # Just use trial and error to find the correct steepness.
+      ball = circle()
+      angle = 35
+      launch ball, angle
+      '''
+  },
+~~~
+
+I used a home-grown HAML-like system to buid out my HTML. I called
+it PipeDent.
+
+~~~ coffeescript
+demo_layout = \
+  '''
+  table
+    tr valign="top"
+      td id ="sideBar"
+        ul id="program_list" |
+      td id="leftPanel"
+        h2 id="leftPanel" | Input
+        input type="submit" value="Run" id="runCode" |
+        <br>
+        textarea id="input_code" rows=30 cols=80 |
+      td id="rightPanel"
+        h4 | Output
+        div id="main" |
+  '''
+~~~
+
 ## Math Links (YouTube)
 
 *January 28, 2026*
