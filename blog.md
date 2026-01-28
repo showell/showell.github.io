@@ -34,7 +34,7 @@ run_code = (code) ->
   eval js
 ~~~
 
-Here is a typical challenge:
+Here is a typical challenge called "Launch the Ball":
 
 ~~~ coffeescript
   {
@@ -54,6 +54,44 @@ Here is a typical challenge:
       '''
   },
 ~~~
+
+Here's the launch helper:
+
+~~~ coffeescript
+  launch = (ball, angle) ->
+    wall_offset = 315
+    wall_height = 427
+    ball_radius = 15
+    line [wall_offset, 0], [wall_offset, wall_height]
+    line [wall_offset - ball_radius, wall_height], [wall_offset, wall_height]
+
+    cx = 0
+    cy = 0
+    ball.goto(0, 0)
+    v = 7
+    dx = v * cosine(angle)
+    dy = v * sine(angle)
+    over_wall = false
+    flying = true
+    repeat ->
+      return if !flying
+
+      flying = false if cy < 0 or cx > width
+
+      if flying and !over_wall and cx + ball_radius >= wall_offset
+        if cy > wall_height + ball_radius
+          if cx >= wall_offset
+            over_wall = true
+        else
+          flying = false
+
+      if flying
+        cx += dx
+        cy += dy
+        ball.goto(cx, cy)
+        dy -= 0.05
+~~~
+
 
 I used a home-grown HAML-like system to buid out my HTML. I called
 it PipeDent.
