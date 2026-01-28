@@ -4,9 +4,7 @@
 
 I was digging through my archives.  Back in 2011 I was really
 into CoffeeScript. I wrote a little program with some math
-widgets:
-
-https://showell.github.io/MathWidgets/client.htm
+widgets: [MathWidgets/client.htm](https://showell.github.io/MathWidgets/client.htm)
 
 Unfortunately, it was using a really old version of jQuery.
 I could have simply upgraded jQuery, but there was never
@@ -46,3 +44,7 @@ And problem solved!
 I have no intention of cleaning up the program further. It was a pretty experimental
 program to begin with, and I honestly don't remember all the math concepts that went
 into it.  But now I still have it running!
+
+I'm still relatively fluent in CoffeeScript, it turns out.  Which isn't that much
+use to me any more, since I now prefer more modern JavaScript and TypeScript. But
+it was a fun language back in the time.
