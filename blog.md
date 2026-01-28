@@ -42,3 +42,7 @@ a couple jQuery-ism with my own wrappers:
 ~~~
 
 And problem solved!
+
+I have no intention of cleaning up the program further. It was a pretty experimental
+program to begin with, and I honestly don't remember all the math concepts that went
+into it.  But now I still have it running!
