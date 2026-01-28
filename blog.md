@@ -6,7 +6,8 @@ Back in 2011 I created a little logo-like tool to teach folks
 how to use the canvas.  It used CoffeeScript as its language.
 I think it's a pretty good language for that particular task.
 
-Here is a screenshot from the app:
+Here is a screenshot from the app or you can
+[just run the app here](http://showell.github.io/OnlineDrawing/demo.htm):
 
 ![OnlineDrawing](smiley.webp)
 
