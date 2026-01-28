@@ -14,7 +14,7 @@ here was completely faithful to Gary's teachings; I
 am just noting that he expressed the underlying concepts
 very well.
 
-You can [my repo here](https://github.com/showell/basic-mocking-in-python-and-js).
+You can see [my repo here](https://github.com/showell/basic-mocking-in-python-and-js).
 
 Consider the following Python code (calc.py):
 
@@ -147,7 +147,7 @@ def test_actual_plot():
     assert(called)
 ```
 
-Note that there is no test runner here!  We use the native assert from
+Note that there is no test runner here!  We use the native `assert` from
 Python and a simple `run_test` decorator.
 
 We also barely use `with_mocked_value` here.  It's just in the last
@@ -155,7 +155,8 @@ test. You could argue that the way the original code is written here
 **prevents** the need for mocking, and that's kind of the point of
 separating your functional core from an imperative shell.  I could
 have actually structured `calc.py` to just be the functional core,
-actually, but it kinda mixes in the imperative shell.
+actually, but it kinda mixes in the imperative shell for the very
+last function (i.e. `plot`).
 
 This is a super lightweight mocking helper, by the way. It's not
 versatile enough for every kind of testing, but it works fine
