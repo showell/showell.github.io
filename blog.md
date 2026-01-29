@@ -15,7 +15,7 @@ Also note the following addition:
 ~~~
 
 You can think of the smaller number "masking"
-away the 99s.
+away the "01" piece of "990100" with the "99".
 
 So the relationship there is 9901 * 101 = 1000001,
 which you can easily verify with a calculator.
