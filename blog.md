@@ -80,7 +80,7 @@ Here is my next question:
 
 **Are there are any numbers for which none of
 its infinite multiples can be expressed as a
-sum of three powers of 4? If so, what's the
+sum of three distinct powers of 4? If so, what's the
 smallest integer with that property?**
 
 There may be some interesting number theory to
@@ -91,7 +91,41 @@ of course, but up to some pretty big numbers)
 Just to be clear, I have no idea what the answer
 to my question is yet.
 
-To be continued...
+But as soon as I run my program, I think I have
+some candidates:
+
+~~~
+5 does not seem to divide any triplets
+17 does not seem to divide any triplets
+31 does not seem to divide any triplets
+41 does not seem to divide any triplets
+~~~
+
+Here is the loop that I used:
+
+``` py
+def seek_bad_numbers():
+    bad_numbers = set()
+
+    for i in range(2, 50):
+        # Skip redundant answers. If 5 doesn't work, neither will
+        # 10, 15, 20, etc.
+        if any(i % bad_number == 0 for bad_number in bad_numbers):
+            continue
+        answer = enumerate_power_of_4_triplets(
+            until_callback=lambda n: n % i == 0
+        )
+        if answer is None:
+            bad_numbers.add(i)
+            print(f"{i} does not seem to divide any triplets")
+```
+
+I didn't **prove** that 5 is an "impossible divisor", since
+I capped my searches at a finite maximum power of 4. I used
+`k < 200` as my upper bound. But I would be kinda surprised
+if the smallest triplet that divided 5 included some massive
+power of 4.
+
 
 ## Self-masking numbers (a math problem)
 
