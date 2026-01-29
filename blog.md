@@ -64,7 +64,7 @@ sum of three distinct powers of 10.
 
 So you could formulate the question as "Find the
 smallest number that is the sum of three distinct
-powers that is also divisible by 99990001?"
+powers of ten that is also divisible by 99990001?"
 
 And the answer would be 10000000100000001.
 
