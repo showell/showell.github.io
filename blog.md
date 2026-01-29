@@ -1,3 +1,98 @@
+## Cheating on math quiz problems (with Python)
+
+In yesterday's blog I posed the following question,
+and I showed how you could solve the problem using
+pretty minimal calculation (*I only used the computer
+for convenience, but there are pretty quick manual
+ways to convert numbers back and forth between
+base 4 and base 10 if you have pen and paper and
+are reasonably adept at arithmetic.*)
+
+**What is the smallest number
+that is both a multiple of 241 (decimal) and the
+sum of three powers of 4?**
+
+I posed a very similar question to my programming
+buddy Apoorva, but I forgot to tell him that
+Python wasn't allowed! I asked him this:
+
+**What is the smallest number
+that is both a multiple of 16773121 (decimal) and the
+sum of three powers of 4?**
+
+And he came back pretty quickly with the
+answer: 281474993487873
+
+And when he showed me the answer, it was a
+screenshot from a computer program!
+
+He technically wasn't cheating, because I didn't
+explain the rules, but, yeah, he was cheating.
+
+So now I'm gonna cheat too!
+
+Here's a program that correctly produces the
+answer rather efficiently:
+
+``` py
+def enumerate_power_of_4_triplets(until_callback):
+    i = 0
+    j = 1
+    k = 2
+
+    # We compute higher powers of 4 lazily, and k will
+    # always be the last index index into the list
+    # (i.e. K + 1 == len(powers))
+    powers = [1, 4, 16]
+
+    while k < 100:
+        assert k + 1 == len(powers)
+
+        triplet_sum = powers[i] + powers[j] + powers[k]
+
+        # for debugging
+        # print(i, j, k, triplet_sum)
+
+        if until_callback(triplet_sum):
+            return triplet_sum
+
+        # Our invariant is that i < j < k,
+        # and we try to always bump the smallest
+        # number we can.
+        if i + 1 < j:
+            i += 1
+        elif j + 1 < k:
+            j += 1
+            i = 0
+        else:
+            powers.append(4 * powers[k])
+            k += 1
+            i = 0
+            j = 1
+
+answer = enumerate_power_of_4_triplets(
+    until_callback=lambda n: n % 16773121 == 0
+)
+print(answer)
+```
+
+Here is my next question:
+
+**Are there are any numbers for which none of
+its infinite multiples can be expressed as a
+sum of three powers of 4? If so, what's the
+smallest integer with that property?**
+
+There may be some interesting number theory to
+answer that question, but my intention is to
+brute-force it with Python! (not till infinity,
+of course, but up to some pretty big numbers)
+
+Just to be clear, I have no idea what the answer
+to my question is yet.
+
+To be continued...
+
 ## Self-masking numbers (a math problem)
 
 *January 28, 2026*
