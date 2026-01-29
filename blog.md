@@ -89,8 +89,8 @@ And then to mask it, this is all in base 4:
 
      3301 * 10101 = 100010001 (base 4 arithmetic)
 
-And then the powers of 4 here are 1, 4**4 (256),
-and 4**8 (65536), so going back to decimal, the
+And then the powers of 4 here are 1, `4**4` (256),
+and `4**8` (65536), so going back to decimal, the
 answer is: **65793**
 
 A quick sanity check in the Python shell is helpful
