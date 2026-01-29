@@ -822,7 +822,7 @@ to explore generating permutations with
 a breadth first search.
 
 The idea is that every permutation has some immediate
-neighbors that are just off my one "transposition" of
+neighbors that are just off by one "transposition" of
 two elements.  In my output below the elements of the
 set that I am permuting are just the ints 1, 2, 3, and
 4.
