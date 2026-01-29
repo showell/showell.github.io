@@ -76,7 +76,7 @@ that is both a multiple of 241 (decimal) and the
 sum of three powers of 4?**
 
 The main trick there is to convert 241 to base 4
-and notice that is 3301 in base 4. (Back to decimal,
+and notice that it is 3301 in base 4. (Back to decimal,
 you have: 241 = 3 * 64 + 3 * 16 + 0 + 1).
 
 3301 is self-masking in base 4 for the same reason
