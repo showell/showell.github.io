@@ -1,5 +1,7 @@
 ## Self-masking numbers (a math problem)
 
+*January 28, 2026*
+
 Certain decimal numbers have the property that
 they are self-masking.  Consider the number 9901.
 
