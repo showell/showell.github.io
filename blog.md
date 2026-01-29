@@ -1,5 +1,7 @@
 ## Cheating on math quiz problems (with Python)
 
+*January 29, 2026*
+
 In yesterday's blog I posed the following question,
 and I showed how you could solve the problem using
 pretty minimal calculation (*I only used the computer
