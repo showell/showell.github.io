@@ -126,6 +126,17 @@ I capped my searches at a finite maximum power of 4. I used
 if the smallest triplet that divided 5 included some massive
 power of 4.
 
+It's noteworthy that 5 and 17 are both trivially divisors
+of **pairs** of powers-of-four.
+
+~~~
+5 == 1 + 4
+17 == 1 + 16
+~~~
+
+I would have to search harder to find out if any multiple
+of 31 can be expressed as the sum of a pair of powers.
+
 
 ## Self-masking numbers (a math problem)
 
