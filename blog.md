@@ -1,4 +1,361 @@
+## A Wacky Virtual Machine (2023)
+
+*January 28, 2026*
+
+In 2023 I took some time to educate myself on
+Computational Theory, including watching some
+of the excellent courseware from MIT that is
+publicly available on YouTube.
+
+See an example lecture
+[here](https://www.youtube.com/watch?v=iZPzBHGDsWI).
+
+Anyway, I wanted to get my hands dirty with
+some simulations of virtual machines using Python.
+
+The project is on my
+[virtual-machine repo](https://github.com/showell/virtual-machine).
+
+I created a simple virtual machine with the
+following op-codes and a single register
+called AX:
+
+~~~
+    00 (nada):
+        (do nothing)
+
+    01 (zero):
+        AX = 3 -> ignore and continue
+        AX = 2 -> ignore and continue
+        AX = 1 -> ignore and continue
+        AX = 0 -> halt and accept input
+
+    10 (decr):
+        AX = 3 -> AX = 2 and continue
+        AX = 2 -> AX = 1 and continue
+        AX = 1 -> AX = 0 and continue
+        AX = 0 -> halt and reject input
+
+    11 (mod2):
+        AX = 3 -> AX = 1
+        AX = 2 -> AX = 0
+        AX = 1 -> AX = 1
+        AX = 0 -> AX = 0
+~~~
+
+I constrained every program to have exactly six
+instructions.
+
+My input alphabet consists of the numbers 0, 1, 2, and 3.
+
+There are 16 different languages that could possibly
+be accepted--it's just all the subsets of `[0, 1, 2, 3]`,
+including the empty set and the set itself.
+
+My virtual machine was robust enough (or big enough,
+if you will) that you could write a program for
+every possible language that you wanted to accept.
+
+Here is the output from running `python virtual_machine.py`.
+
+~~~
+] is solved by 844 possible program
+See an example program below.
+   it accepts []
+   it rejects [0, 1, 2, 3]
+--
+nada # do nothing
+nada # do nothing
+nada # do nothing
+nada # do nothing
+nada # do nothing
+nada # do nothing
+--
+
+[0] is solved by 681 possible program
+See an example program below.
+   it accepts [0]
+   it rejects [1, 2, 3]
+--
+zero # accept original input if AX = 0
+nada # do nothing
+nada # do nothing
+nada # do nothing
+nada # do nothing
+nada # do nothing
+--
+
+[1] is solved by 303 possible program
+See an example program below.
+   it accepts [1]
+   it rejects [0, 2, 3]
+--
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+nada # do nothing
+nada # do nothing
+nada # do nothing
+nada # do nothing
+--
+
+[0, 1] is solved by 172 possible program
+See an example program below.
+   it accepts [0, 1]
+   it rejects [2, 3]
+--
+zero # accept original input if AX = 0
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+nada # do nothing
+nada # do nothing
+nada # do nothing
+--
+
+[2] is solved by 248 possible program
+See an example program below.
+   it accepts [2]
+   it rejects [0, 1, 3]
+--
+decr # reject zero or decrement AX
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+nada # do nothing
+nada # do nothing
+nada # do nothing
+--
+
+[0, 2] is solved by 883 possible program
+See an example program below.
+   it accepts [0, 2]
+   it rejects [1, 3]
+--
+mod2 # subtract 2 from AX if AX >= 2
+zero # accept original input if AX = 0
+nada # do nothing
+nada # do nothing
+nada # do nothing
+nada # do nothing
+--
+
+[1, 2] is solved by 74 possible program
+See an example program below.
+   it accepts [1, 2]
+   it rejects [0, 3]
+--
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+nada # do nothing
+nada # do nothing
+--
+
+[0, 1, 2] is solved by 13 possible program
+See an example program below.
+   it accepts [0, 1, 2]
+   it rejects [3]
+--
+zero # accept original input if AX = 0
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+nada # do nothing
+--
+
+[3] is solved by 63 possible program
+See an example program below.
+   it accepts [3]
+   it rejects [0, 1, 2]
+--
+decr # reject zero or decrement AX
+decr # reject zero or decrement AX
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+nada # do nothing
+nada # do nothing
+--
+
+[0, 3] is solved by 12 possible program
+See an example program below.
+   it accepts [0, 3]
+   it rejects [1, 2]
+--
+zero # accept original input if AX = 0
+decr # reject zero or decrement AX
+decr # reject zero or decrement AX
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+nada # do nothing
+--
+
+[1, 3] is solved by 520 possible program
+See an example program below.
+   it accepts [1, 3]
+   it rejects [0, 2]
+--
+mod2 # subtract 2 from AX if AX >= 2
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+nada # do nothing
+nada # do nothing
+nada # do nothing
+--
+
+[0, 1, 3] is solved by 150 possible program
+See an example program below.
+   it accepts [0, 1, 3]
+   it rejects [2]
+--
+zero # accept original input if AX = 0
+mod2 # subtract 2 from AX if AX >= 2
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+nada # do nothing
+nada # do nothing
+--
+
+[2, 3] is solved by 13 possible program
+See an example program below.
+   it accepts [2, 3]
+   it rejects [0, 1]
+--
+decr # reject zero or decrement AX
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+nada # do nothing
+--
+
+[0, 2, 3] is solved by 1 possible program
+See an example program below.
+   it accepts [0, 2, 3]
+   it rejects [1]
+--
+zero # accept original input if AX = 0
+decr # reject zero or decrement AX
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+--
+
+[1, 2, 3] is solved by 15 possible program
+See an example program below.
+   it accepts [1, 2, 3]
+   it rejects [0]
+--
+decr # reject zero or decrement AX
+mod2 # subtract 2 from AX if AX >= 2
+zero # accept original input if AX = 0
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+nada # do nothing
+--
+
+[0, 1, 2, 3] is solved by 104 possible program
+See an example program below.
+   it accepts [0, 1, 2, 3]
+   it rejects []
+--
+mod2 # subtract 2 from AX if AX >= 2
+zero # accept original input if AX = 0
+decr # reject zero or decrement AX
+zero # accept original input if AX = 0
+nada # do nothing
+nada # do nothing
+--
+~~~
+
+Just to be clear about the finite nature of this
+exercise on any every level (hence no halting problem),
+there are exactly 4**6 (4096) possible programs
+that you could write for my machine.
+
+And the way that I produced the output above is
+that I ran all 4096 possible programs.
+
+To simulate any particular program, I used the
+following simple Python code:
+
+``` py
+def run_progam(n, program):
+    halted = False
+    AX = n
+    status = None
+
+    assert len(program) == MAX_STEPS
+
+    for op in program:
+        if halted:
+            continue
+        if op == "nada":
+            pass
+        elif op == "zero":
+            if AX == 0:
+                halted = True
+                status = True
+            else:
+                pass
+        elif op == "decr":
+            if AX == 0:
+                halted = True
+                status = False
+            else:
+                AX -= 1
+        elif op == "mod2":
+            AX = AX % 2
+        else:
+            assert False
+
+    return status
+```
+
+In order to work fully in integer space at the
+computational level but to read the program as
+a human, I had little helper methods like so:
+
+``` py
+def assemble(program):
+    return sum(OPS[op] * (4**i) for i, op in enumerate(program))
+
+
+def disassemble(n):
+    ops = ["nada", "zero", "decr", "mod2"]
+    program = []
+    for i in range(MAX_STEPS):
+        program.append(ops[n % 4])
+        n = n // 4
+    return program
+
+
+def encoded_language(lang):
+    return sum(2**n for n in lang)
+
+
+def language(code):
+    lang = []
+    i = 0
+    while code:
+        if code % 2 == 1:
+            lang.append(i)
+        code = code // 2
+        i += 1
+    return lang
+```
+
+All of that exercise was kinda fun, but it's
+pretty standard stuff even before you get into
+any deep kind of computational theory. (Way back
+in ~1988 I had to simulate some subset of the 8086
+assembly language in Pascal, if memory serves.)
+
+But there were some bizarre tacks that I took.
+
 ## Pure HTML/JS, no-frills programming (2023)
+
+*January 28, 2026*
 
 Every now and then it's fun to build a simple
 but not totally trivial app (multiple modules)
