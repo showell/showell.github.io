@@ -1,7 +1,5 @@
 ## Stephen Howell
 
-(I mostly answer to "Steve" or "showell".)
-
 I live in Rockledge, FL, USA, but I spend most of my
 time on the Zulip instance that I host. It's a
 [public community, no invite needed](https://macandcheese.zulipchat.com/).
@@ -9,13 +7,14 @@ time on the Zulip instance that I host. It's a
 I am seeking a position teaching bright students of all ages
 how to enjoy and excel at math and computer programming.
 
-Please reach out to me if you are hiring teachers:
-
+Contact me:
 - phone: 202-213-7553
 - email: showell285@gmail.com
 - zulip: [macandcheese](https://macandcheese.zulipchat.com/).
+- nicknames: Steve, showell
 
-I write stuff on the web:
+I have some presence on the web:
+* [CoffeeScript Programming Tutorial](https://www.youtube.com/watch?v=TlERmDaEjJo&list=PLLwiAE7l6YhK94qx5-vIpDvSwyV2dCWr8) (2011)
 - [showell on github](https://github.com/showell)
 - [blog](https://showell.github.io/blog.html)
 - [Lyn Rummy card game](https://showell.github.io/LynRummy/) <= run it!
