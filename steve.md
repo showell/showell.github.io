@@ -1,20 +1,17 @@
 ## Stephen Howell
 
-I live in Rockledge, FL, USA, but I spend most of my
-time on the Zulip instance that I host. It's a
-[public community, no invite needed](https://macandcheese.zulipchat.com/).
-
 I am seeking a position teaching bright students of all ages
 how to enjoy and excel at math and computer programming.
 
 Contact me:
 - phone: 202-213-7553
 - email: showell285@gmail.com
-- zulip: [macandcheese](https://macandcheese.zulipchat.com/).
+- zulip: [macandcheese](https://macandcheese.zulipchat.com/)
 - nicknames: Steve, showell
+- location: Rockledge, FL, USA (and remote)
 
 I have some presence on the web:
-* [CoffeeScript Programming Tutorial](https://www.youtube.com/watch?v=TlERmDaEjJo&list=PLLwiAE7l6YhK94qx5-vIpDvSwyV2dCWr8) (2011)
+* YouTube: [CoffeeScript Programming Tutorial](https://www.youtube.com/watch?v=TlERmDaEjJo&list=PLLwiAE7l6YhK94qx5-vIpDvSwyV2dCWr8) (2011)
 - [showell on github](https://github.com/showell)
 - [blog](https://showell.github.io/blog.html)
 - [Lyn Rummy card game](https://showell.github.io/LynRummy/) <= run it!
@@ -26,9 +23,9 @@ My own education:
 
 Math credentials:
 - 800 Math SAT, 800 Math GRE
-= Abstract Algebra, Calc III, Diff Eqs during high school
+- Abstract Algebra, Calc III, Diff Eqs during high school
 - received math scholarship during my tenure at Duke
-- undergrad: combinatorics, stats, linear algebra, logic
+- undergrad: combinatorics, stats, linear algebra, logic, EE math
 - YouTube: 3blue1brown, lots of linear algebra, abstract algebra
 
 Students I have taught:
