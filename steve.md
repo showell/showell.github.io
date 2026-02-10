@@ -1,5 +1,6 @@
-Hi, I'm Stephen Howell!  I mostly go by "Steve" in person
-and by "showell" on the web.
+## Stephen Howell
+
+(I mostly answer to "Steve" or "showell".)
 
 I live in Rockledge, FL, USA, but I spend most of my
 time on the Zulip instance that I host. It's a
@@ -24,6 +25,13 @@ My own education:
 - CS/EE degree from Duke University, 1989, age 19, Phi Beta Kappa
 - self-educated on many topics related to math and software
 
+Math credentials:
+- 800 Math SAT, 800 Math GRE
+= Abstract Algebra, Calc III, Diff Eqs during high school
+- received math scholarship during my tenure at Duke
+- undergrad: combinatorics, stats, linear algebra, logic
+- YouTube: 3blue1brown, lots of linear algebra, abstract algebra
+
 Students I have taught:
 - late 1980s: college roommates Scott McConchie (math) and Eric Lewine (CS)
 - mid 1990s: numerous colleagues at Watson Wyatt Worldwide
@@ -34,7 +42,8 @@ Students I have taught:
 I am also a professional programmer.  I wrote my first program in 1983
 (43 years ago as of this writing).  Here is a brief history:
 
-- CS degree from Duke University, 1989
+- TI 99/4a: Boggle board (first real program, saved on cassette tape)
+- CS/EE degree from Duke University, 1989
 - 1980s: Pascal, Basic, C
 - 1990s: C/C++, Perl
 - 2000s: Python, Ruby, JS
