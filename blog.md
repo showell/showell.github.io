@@ -1,3 +1,5 @@
+(* see also [Steve resume](steve.html)
+
 ## Cheating on math quiz problems (with Python)
 
 *January 29, 2026*
