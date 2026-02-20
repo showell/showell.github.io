@@ -84,6 +84,82 @@ talking about project-specific topics within
 project-specific channels pays huge dividends
 over time.
 
+### Apoorva has been productive!
+
+Apoorva has been very productive during the two
+months of our collaboration, and I will take
+partial credit for his achievements.
+
+Here are his commits that have **already been
+merged to Zulip main** during our two months:
+
+~~~
+ 2025-12-15 : tenor: Focus edit textarea on closing tenor picker with esc.
+ 2025-12-16 : eslint: Disable `import/unambiguous` rule for .md files.
+ 2025-12-19 : message_select: Fix text selection not working for clicks.
+ 2025-12-19 : tenor_picker: Use the filter-input styling for search input.
+ 2025-12-21 : search: Avoid showing topic suggestions from negated channels.
+ 2025-12-22 : search_suggestions: Show combined `#channel>topic` pills.
+ 2025-12-24 : message_header: Don't shift vdots on hiding icons.
+ 2025-12-25 : abstract_network_gif: Introduce an abstract base class.
+ 2025-12-25 : gifs: Introduce `abstract_gif_network.ts`.
+ 2025-12-25 : gifs: Unify GIPHY and Tenor UI.
+ 2025-12-25 : tenor: Introduce callback mechanism to render GIFs.
+ 2025-12-25 : tenor: Introduce the `TenorNetwork` class.
+ 2025-12-25 : tenor: Make `tenor.ts` members provider agnostic.
+ 2025-12-25 : tenor: Move `raw_tenor_result` parsing logic from `render_gifs_to_grid`.
+ 2025-12-25 : tenor: Move network stuff over to `tenor_network.ts`.
+ 2025-12-25 : tenor: Move the request payload construction from UI.
+ 2025-12-25 : tenor: Rename `.tenor-gif` and the tenor_gif template.
+ 2025-12-25 : tenor: Use `ask_tenor_for_gifs` to isolate network calls.
+ 2025-12-25 : tenor_network: Use a new network object per picker instance.
+ 2025-12-26 : gifs: Generate network objects based on realm state.
+ 2025-12-27 : gifs: Simplify `gif_picker_ui.hbs`.
+ 2025-12-31 : node_tests: Remove unused giphy.ts esm mock.
+ 2026-01-01 : user_presence: Remove dead `.user-name-and-status-wrapper`.
+ 2026-01-02 : buddy_list: Introduce background_task for non awaited code.
+ 2026-01-04 : activity_tests: Remove mock_template for presence rows.
+ 2026-01-06 : gifs: Introduce fallback placement options for GIFs.
+ 2026-01-07 : gifs: Rename `giphy_rating` to `gif_rating_policy`.
+ 2026-01-08 : quote_message: Improve sad-path UX when fetching raw_content.
+ 2026-01-09 : web: Use `apply_markdown` to get raw markdown.
+ 2026-01-12 : click: Prevent composebox refocus on double/triple clicks.
+ 2026-01-13 : gif_state: Use a better name for rating policy update handler.
+ 2026-01-13 : gifs: Rename `gif_rating_options` to `gif_rating_policy_options`.
+ 2026-01-14 : message_header: Avoid hiding icons on smaller widths.
+ 2026-01-14 : tenor_picker: Use `keyup` only when trying to focus GIFs.
+ 2026-01-15 : emoji_frequency: Ignore uncached messages on deletion events.
+ 2026-01-16 : emoji_frequency: Ignore reaction events from muted sources.
+ 2026-01-21 : emoji_frequency: Move data handling to emoji_frequency_data.ts
+ 2026-01-21 : emoji_frequency_data: Use better names for add/remove handlers.
+ 2026-01-22 : gifs: Focus compose box on closing picker with Escape.
+ 2026-01-22 : gifs: Prevent message navigation when navigating with arrows.
+ 2026-01-22 : gifs: Prevent stale network calls beacuse of debouncing.
+ 2026-01-27 : gif_picker: Switch to a two-column layout.
+ 2026-01-31 : click: Revert getSelection() check to determine link selection.
+ 2026-02-04 : docs: Add Spectacle for screenshot software on Linux.
+ 2026-02-07 : setup_docs: Use the `usermod` command for docker.
+ 2026-02-09 : message_quoting: Improve comment about using raw_content.
+ 2026-02-09 : quote_messages: Cache raw_content after fetching it.
+ 2026-02-10 : copy_messages: Improve end_id detection in analyze_selection.
+ 2026-02-10 : quote_message: Attempt to use `raw_content` in error callback.
+ 2026-02-11 : message_store: Conditionally update message's raw_content.
+ 2026-02-17 : search_pill: Dedupe types that can use PillRenderData.
+ 2026-02-17 : search_pill: Use hbs to render combined channel topic.
+~~~
+
+That's over 50 commits, and I would say that I have
+participated in about 70% of those, and I even have
+co-author status on some of them.
+
+If you want to contribute to the Zulip project as a
+developer, there is a high expectation of being a
+generalist, and you can glean from the commits above
+that Apoorva has worked in several areas of the codebase
+recently.  Having said that, there have been some major
+areas of concentration, so I will speak to a few of those.
+
+
 
 ## Cheating on math quiz problems (with Python)
 
