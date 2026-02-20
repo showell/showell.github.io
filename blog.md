@@ -211,6 +211,73 @@ We have pretty detailed conversations about
 how to structure PRs to get from point A to
 point B in the lease disruptive way possible.
 
+#### Outcome
+
+Zulip now has these generic files for picking
+gifs:
+
+```
+ wc -l gif_picker_*
+   23 gif_picker_popover_content.ts
+  289 gif_picker_ui.ts
+  312 total
+```
+
+And then there is a small amount of code that
+is specific to each network:
+
+```
+ wc -l *network.ts
+  39 abstract_gif_network.ts
+ 138 giphy_network.ts
+ 139 tenor_network.ts
+ 316 total
+```
+
+Here is `abstract_gif_network.ts` in its entirety:
+
+``` ts
+export type GifInfoUrl = {
+    preview_url: string;
+    insert_url: string;
+};
+
+export type RenderGifsCallback = (urls: GifInfoUrl[], next_page: boolean) => void;
+
+export type GifProvider = "tenor" | "giphy";
+// When a user clicks on the gif icon either while composing a
+// message in the normal compose box or while editing a
+// message, the UI will need to talk to a third party
+// vendor such as tenor to get gifs.
+
+// The network class will need to support this protocol.
+
+// Typically, the UI will instantiate an object from a derived subclass
+// of `GifNetwork`.
+// Then they will make one or more calls to ask_for_*() to ask the
+// third party to send back gif urls. See the callback
+// type definition as well (RenderGifsCallback).
+
+// The final piece of the contract is that if the user abandons the UI
+// (typically the picker is a popover, but we don't care here), then
+// the UI should call `abandon()` below. And then they should
+// obviously never call the object again.
+export abstract class GifNetwork {
+    abstract get_provider(): GifProvider;
+    abstract is_loading_more_gifs(): boolean;
+    abstract ask_for_default_gifs(
+        next_page: boolean,
+        render_gifs_callback: RenderGifsCallback,
+    ): void;
+    abstract ask_for_search_gifs(
+        search_term: string,
+        next_page: boolean,
+        render_gifs_callback: RenderGifsCallback,
+    ): void;
+    abstract abandon(): void;
+}
+```
+
 ## Cheating on math quiz problems (with Python)
 
 *January 29, 2026*
