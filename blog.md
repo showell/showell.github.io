@@ -1,5 +1,5 @@
 Welcome to my "blog"! For now this is just a big
-markdown file that I host via Google Pages. I may
+markdown file that I host via Github Pages. I may
 eventually move to a third-party blogging site or
 build out some new features.
 
@@ -26,8 +26,10 @@ him on a social level, although even then I
 did advise him on some small projects.
 
 After a successful "Summer of Code", Apoorva
-was hired on as an intern to work on Zulip
-code. I had been mostly away from Zulip during
+has continued to work on Zulip code despite
+being back in "university life".
+
+I had been mostly away from Zulip during
 2025, but when I came back to catch up on news,
 I started talking to Apoorva again, and we
 got talking about some of the projects he was
