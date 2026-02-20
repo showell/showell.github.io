@@ -69,6 +69,21 @@ according to which project we are working on
 at the time. (There are always multiple projects
 active; it's the nature of the beast.)
 
+Just to illustrate how specific we can get in
+our channels (emphasis on channels: not topics,
+channels!), here are some recent example:
+
+* webex
+* message store cleanup
+* emoji picker
+* gif picker project
+
+In a typical work week, Apoorva and I exchange
+roughly 1000 messages, so the discipline of
+talking about project-specific topics within
+project-specific channels pays huge dividends
+over time.
+
 
 ## Cheating on math quiz problems (with Python)
 
