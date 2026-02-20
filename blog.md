@@ -161,6 +161,43 @@ that Apoorva has worked in several areas of the codebase
 recently.  Having said that, there have been some major
 areas of concentration, so I will speak to a few of those.
 
+### Tenor/Giphy unification
+
+During our first few weeks, Apoorva had been tasked
+with unifying code for two of Zulip's gif pickers
+(Tenor and Giphy).  Zulip had long been using Giphy,
+but it only started using Tenor during the summer of
+2025.
+
+During the initial prototyping of the Tenor project,
+it was expedient to basically copy/paste a lot of
+the Giphy code to reduce the risk of breaking Giphy
+features while still working out bugs with Tenor.
+
+Once the Tenor feature stabilized (as well as being
+validated by users as a worthwhile feature to begin
+with), it was clearly time to de-duplicate the new
+code and move to more general-use components.
+
+It was also time to clean up any technical debt
+that had been accrued even before the Tenor project.
+
+I think one of my assets as a senior developer
+(been doing this for 40 years) is that I deeply
+understand the best way to organize code for
+re-use.
+
+In some ways it's not actually rocket science.
+Most of the tried-and-true principles of object
+oriented development apply to the Zulip codebase,
+and of course it helps to work with modern
+JavaScript (er, actually TypeScript) in order
+to facilitate good design.  (I believe some of
+the giphy code was written before Zulip even
+had the luxury of using es6 classes.)
+
+
+
 
 
 ## Cheating on math quiz problems (with Python)
