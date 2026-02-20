@@ -1,4 +1,74 @@
-(* see also [Steve resume](steve.html)
+Welcome to my "blog"! For now this is just a big
+markdown file that I host via Google Pages. I may
+eventually move to a third-party blogging site or
+build out some new features.
+
+For now, feel free to give me feedback by
+emailing me at `showell285@gmail.com` or by
+joining [my Zulip realm](https://macandcheese.zulipchat.com/register).
+
+(* see also [Steve resume](steve.html) *)
+
+## Mentoring Apoorva
+
+*February 20, 2026*
+
+I have been mentoring a college student named
+Apoorva Pendse since December 2025.  We got
+connected somewhat indirectly through Zulip's
+participation in the Google Summer of Code.
+
+I'm a long-time contributor to the Zulip Open
+Source project and a former employee of its
+related company, Kandra Labs.  I met Apoorva
+in early 2025 and mostly just interacted with
+him on a social level, although even then I
+did advise him on some small projects.
+
+After a successful "Summer of Code", Apoorva
+was hired on as an intern to work on Zulip
+code. I had been mostly away from Zulip during
+2025, but when I came back to catch up on news,
+I started talking to Apoorva again, and we
+got talking about some of the projects he was
+working on.  Since some of them were in areas
+of the code that I was familiar with, I stared
+unofficially mentoring him on a daily basis.
+
+Fast forward to now.  We have been working quite
+closely on a daily basis, including weekends, for
+almost exactly two months now.
+
+Apoorva lives in India, and I live in the US, so
+all of our interaction is remote (and time shifted
+by 10.5 hours!).  We naturally use the Zulip
+tool itself as our primary means of collaboration
+on improving Zulip.
+
+We mostly talk on the "macandcheese" Zulip
+instance that I administer.  This instance is
+free to me through the generosity of the project,
+and it is completely hosted on Zulip Cloud.
+
+If you have read this far, I encourage you to join
+[macandcheese](https://macandcheese.zulipchat.com/register).
+As an aside, the whimsical name was actually coined
+by another former GSoC student.
+
+### Zulip collaboration style
+
+When I work on Zulip projects (and projects in
+general), I am fairly fanatical about creating
+new decidicated **channels** on Zulip for even
+seemingly small projects.  I have successfully
+indoctrinated Apoorva into this philosophy, and
+I think he would agree that it truly leverages
+the power of Zulip. We not only have topics within
+channels, but we segregate our conversations
+according to which project we are working on
+at the time. (There are always multiple projects
+active; it's the nature of the beast.)
+
 
 ## Cheating on math quiz problems (with Python)
 
