@@ -14,7 +14,8 @@ joining [my Zulip realm](https://macandcheese.zulipchat.com/register).
 *February 20, 2026*
 
 I have been mentoring a college student named
-Apoorva Pendse since December 2025.  We got
+Apoorva Pendse (see github.com/apoorvapendse)
+since December 2025.  We got
 connected somewhat indirectly through Zulip's
 participation in the Google Summer of Code.
 
@@ -178,7 +179,7 @@ Once the Tenor feature stabilized (as well as being
 validated by users as a worthwhile feature to begin
 with), it was clearly time to de-duplicate the new
 code and move to more general-use components.
-
+github.com/apoorvapendse
 It was also time to clean up any technical debt
 that had been accrued even before the Tenor project.
 
