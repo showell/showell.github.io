@@ -196,9 +196,19 @@ to facilitate good design.  (I believe some of
 the giphy code was written before Zulip even
 had the luxury of using es6 classes.)
 
+Also, Apoorva already knew most of those principles
+himself, so in many senses I was just validating
+what he already knew, or, perhaps in some cases,
+simply emphasizing the importance of them.
 
+But there's also the logistics of incrementally
+moving toward the final version, and that's an
+area where my decade of working on the project
+was probably most helpful.
 
-
+We have pretty detailed conversations about
+how to structure PRs to get from point A to
+point B in the lease disruptive way possible.
 
 ## Cheating on math quiz problems (with Python)
 
