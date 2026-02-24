@@ -914,6 +914,146 @@ export function table(
 }
 ```
 
+#### UI architecture summary
+
+I didn't cover every single component or aspect of the UI,
+but I can summarize it as follows:
+
+* The Page object builds the navbar and the main container
+* The PluginHelper orchestrates the tab-based UI.
+* The main plugin is SearchWidget.
+* SearchWidget uses PaneManager to arrange these objects:
+    * ChannelPane
+    * ChannelInfo
+    * TopicPane
+    * MessagePane
+    * ReplyPane
+    * AddTopicPane
+
+The FooPane objects can include any components that they
+want, but to give a concrete hierarchy:
+
+* TopicPane
+    * TopicList
+        * (data) TopicRow[]
+        * (pure function) dom/table_widget.ts: table()
+        * Cursor
+
+I didn't talk much about click handlers and callbacks, but
+you can read the code to see the paradigm there.
+
+We only have three plugins so far:
+
+* SearchWidget (with the 5 panes)
+* PluginChooser
+* EventRadio
+
+Soon to come:
+
+* buddy list
+* recent conversations
+* code search
+* (etc.)
+
+#### other stuff
+
+I didn't really cover event handling or live updates, but
+the model there is quite simple too.  Here is an example
+event handler from `SearchWidget`:
+
+``` ts
+    handle_event(event: ZulipEvent): void {
+        if (event.flavor === EventFlavor.MESSAGE) {
+            this.handle_incoming_message(event.message);
+        }
+
+        if (event.flavor === EventFlavor.MUTATE_MESSAGE) {
+            this.refresh_message_ids([event.message_id]);
+        }
+
+        if (event.flavor === EventFlavor.MUTATE_UNREAD) {
+            this.refresh_message_ids(event.message_ids);
+        }
+
+        this.update_label();
+    }
+```
+
+Here is the entire codebase as of February 24, 2026:
+
+``` ts
+$ find . -name '*.ts' | sort | xargs wc -l
+    45 ./add_topic_pane.ts
+    40 ./backend/channel_row_query.ts
+    65 ./backend/database.ts
+    31 ./backend/db_types.ts
+   132 ./backend/event.ts
+   107 ./backend/fetch.ts
+    31 ./backend/filter.ts
+    52 ./backend/message_list.ts
+    82 ./backend/model.ts
+    57 ./backend/outbound.ts
+    35 ./backend/topic_map.ts
+    33 ./backend/topic_row_query.ts
+    73 ./backend/zulip_client.ts
+    60 ./button.ts
+    58 ./channel_info.ts
+   161 ./channel_list.ts
+    38 ./channel_pane.ts
+   215 ./channel_view.ts
+   125 ./compose.ts
+    46 ./cursor.ts
+    69 ./dom/channel_row_widget.ts
+    43 ./dom/compose_widget.ts
+    92 ./dom/page_widget.ts
+    96 ./dom/render.ts
+    31 ./dom/table_widget.ts
+    75 ./dom/topic_row_widget.ts
+    42 ./main.ts
+    67 ./message_content.ts
+   148 ./message_list.ts
+    33 ./message_pane.ts
+    34 ./message_popup.ts
+    83 ./message_row_widget.ts
+    48 ./message_view.ts
+    41 ./message_view_header.ts
+   128 ./nav_button_panel.ts
+   152 ./page.ts
+    94 ./pane_manager.ts
+   108 ./plugin_helper.ts
+    68 ./plugins/event_radio.ts
+    34 ./plugins/plugin_chooser.ts
+    94 ./popup.ts
+     8 ./render.ts
+    38 ./reply_pane.ts
+   179 ./row_types.ts
+   339 ./search_widget.ts
+    79 ./secrets.ts
+    10 ./server.ts
+   129 ./smart_list.ts
+    38 ./status_bar.ts
+   165 ./topic_list.ts
+    34 ./topic_pane.ts
+  4085 total
+```
+
+#### Future directions
+
+I am already up to using Angry Cat for 95% of my Zulip-based
+work. I use Zulip every single day of development. I am not
+only developing Angry Cat itself, but I am helping Apoorva
+with his contributions to the core Zulip product.  We are
+absolutely power users of the Zulip server, and I am very
+happy using the Cat as my client.
+
+I feel like I have a pretty good architectural foundation now
+to build out features.  I basically prioritize features by
+being annoyed.  If I can't do something with Angry Cat, I try
+to work around it within the app.  If I need to go to the
+official Zulip client for the same thing over and over again,
+I eventually build it.
+
+I will blog more soon! Feedback is welcome.
 
 <hr>
 
