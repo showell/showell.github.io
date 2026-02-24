@@ -58,6 +58,10 @@ unread messages on [chat.zulip.org](https://chat.zulip.org).
 
 ![czo screencast](czo_angry_cat.mp4)
 
+<video controls>
+  <source src="czo_angry_cat.mp4" type="video/mp4">
+</video>
+
 <hr>
 
 ## Mentoring Apoorva
