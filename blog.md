@@ -88,7 +88,7 @@ are certain limitations, of course:
 The official Zulip client is in its 14th year of development.
 I'm in my 14th day. So there is some catching up to do!
 
-Fortunately, I can customize the client to things that I
+Fortunately, I can customize the client to do things that I
 really, really need. And then I use my client as a companion
 app to the official Zulip client. It works well. I actually
 spend about 95% of my working day in Angry Cat.
@@ -146,7 +146,7 @@ So, basically do the following:
 * follow the instructions in README.md to configure your site url and API key
 * install npm and vite
 * run `npx vite`
-* open up something like `http://localhost:7888/` in the browser
+* open up something like `http://localhost:7888/` in the browser (vite will tell you the exact port number)
 
 Obviously, at some point I intend to have a version of the client
 running on the web, and it will just have normal Zulip authentication
@@ -744,13 +744,18 @@ little bit more complex:
 ```
 
 When you click on a selected item within the channel chooser,
-we do a few things so that the UI subsequently looks like
-this:
+that click effectively de-selects the particular channel.
+
+At that point we want the topic list (and possibly a message
+list) to go away.
+
+By virtue of calling `this.pane_manager.remove_after("channel_pane");`,
+the UI will subsequently look like this:
 
 ![just_channels.png](just_channels.png)
 
-We just let `pane_manager.remove_after` manage how it draws
-into the main page container:
+We just let `pane_manager.remove_after` manage the redraw process
+(in a completely generic way, of course):
 
 ``` ts
     remove_after(key: string) {
@@ -944,7 +949,7 @@ you can read the code to see the paradigm there.
 
 We only have three plugins so far:
 
-* SearchWidget (with the 5 panes)
+* SearchWidget (with ChannelPane, TopicPane, MessagePane, etc.)
 * PluginChooser
 * EventRadio
 
