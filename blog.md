@@ -108,6 +108,52 @@ Notice as you watch the screencast that there are little
 status notifications at the top of the page that tell
 me when messages arrive.
 
+#### Try it out!
+
+In order to use Angry Cat, you need a Linux environment.
+In my case, I use WSL (Windows Subsystem for Linux), but
+it should work on any modern Linux distribution. (I am
+testing it on "Ubuntu 22.04.5 LTS" via WSL.)
+
+The application has very few dependencies. It's an HTML
+application with a single HTML file called `index.html`:
+
+``` html
+<html>
+  <head>
+    <title>Angry Cat</title>
+    <link rel="stylesheet" href="styles/app_variables.css">
+    <link rel="stylesheet" href="styles/rendered_markdown.css">
+  </head>
+  <body>
+    <script src="/src/main.ts" type="module"></script>
+  </body>
+</html>
+```
+
+The file `main.ts` is in TypeScript, so you need to transpile
+it from TypeScript into JavaScript. Apoorva helped me out
+by setting up [vite](https://vite.dev/guide/) as our build
+tool.
+
+So, basically do the following:
+* go into Linux
+* `git clone git@github.com:showell/zulip-bot-impersonator.git`
+* cd zulip-bot-impersonator
+* follow the instructions in README.md to configure your site url and API key
+* install npm and vite
+* run `npx vite`
+* open up something like `http://localhost:7888/` in the browser
+
+Obviously, at some point I intend to have a version of the client
+running on the web, and it will just have normal Zulip authentication
+to connect to your Zulip server of choice.  I'm just not there
+yet.  It's actually kind of nice to have it running locally
+if you have the proper setup, because you can hack on the code!
+
+The setup should be quick and easy for software developers who
+have a bit of familiarity with Linux and node JS.
+
 <hr>
 
 ## Mentoring Apoorva
