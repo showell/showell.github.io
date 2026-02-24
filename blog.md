@@ -154,6 +154,183 @@ if you have the proper setup, because you can hack on the code!
 The setup should be quick and easy for software developers who
 have a bit of familiarity with Linux and node JS.
 
+#### Architecture
+
+As I mentioned earlier, this is just an HTML/JS app with a single
+HTML file.  The source code is in `src` and it's all written in
+TypeScript and then transpiled to JavaScript by `vite`.
+
+Here is the current version of the main JS entry point, `src/main.ts`:
+
+``` ts
+import { EventHandler, ZulipEvent } from "./backend/event";
+import * as database from "./backend/database";
+import * as zulip_client from "./backend/zulip_client";
+
+import { config } from "./secrets";
+
+import { Page } from "./page";
+
+export async function run() {
+    // We overwrite this as soon as we fetch data
+    // and call page.start(), which in turn calls
+    // into SearchWidget to get the unread counts
+    // for our initial download of Zulip data.  But
+    // this is nice to have while data is still loading.
+    document.title = config.nickname;
+
+    // do before fetching to get "spinner"
+    const page = new Page();
+
+    function handle_event(event: ZulipEvent) {
+        // We want the model to update before any plugins touch
+        // the event.
+        database.handle_event(event);
+
+        // The Page object dispatches events to all the plugins.
+        page.handle_event(event);
+    }
+
+    const event_manager = new EventHandler(handle_event);
+
+    // we wait for register to finish, but then polling goes
+    // on "forever" asynchronously
+    await zulip_client.register_queue();
+
+    await database.fetch_original_data();
+
+    zulip_client.start_polling(event_manager);
+
+    page.start();
+}
+
+run();
+```
+
+As you can tell from the imports, there is a "backend" directory
+that lives in `src/backend` (relative to the project root).
+
+The code below will help you get started understanding the
+data flow.
+
+The "DB" here is just a bunch of JS data structures, to be clear.
+My client doesn't have its own back end; **Zulip** itself is the
+back end.
+
+``` ts
+export let DB: Database;
+
+export type Database = {
+    current_user_id: number;
+    user_map: Map<number, User>;
+    channel_map: Map<number, Stream>;
+    topic_map: TopicMap;
+    message_map: Map<number, Message>;
+};
+
+export async function fetch_original_data(): Promise<void> {
+    DB = await fetch.fetch_model_data();
+}
+```
+
+Here is the fetch code from `src/backend/fetch.ts`:
+
+``` ts
+export async function fetch_model_data(): Promise<Database> {
+    const users = await fetch_users();
+
+    const user_map = new Map<number, User>();
+
+    let current_user_id = -1;
+
+    for (const user of users) {
+        user_map.set(user.id, user);
+
+        if (user.email === config.user_creds.email) {
+            current_user_id = user.id;
+        }
+    }
+
+    const streams = await fetch_streams();
+
+    const channel_map = new Map<number, Stream>();
+
+    for (const stream of streams) {
+        channel_map.set(stream.stream_id, stream);
+    }
+
+    const topic_map = new TopicMap();
+
+    const rows = await zulip_client.get_messages(BATCH_SIZE);
+
+    const messages: Message[] = rows
+        .filter((row: any) => row.type === "stream")
+        .map((row: any) => {
+            const topic = topic_map.get_or_make_topic_for(
+                row.stream_id,
+                row.subject,
+            );
+            const unread =
+                row.flags.find((flag: string) => flag === "read") === undefined;
+            return {
+                id: row.id,
+                type: row.type,
+                sender_id: row.sender_id,
+                topic_id: topic.topic_id,
+                stream_id: row.stream_id,
+                content: row.content,
+                is_super_new: false,
+                unread,
+            };
+        });
+
+    for (const row of rows) {
+        if (!user_map.has(row.sender_id)) {
+            const id = row.sender_id;
+            const email = row.sender_email;
+            const full_name = row.sender_full_name;
+            const user = { id, email, full_name };
+            user_map.set(id, user);
+        }
+    }
+
+    const message_map = new Map(
+        messages.map((message) => [message.id, message]),
+    );
+
+    return {
+        current_user_id,
+        user_map,
+        channel_map,
+        topic_map,
+        message_map,
+    };
+}
+```
+
+If you are familiar with Zulip's actual back end architecture,
+you may be surprised to see topic ids. The topic ids are actually
+generated on the fly by the client.
+
+Here is an example of where the rubber actually hits the road:
+
+``` ts
+export async function get_messages(num_before: number) {
+    const url = new URL(`/api/v1/messages`, realm_data.url);
+    url.searchParams.set("narrow", `[]`);
+    url.searchParams.set("num_before", JSON.stringify(num_before));
+    url.searchParams.set("anchor", "newest");
+    const response = await fetch(url, { headers: get_headers() });
+    const data = await response.json();
+    return data.messages;
+}
+```
+
+Note that I don't even bother with Zulip's official JS bindings
+to fetch message data.  I just use native `fetch` and conform to
+Zulip's extremely well-documented [REST API](https://zulip.com/api/rest).
+
+
 <hr>
 
 ## Mentoring Apoorva
