@@ -51,6 +51,7 @@ bring back that feature), the name lives on in the
 [zulip-bot-impersonator GH project](https://github.com/showell/zulip-bot-impersonator)
 on my GH page.
 
+***
 
 ## Mentoring Apoorva
 
@@ -407,6 +408,8 @@ wrote a card game together from the ground up.
 
 But that's for later!
 
+<hr>
+
 ## Cheating on math quiz problems (with Python)
 
 *January 29, 2026*
@@ -549,6 +552,8 @@ I would have to search harder to find out if any multiple
 of 31 can be expressed as the sum of a pair of powers.
 
 
+<hr>
+
 ## Self-masking numbers (a math problem)
 
 *January 28, 2026*
@@ -656,6 +661,8 @@ There are certainly other ways to solve this problem,
 but I enjoy the self-masking angle from a programming
 perspective.  It's like an extension of bit shifting
 and bit masking.
+
+<hr>
 
 ## A Wacky Virtual Machine (2023)
 
@@ -1173,6 +1180,8 @@ my simulation.  As well as three other polynomials.
 And it got the exact same results as the mundane
 virtual machine!
 
+<hr>
+
 ## Pure HTML/JS, no-frills programming (2023)
 
 *January 28, 2026*
@@ -1465,6 +1474,8 @@ window.dom_helpers = (function () {
 })();
 ```
 
+<hr>
+
 
 ## Permutations w/breadth-first-search
 
@@ -1641,6 +1652,8 @@ print("</pre>")
 
 When I'm just experimenting with concepts, I **definitely** use Python
 as a scripting language in the most ugly sense.  But it works!
+
+<hr>
 
 ## Boolean Satisfiability Problem (SAT)
 
@@ -1826,6 +1839,8 @@ def strings():
 There are deeper examples in the `test_*.py` examples in the repo.
 
 
+<hr>
+
 ## Binary Tree Diagrams (2019)
 
 *January 28, 2026*
@@ -1903,6 +1918,8 @@ but here's a taste of the code:
 
 
 ```
+
+<hr>
 
 ## Functional Core, Imperative Shell (2023)
 
@@ -2103,6 +2120,8 @@ gruesome unit testing (lots of mocking, basically).
 I generally prefer to focus my unit-testing efforts
 on functional code. For the other pieces, the testing
 strategies can be a lot more difficult to maintain.
+
+<hr>
 
 ## Polynomials of polynomials of polynomials (2023)
 
@@ -2410,6 +2429,8 @@ I have dabbled with things like Jupyter notebooks in Python.
 Maybe it's time for a deeper dive.
 
 
+<hr>
+
 ## Online Drawing (2011)
 
 *January 28, 2026*
@@ -2529,6 +2550,8 @@ demo_layout = \
   '''
 ~~~
 
+<hr>
+
 ## Math Links (YouTube)
 
 *January 28, 2026*
@@ -2545,6 +2568,8 @@ favorite YouTube math people.
 
 Some non-math stuff too:
 * [Italian](https://www.youtube.com/watch?v=bZ1_vxGcwUQ&list=LL&index=34)
+
+<hr>
 
 ## Resurrecting a CoffeeScript Program
 
