@@ -51,7 +51,14 @@ bring back that feature), the name lives on in the
 [zulip-bot-impersonator GH project](https://github.com/showell/zulip-bot-impersonator)
 on my GH page.
 
-***
+## Using it to catch up on messages
+
+You can see here how I use it to manage my backlog of
+unread messages on [chat.zulip.org](https://chat.zulip.org).
+
+![czo screencast](czo_angry_cat.mp4)
+
+<hr>
 
 ## Mentoring Apoorva
 
