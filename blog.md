@@ -279,6 +279,91 @@ export abstract class GifNetwork {
 }
 ```
 
+### Organizing emoji frequency code
+
+Another project that Apoorva took on was related
+to Zulip's emoji picker for reactions.  When you
+react to a Zulip message with an emoji (e.g.
+thumbs-up!), you can open the emoji picker to find
+pertinent emojis.
+
+There are certain emojis that are used very
+frequently on Zulip (and in general), such as
+the emojis for "thank you", "thumbs up", "smile",
+and a couple other celebration-related emojis.
+
+Up until 2025 Zulip just had a hard coded list
+of emojis that were anecdotally popular among
+users, and those actually worked quite well, in
+my opinion. The product team decided to refine the
+feature by actually calculating the frequency
+of previous emoji usage on a per-user basis.
+
+They tasked another programmer to come up with a
+prototype solution. The good outcome of that project
+was that even a fairly naive algorithm for determining
+the frequency of emoji reactions by any given
+user produced good user experiences when the results
+of the algorithm were used to determine which
+emojis got displayed at the top of the picker.
+
+Apoorva got enlisted for the second phase of the
+project, in which Zulip intended to use a more
+refined algorithm.  Unfortunately, this is the
+real world, and sometimes fairly easy decisions
+get stalled due to a lot of over-thinking and
+trying to reach consensus.
+
+All that Apoorva and I did during the project,
+before it got stalled, was to refactor the existing
+code.
+
+The original author had a nice implementation, but
+it was difficult to unit test, because the model
+code was intermingled with UI code.
+
+I actually co-authored a commit to simply extract
+the model-specific code into separate functions.
+And then Apoorva went to the next step and pulled
+all the model-specific code into a new file
+called `emoji_frequency_data.ts`.  Here is the
+relevant commit:
+
+[emoji_frequency: Move data handling to emoji_frequency_data.ts](https://github.com/zulip/zulip/commit/5a73063a21a4e00d0331b2a5dc964b3520c19f7a#diff-e89b389ac056079bbd670554589663ce3207fbb3e0d386d217c31a8b48910c1cR4-R5)
+
+#### Outcome
+
+The work that Apoorva and I did to re-organize
+the code will pay dividends in the future.
+It will be easier to unit-test the code, and
+it will be easier to do a complete re-write
+of the algorithm, as needed, without risk
+of breaking the UI interactions surrounding
+those calculations.  That's all good.
+
+Unfortunately, that project is stalled for now.
+
+### So what else?
+
+I will write more in future blogs.  So far I have
+described the outcomes of two of our projects
+that directly pertain to Zulip.
+
+The common theme for both of them is that we
+started with prototype code and moved to a cleaner
+way of organizing the code.
+
+As a senior developer, one of the most important
+things that you can teach younger developers is
+the importance of the overall structure of code
+within a project.
+
+Just to tease a future blog, I did that with
+Apoorva in a completely non-Zulip context. We
+wrote a card game together from the ground up.
+
+But that's for later!
+
 ## Cheating on math quiz problems (with Python)
 
 *January 29, 2026*
