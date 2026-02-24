@@ -51,10 +51,13 @@ bring back that feature), the name lives on in the
 [zulip-bot-impersonator GH project](https://github.com/showell/zulip-bot-impersonator)
 on my GH page.
 
-## Using it to catch up on messages
+I took over the code and decided to build a fairly
+general-purpose Zulip client for reading messages.
 
-You can see here how I use it to manage my backlog of
-unread messages on [chat.zulip.org (czo)](https://chat.zulip.org).
+## Using Angry Cat to catch up on messages
+
+You can see here how I use Angry Cat to manage my backlog of
+unread messages from [chat.zulip.org (czo)](https://chat.zulip.org).
 
 ![czo screencast](czo_angry_cat.mp4)
 
@@ -776,7 +779,7 @@ into the main page container:
     }
 ```
 
-Right now the `PaneManager` class just always sticks
+Righj now the `PaneManager` class just always sticks
 the panes in a flex div, but of course, as the `TODO`
 above suggests, it would be trivial to provide alternative
 renderings of the panes for a more responsive design.
@@ -797,6 +800,120 @@ export class PaneManager {
     // ...
 }
 ```
+
+#### The channel pane
+
+Let's look at how the channel pane gets rendered. Here
+it is again for reference:
+
+![just_channels.png](just_channels.png)
+
+Here is the `ChannelPane` class in its entirety:
+
+``` ts
+export class ChannelPane {
+    div: HTMLElement;
+    channel_list: ChannelList;
+
+    constructor(search_widget: SearchWidget) {
+        const div = render_pane();
+
+        this.channel_list = new ChannelList(search_widget);
+
+        this.div = div;
+        this.populate();
+    }
+
+    channel_selected(): boolean {
+        return this.channel_list.has_selection();
+    }
+
+    get_channel_list(): ChannelList {
+        return this.channel_list;
+    }
+
+    populate() {
+        const div = this.div;
+        const channel_list = this.channel_list;
+
+        channel_list.populate();
+
+        div.innerHTML = "";
+        div.append(render_list_heading("Channels"));
+        div.append(channel_list.div);
+    }
+}
+```
+
+It includes a `ChannelList` object. That class does some logic
+to manage click events and to respond to the "next channel"
+and "surf channels" buttons. I will omit those details for
+brevity, but you can read `channel_list.ts` in the repo.
+
+Here is where it populates itself:
+
+``` ts
+    make_table(): HTMLElement {
+        const search_widget = this.search_widget;
+        const cursor = this.cursor;
+        const row_widgets = [];
+
+        const channel_rows = this.get_channel_rows();
+
+        for (let i = 0; i < channel_rows.length; ++i) {
+            const channel_row = channel_rows[i];
+            const selected = cursor.is_selecting(i);
+            const row_widget = channel_row_widget.row_widget(
+                channel_row,
+                i,
+                selected,
+                search_widget,
+            );
+            row_widgets.push(row_widget);
+        }
+
+        const columns = ["Unread", "Channel", "Topics"];
+        return table_widget.table(columns, row_widgets);
+    }
+```
+
+And the `table_widget.ts` module does the drawing.  The
+`table_widget.table` function is pure DOM:
+
+``` ts
+import { render_th, render_thead, render_tr } from "./render";
+
+export type RowWidget = {
+    divs: HTMLDivElement[];
+};
+
+export function table(
+    columns: string[],
+    row_widgets: RowWidget[],
+): HTMLTableElement {
+    function make_tbody(): HTMLTableSectionElement {
+        const tbody = document.createElement("tbody");
+
+        for (const row_widget of row_widgets) {
+            tbody.append(render_tr(row_widget.divs));
+        }
+
+        return tbody;
+    }
+
+    const thead = render_thead(columns.map((col) => render_th(col)));
+    const tbody = make_tbody();
+
+    const table = document.createElement("table");
+    table.append(thead);
+    table.append(tbody);
+
+    table.style.borderCollapse = "collapse";
+
+    return table;
+}
+```
+
 
 <hr>
 
