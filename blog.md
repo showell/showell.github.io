@@ -210,6 +210,8 @@ run();
 As you can tell from the imports, there is a "backend" directory
 that lives in `src/backend` (relative to the project root).
 
+##### Model code
+
 The code below will help you get started understanding the
 data flow.
 
@@ -330,6 +332,25 @@ Note that I don't even bother with Zulip's official JS bindings
 to fetch message data.  I just use native `fetch` and conform to
 Zulip's extremely well-documented [REST API](https://zulip.com/api/rest).
 
+#### Some more history (Lyn Rummy)
+
+Before I describe the UI piece of Angry Cat, I will show off my
+January app.  Here is what I have done in 2026 so far:
+
+* January: wrote [Lyn Rummy](https://showell.github.io/LynRummy/) (code complete)
+* February: wrote Angry Cat (very much a work in progress)
+
+He is a screencast of Lyn Rummy (aka the January app):
+
+
+<video controls>
+  <source src="lynrummy_replay.mp4" type="video/mp4">
+</video>
+
+This is the card game that I wrote with some help from Apoorva.
+As you can tell, it's a variation of Rummy, and the screencast
+shows off a nifty feature of the game, which is that you can
+have the app do an "instant replay" of the entire game for you.
 
 <hr>
 
