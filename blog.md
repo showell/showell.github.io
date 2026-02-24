@@ -14,7 +14,7 @@ joining [my Zulip realm](https://macandcheese.zulipchat.com/register).
 *February 20, 2026*
 
 I have been mentoring a college student named
-Apoorva Pendse (see github.com/apoorvapendse)
+Apoorva Pendse (see [his GitHub repo](https://github.com/apoorvapendse))
 since December 2025.  We got
 connected somewhat indirectly through Zulip's
 participation in the Google Summer of Code.
@@ -23,7 +23,7 @@ I'm a long-time contributor to the Zulip Open
 Source project and a former employee of its
 related company, Kandra Labs.  I met Apoorva
 in early 2025 and mostly just interacted with
-him on a social level, although even then I
+him on a social level, although back then I
 did advise him on some small projects.
 
 After a successful "Summer of Code", Apoorva
@@ -35,7 +35,7 @@ I had been mostly away from Zulip during
 I started talking to Apoorva again, and we
 got talking about some of the projects he was
 working on.  Since some of them were in areas
-of the code that I was familiar with, I stared
+of the code that I was familiar with, I started
 unofficially mentoring him on a daily basis.
 
 Fast forward to now.  We have been working quite
@@ -62,7 +62,7 @@ by another former GSoC student.
 
 When I work on Zulip projects (and projects in
 general), I am fairly fanatical about creating
-new decidicated **channels** on Zulip for even
+new dedicated **channels** on Zulip for even
 seemingly small projects.  I have successfully
 indoctrinated Apoorva into this philosophy, and
 I think he would agree that it truly leverages
@@ -74,7 +74,7 @@ active; it's the nature of the beast.)
 
 Just to illustrate how specific we can get in
 our channels (emphasis on channels: not topics,
-channels!), here are some recent example:
+channels!), here are some recent examples:
 
 * webex
 * message store cleanup
@@ -93,8 +93,8 @@ Apoorva has been very productive during the two
 months of our collaboration, and I will take
 partial credit for his achievements.
 
-Here are his commits that have **already been
-merged to Zulip main** during our two months:
+Here are the commits that Tim (the project leader)
+has **already merged to Zulip main** during our two months:
 
 ~~~
  2025-12-15 : tenor: Focus edit textarea on closing tenor picker with esc.
@@ -157,7 +157,7 @@ co-author status on some of them.
 
 If you want to contribute to the Zulip project as a
 developer, there is a high expectation of being a
-generalist, and you can glean from the commits above
+generalist, and you can glean from the above commits
 that Apoorva has worked in several areas of the codebase
 recently.  Having said that, there have been some major
 areas of concentration, so I will speak to a few of those.
@@ -173,18 +173,19 @@ but it only started using Tenor during the summer of
 During the initial prototyping of the Tenor project,
 it was expedient to basically copy/paste a lot of
 the Giphy code to reduce the risk of breaking Giphy
-features while still working out bugs with Tenor.
+features while still working out bugs with the
+Tenor prototype.
 
-Once the Tenor feature stabilized (as well as being
-validated by users as a worthwhile feature to begin
-with), it was clearly time to de-duplicate the new
+Once the Tenor prototype stabilized (as well as Tenor
+itself being validated as a gif vendor),
+it was clearly time to de-duplicate the new
 code and move to more general-use components.
-github.com/apoorvapendse
+
 It was also time to clean up any technical debt
 that had been accrued even before the Tenor project.
 
 I think one of my assets as a senior developer
-(been doing this for 40 years) is that I deeply
+(I've been doing this for 40 years) is that I deeply
 understand the best way to organize code for
 re-use.
 
