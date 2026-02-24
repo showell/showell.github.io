@@ -384,6 +384,249 @@ as I found out difficulties in code that I myself had
 written. The crutch of TypeScript allowed me to quickly
 refactor code into a shape that finally felt simple.
 
+I won't go down the whole rabbit hole of how Lyn Rummy
+led me into writing Angry Cat.  I will briefly point out
+that the two apps will eventually be integrated in
+**both directions** with each other. Chat within a
+two-player card game is kinda essential. And having
+a two-player card game within your chat client is
+just fun! But that's another blog post.
+
+Back to the Angry cat UI.
+
+### Angry Cat User Interface code
+
+I am a minimalist by nature.
+
+Angry Cat has no unnecessary dependencies.  It's 90%
+driven by the DOM API for its user interface. There are
+no templates (not even JSX) and certainly no jQuery
+helpers.  I have an entire directory of pure functions
+that just generate DOM with `document.createElement`.
+The directory has the clever name of `src/dom`.
+
+Let's look at the navigation bar:
+
+![navbar.png](navbar.png)
+
+The tabs and buttons are crucial to me for how I like
+to navigate channels and topics in Zulip. Here is the
+code used to render them:
+
+``` ts
+export function navbar_tab_button(): HTMLButtonElement {
+    const button = document.createElement("button");
+    button.style.borderBottom = "none";
+    button.style.fontSize = "16px";
+    button.style.paddingLeft = "13px";
+    button.style.paddingRight = "13px";
+    button.style.paddingTop = "4px";
+    button.style.paddingBottom = "4px";
+    button.style.borderTopRightRadius = "10px";
+    button.style.borderTopLeftRadius = "10px";
+
+    return button;
+}
+
+function add_search_button(add_search_widget: () => void): HTMLDivElement {
+    const div = document.createElement("div");
+    div.style.marginRight = "15px";
+
+    const button = document.createElement("button");
+    button.innerText = "+";
+    button.style.backgroundColor = "white";
+    button.style.padding = "3px";
+    button.style.fontSize = "12px";
+    button.style.backgroundColor = "white";
+    button.style.border = "1px green solid";
+
+    button.addEventListener("click", () => {
+        add_search_widget();
+    });
+
+    div.append(button);
+
+    return div;
+}
+
+function tab_bottom_border_spacer(): HTMLDivElement {
+    const spacer = document.createElement("div");
+    spacer.innerText = " ";
+    spacer.style.borderBottom = "1px black solid";
+    spacer.style.height = "1px";
+    spacer.style.flexGrow = "1";
+
+    return spacer;
+}
+
+function make_button_bar(
+    tab_button_divs: HTMLDivElement[],
+    add_search_widget: () => void,
+): HTMLDivElement {
+    const button_bar = document.createElement("div");
+    button_bar.style.display = "flex";
+    button_bar.style.alignItems = "flex-end";
+    button_bar.style.paddingTop = "2px";
+    button_bar.style.marginBottom = "3px";
+    button_bar.style.maxHeight = "fit-content";
+
+    button_bar.append(add_search_button(add_search_widget));
+
+    for (const tab_button_div of tab_button_divs) {
+        button_bar.append(tab_button_div);
+    }
+
+    button_bar.append(tab_bottom_border_spacer());
+
+    return button_bar;
+}
+
+export function render_navbar(
+    status_bar_div: HTMLDivElement,
+    tab_button_divs: HTMLDivElement[],
+    add_search_widget: () => void,
+) {
+    const navbar_div = document.createElement("div");
+    navbar_div.append(status_bar_div);
+    navbar_div.append(make_button_bar(tab_button_divs, add_search_widget));
+    navbar_div.style.position = "sticky";
+    navbar_div.style.marginTop = "8px";
+    navbar_div.style.marginLeft = "8px";
+    navbar_div.style.top = "0px";
+    navbar_div.style.zIndex = "100";
+    navbar_div.style.backgroundColor = "rgb(246, 246, 255)";
+
+    return navbar_div;
+}
+```
+
+I don't even use CSS to style them. The DOM API lets you set
+all the styles that I needed to make it look nice. (*As a quick
+aside, I do actually use some CSS in the app. I only use CSS
+to style message content for each message in the message list.
+I borrowed that code 100% verbatim from the official client.*)
+
+#### Composability through functions
+
+When your entire codebase is driven by TypeScript functions and
+classes, it is extremely easy to do the following things:
+
+* I can refine **everything** about a "leaf" component with one-stop shopping.
+* I don't have to worry about breaking other components (i.e. I avoid the CSS pitfall).
+* I can let TypeScript enforce the protocols for how parents interact with their children (and vice versa).
+
+It's honestly laughable how simple things are at times.
+
+#### Plugins and panes
+
+All of the tabs are driven by a Plugin architecture.
+
+Here is how you expect a plugin to behave:
+
+``` ts
+ 16 export type Plugin = {
+ 17     div: HTMLElement;
+ 18     start: (plugin_helper: PluginHelper) => void;
+ 19     handle_event: (event: ZulipEvent) => void;
+ 20 };
+```
+
+Every plugin just needs to hand off a `div` to its parent. In our
+case the parent is always a `Page` object.
+
+And the plugin uses the `PluginHelper` protocol:
+
+``` ts
+export class PluginHelper {
+    deleted: boolean;
+    page: Page;
+    open: boolean;
+    plugin: Plugin;
+    label: string;
+    tab_button: TabButton;
+    model: Model;
+
+    constructor(plugin: Plugin, page: Page) {
+        this.plugin = plugin;
+        this.page = page;
+        this.deleted = false;
+        this.open = false;
+        this.label = "plugin";
+        this.tab_button = new TabButton(this, page);
+        this.model = new Model();
+    }
+
+    delete_me(): void {
+        this.deleted = true;
+        this.page.remove_deleted_plugins();
+        this.page.go_to_top();
+    }
+
+    refresh() {
+        this.tab_button.refresh();
+    }
+
+    update_label(label: string) {
+        this.label = label;
+        this.refresh();
+    }
+
+    violet() {
+        this.tab_button.violet();
+    }
+
+    add_plugin(plugin: Plugin): void {
+        this.page.add_plugin(plugin);
+    }
+}
+```
+
+The main plugin, which gets a tiny bit of first-class treatment,
+is my `SearchWidget` component.  Here is an example of `SearchWidget`
+updating unread counts in its tab button. (There may be, and usually
+are, multiple instances of `SearchWidget` running.)
+
+``` ts
+    update_label(): void {
+        this.plugin_helper!.update_label(this.get_narrow_label());
+    }
+
+    get_narrow_label(): string {
+        const channel_name = this.get_channel_name();
+        const topic_name = this.get_topic_name();
+        const unread_count = this.unread_count();
+
+        return narrow_label(channel_name, topic_name, unread_count);
+    }
+```
+
+The above two methods are inside the `SearchWidget` class.
+
+The following pure function is at module level. I try to extract
+pure functions as much as possible:
+
+```
+function narrow_label(
+    channel_name: string | undefined,
+    topic_name: string | undefined,
+    unread_count: number,
+): string {
+    let label: string;
+
+    if (topic_name !== undefined) {
+        label = "> " + topic_name;
+    } else if (channel_name !== undefined) {
+        label = "#" + channel_name;
+    } else {
+        label = "Channels";
+    }
+
+    const prefix = unread_count === 0 ? "" : `(${unread_count}) `;
+
+    return prefix + label;
+}
+```
+
 <hr>
 
 ## Mentoring Apoorva
