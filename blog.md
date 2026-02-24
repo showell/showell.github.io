@@ -352,6 +352,38 @@ As you can tell, it's a variation of Rummy, and the screencast
 shows off a nifty feature of the game, which is that you can
 have the app do an "instant replay" of the entire game for you.
 
+Before working on Lyn Rummy, I had spent most of my software
+brain power to help develop the official Zulip product, both
+on the backend and the frontend. Almost from day one, I was
+a "maintenance programmer" and even when I was developing new
+features, it was always an exercise of integrating new features
+into an application that was already built out.
+
+I simply had never made "play time" to build applications in
+either JavaScript or TypeScript. (To be clear, I wasn't
+completely idle after work hours.  I wrote a lot of code
+in Elm and Python in my spare time.)
+
+In particular, I had never really used TypeScript until my
+last year or two of being heavily active as a core developer
+in Zulip, and most of that coding was just maintenance in
+nature.
+
+Writing Lyn Rummy fueled my passion for how **easily** you
+can build browser-based applications in TypeScript. I have
+long been a believer of the power of the DOM API that you
+get right out of the box, but having the type safety and
+code discipline that TS provides amplified my productivity
+probably about 10x.
+
+I shouldn't actually say that Lyn Rummy was **easy** to
+build.  It went through a lot of iterations.  My final
+object architecture for Lyn Rummy is incredibly simple
+on the surface, but there was a lot of nuance that evolved
+as I found out difficulties in code that I myself had
+written. The crutch of TypeScript allowed me to quickly
+refactor code into a shape that finally felt simple.
+
 <hr>
 
 ## Mentoring Apoorva
