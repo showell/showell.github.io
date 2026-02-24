@@ -54,13 +54,59 @@ on my GH page.
 ## Using it to catch up on messages
 
 You can see here how I use it to manage my backlog of
-unread messages on [chat.zulip.org](https://chat.zulip.org).
+unread messages on [chat.zulip.org (czo)](https://chat.zulip.org).
 
 ![czo screencast](czo_angry_cat.mp4)
 
 <video controls>
   <source src="czo_angry_cat.mp4" type="video/mp4">
 </video>
+
+The basic paradigm of Zulip is as follows:
+* You join an organization (e.g. czo)
+* The org has **channels** that you subscribe to.
+* Channels have separate **topics** created by users.
+* Each topic has **messages**.
+
+It's really that simple for 95% of what I do on Zulip.
+
+So on Angry Cat I have the following UI:
+* The **Channel List** lets me choose a channel.
+* The **Topic List** lets me choose a topic.
+* The **Message List** show me all the messages on a topic.
+
+This project is very clearly in its early stages, so there
+are certain limitations, of course:
+
+* I only download the most recent 5000 messages.
+* I don't show message reactions or user avatars yet.
+* I don't exclude or indicate which channels and topics I have muted.
+
+The official Zulip client is in its 14th year of development.
+I'm in my 14th day. So there is some catching up to do!
+
+Fortunately, I can customize the client to things that I
+really, really need. And then I use my client as a companion
+app to the official Zulip client. It works well. I actually
+spend about 95% of my working day in Angry Cat.
+
+#### What I do on Angry Cat:
+
+* I browse channels and topics.
+* Angry Cat tells me which topics are still unread by me.
+* I read the message lists.
+* I respond to messages using the "reply" feature.
+* When I am done with a topic, I use "mark as read".
+
+Here is a screencast of me replying to a topic:
+
+<video controls>
+  <source src="reply_pane.mp4" type="video/mp4">
+</video>
+
+Notice as you watch the screencast that there are little
+status notifications at the top of the page that tell
+me when messages arrive.
 
 <hr>
 
