@@ -9,6 +9,15 @@ joining [my Zulip realm](https://macandcheese.zulipchat.com/register).
 
 (* see also [Steve resume](steve.html) *)
 
+## Angry Cat Zulip Client
+
+*February 24, 2026*
+
+I have spent most of this month writing my own Zulip
+client called Angry Cat.  Here is a screenshot:
+
+![Angry Cat](angry_cat.png)
+
 ## Mentoring Apoorva
 
 *February 20, 2026*
