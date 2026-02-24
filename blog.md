@@ -411,7 +411,7 @@ Let's look at the navigation bar:
 
 The tabs and buttons are crucial to me for how I like
 to navigate channels and topics in Zulip. Here is the
-code used to render them:
+code used to render the tab buttons in the nav bar:
 
 ``` ts
 export function navbar_tab_button(): HTMLButtonElement {
@@ -517,9 +517,59 @@ classes, it is extremely easy to do the following things:
 
 It's honestly laughable how simple things are at times.
 
-#### Plugins and panes
+#### Plugins
 
-All of the tabs are driven by a Plugin architecture.
+Let's look at the navigation bar again:
+
+![navbar.png](navbar.png)
+
+
+All of the tabs are driven by a Plugin architecture. I
+mentioned earlier that I render the tab buttons themselves
+with pure functions that use the DOM API. Of course,
+the guts of a plugin are in the main container of the page.
+
+You code your plugin and then the integration code is pretty
+simple. Note how the `PluginChooser` has a click handler
+below that launches the `EventRadio` plugin. (*As an aside,
+the PluginChooser is itself a plugin!*)
+
+```
+import type { ZulipEvent } from "../backend/event";
+import type { PluginHelper } from "../plugin_helper";
+
+import { EventRadio } from "./event_radio";
+
+export class PluginChooser {
+    div: HTMLDivElement;
+
+    constructor() {
+        const div = document.createElement("div");
+        this.div = div;
+    }
+
+    start(plugin_helper: PluginHelper): void {
+        const div = this.div;
+
+        div.innerText = "We only have one plugin so far!";
+
+        const button = document.createElement("button");
+        button.innerText = "Launch event radio";
+        button.addEventListener("click", () => {
+            const event_radio = new EventRadio();
+            plugin_helper.add_plugin(event_radio);
+        });
+
+        div.append(button);
+
+        plugin_helper.update_label("Plugins");
+    }
+
+    handle_event(_event: ZulipEvent): void {
+        // nothing to do
+    }
+}
+```
 
 Here is how you expect a plugin to behave:
 
@@ -624,6 +674,127 @@ function narrow_label(
     const prefix = unread_count === 0 ? "" : `(${unread_count}) `;
 
     return prefix + label;
+}
+```
+
+#### SearchWidget and Panes
+
+I mentioned earlier that the entire app is basically a
+bunch of plugins that are managed by the `Page` object
+and the `PluginHelper` object.
+
+The most complex plugin is the `SearchWidget` plugin. It
+gets a little bit of first-class treatment by the `Page`
+object:
+
+``` ts
+    add_search_widget(): void {
+        const search_widget = new SearchWidget();
+        search_widget.populate();
+        this.add_plugin(search_widget);
+    }
+```
+
+The Zulip paradigm, at its core, comes down to three
+concepts:
+
+* channels
+* topics
+* messages
+
+In the `SearchWidget` UI, these concepts manifest as panes.
+
+Look at the three top-level widgets in this screenshot
+(below the navbar and buttons to be clear):
+
+![panes.png](panes.png)
+
+Each of the three panes follows a simple protocol:
+
+``` ts
+type PaneWidget = {
+    div: HTMLElement;
+};
+
+type Pane = {
+    key: string;
+    pane_widget: PaneWidget;
+};
+```
+
+It's literally that simple to be a pane. You need to have
+a div.
+
+Here is some example code from `SearchWidget` that is a
+little bit more complex:
+
+```
+    clear_channel(): void {
+        this.get_channel_list().clear_selection();
+        this.pane_manager.remove_after("channel_pane");
+        this.channel_view = undefined;
+        this.update_button_panel();
+        this.button_panel.focus_next_channel_button();
+        this.update_label();
+        StatusBar.inform("You can choose a channel now.");
+    }
+```
+
+When you click on a selected item within the channel chooser,
+we do a few things so that the UI subsequently looks like
+this:
+
+![just_channels.png](just_channels.png)
+
+We just let `pane_manager.remove_after` manage how it draws
+into the main page container:
+
+``` ts
+    remove_after(key: string) {
+        const new_panes = [];
+
+        for (const pane of this.panes) {
+            new_panes.push(pane);
+            if (pane.key === key) {
+                break;
+            }
+        }
+
+        this.panes = new_panes;
+        this.redraw();
+    }
+
+    redraw(): void {
+        // TODO: adjust to screen size
+        const div = this.div;
+        const panes = this.panes;
+
+        div.innerHTML = "";
+        for (const pane of panes) {
+            div.append(pane.pane_widget.div);
+        }
+    }
+```
+
+Right now the `PaneManager` class just always sticks
+the panes in a flex div, but of course, as the `TODO`
+above suggests, it would be trivial to provide alternative
+renderings of the panes for a more responsive design.
+
+``` ts
+export class PaneManager {
+    div: HTMLElement;
+    panes: Pane[];
+
+    constructor() {
+        const div = document.createElement("div");
+        div.style.display = "flex";
+
+        this.div = div;
+        this.panes = [];
+    }
+
+    // ...
 }
 ```
 
