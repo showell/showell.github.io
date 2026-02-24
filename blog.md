@@ -18,6 +18,40 @@ client called Angry Cat.  Here is a screenshot:
 
 ![Angry Cat](angry_cat.png)
 
+### history
+
+My first commit to build out the client was on February
+10th, so it is officially two weeks old as I write this.
+
+I actually wasn't starting completely from scratch, but
+I was pretty close to having a blank slate.
+
+The original code in the repo was written by my colleague Apoorva
+Pendse.  We were working on a card game together, and
+we wanted to integrate Zulip bots into the game experience.
+The card game uses "cat" characters to inform users
+of their current score and other things.  We had
+a cat we called Angry Cat, and Angry Cat would scold
+the user if they weren't able to make a successful play
+during their turn.
+
+Here is Angry Cat:
+
+![Angry Cat](mr_angry_cat.png)
+
+Apoorva built out a convenience app that made it easy
+to send messages on behalf of Zulip bots.  This app
+had infrastructure to talk to a Zulip server with API
+keys from a TypeScript file. It supported fetching
+bot data and sending simple messages.
+
+It was called zulip-bot-impersonator, and despite my
+app no longer even impersonating bots (although I may
+bring back that feature), the name lives on in the
+[zulip-bot-impersonator GH project](https://github.com/showell/zulip-bot-impersonator)
+on my GH page.
+
+
 ## Mentoring Apoorva
 
 *February 20, 2026*
