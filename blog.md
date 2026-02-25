@@ -725,21 +725,10 @@ function narrow_label(
 
 #### SearchWidget and Panes
 
-I mentioned earlier that the entire app is basically a
-bunch of plugins that are managed by the `Page` object
-and the `PluginHelper` object.
+We talked about how `SearchWidget` talks to its "outer"
+world using the `PluginHelper` class.
 
-The most complex plugin is the `SearchWidget` plugin. It
-gets a little bit of first-class treatment by the `Page`
-object:
-
-``` ts
-    add_search_widget(): void {
-        const search_widget = new SearchWidget();
-        search_widget.populate();
-        this.add_plugin(search_widget);
-    }
-```
+Let's peek inside its implementation.
 
 The Zulip paradigm, at its core, comes down to three
 concepts:
@@ -755,7 +744,13 @@ Look at the three top-level widgets in this screenshot
 
 ![panes.png](panes.png)
 
-Each of the three panes follows a simple protocol:
+The panes are these:
+
+* Channel Chooser
+* Topic Chooser (for "#Angry Cat" channel)
+* Message list (for "> tab discipline" topic)
+
+Each of the three panes (and panes in general) follow a simple protocol:
 
 ``` ts
 type PaneWidget = {
