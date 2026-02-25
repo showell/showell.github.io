@@ -19,8 +19,42 @@ that PR.
 
 #### Overall strategy
 
-I think it will make the most sense to just re-do this PR from
-scratch rather than mess around with merge conflicts.
+Tim is on board with resurrecting this PR if we can just work
+through the merge conflicts.
+
+The main hindrance here is that we have to re-do all the
+provision steps. I honestly think it will be easier to just
+start over.  We want to re-do the provision-related steps,
+and then we can just crib off the PR for the other stuff.
+
+The PR has four separate commits, but we don't need to
+presever the individual commits.
+
+I'm not sure the commits were ever atomic, and
+most of this code is additive and interdependent anyway.
+
+#### Use case: writing a proxy server
+
+In order to keep things a bit concrete, I am going to talk
+about a specific use case. It's the use case that Rohitt and
+I had when we worked on the OAuth PR.
+
+You have a Proxy Server that Zulip users can connect to
+with their custom clients.
+
+Your Proxy Server lets the clients use websockets instead of doing
+long-polling, and it maybe provides other services.
+
+The Client connects to the Proxy, but of course the Client
+does not want to hand over its API key to the Proxy. Instead,
+the Proxy starts an oauth flow with the Client.  The Client
+tells Zulip (offline, so to speak) that it trusts the Proxy
+to hold an OAuth token.
+
+Once the Proxy gets its hands on the OAuth token (I forget
+how that works five years later), the Proxy starts talking
+to Zulip using the OAuth token instead of the Client's
+API key.
 
 #### django-oauth-toolkit library
 
@@ -103,29 +137,6 @@ remember if they are literally built like that or not.)
 
 We eventually need to replace them with Zulip versions that are
 properly skinned and integrated into Zulip.
-
-#### Use case: writing a proxy server
-
-In order to keep things a bit concrete, I am going to talk
-about a specific use case. It's the use case that Rohitt and
-I had when we worked on the OAuth PR.
-
-You have a Proxy Server that Zulip users can connect to
-with their custom clients.
-
-Your Proxy Server lets the clients use websockets instead of doing
-long-polling, and it maybe provides other services.
-
-The Client connects to the Proxy, but of course the Client
-does not want to hand over its API key to the Proxy. Instead,
-the Proxy starts an oauth flow with the Client.  The Client
-tells Zulip (offline, so to speak) that it trusts the Proxy
-to hold an OAuth token.
-
-Once the Proxy gets its hands on the OAuth token (I forget
-how that works five years later), the Proxy starts talking
-to Zulip using the OAuth token instead of the Client's
-API key.
 
 ##### Order of describing things
 
