@@ -11,6 +11,154 @@ joining [my Zulip realm](https://macandcheese.zulipchat.com/register).
 
 <hr>
 
+## Zulip as an OAuth Provider
+
+I am looking at https://github.com/zulip/zulip/pull/16529/changes today,
+and I am going through it to see what we need to do to dust off
+that PR.
+
+#### Overall strategy
+
+I think it will make the most sense to just re-do this PR from
+scratch rather than mess around with merge conflicts.
+
+#### django-oauth-toolkit library
+
+Some of the PR is merely pulling in the library. We will
+essentially want to repeat that process.  This affects:
+
+* requirements/common.in
+* requirements/dev.txt (generated, I assume?)
+* requirements/prod.txt
+
+#### Admin screens
+
+We will resurrect `zerver/lib/oauth2.py` basically verbatim:
+
+```
+import oauth2_provider.views as oauth2_views
+from django.urls import path
+
+oauth2_endpoint_views = [
+    # OAuth2 Application Management endpoints
+    path('applications/', oauth2_views.ApplicationList.as_view(), name="list"),
+    path('applications/register/', oauth2_views.ApplicationRegistration.as_view(), name="register"),
+    path('applications/<pk>/', oauth2_views.ApplicationDetail.as_view(), name="detail"),
+    path('applications/<pk>/delete/', oauth2_views.ApplicationDelete.as_view(), name="delete"),
+    path('applications/<pk>/update/', oauth2_views.ApplicationUpdate.as_view(), name="update"),
+
+    # tokens
+    path('authorize/', oauth2_views.AuthorizationView.as_view(), name="authorize"),
+    path('token/', oauth2_views.TokenView.as_view(), name="token"),
+    path('revoke-token/', oauth2_views.RevokeTokenView.as_view(), name="revoke-token"),
+]
+```
+
+I forget how these links work exactly, but they basically all
+go through the third party library.
+
+They are kind of like the equivalent of Django admin screens. We
+eventually need to replace them with Zulip versions that are properly
+skinned and integrated into Zulip.
+
+#### Use case: writing a proxy server
+
+In order to keep things a bit concrete, I am going to talk
+about a specific use case. It's the use case that Rohitt and
+I had when we worked on the OAuth PR.
+
+You have a Proxy Server that Zulip users can connect to
+with their custom clients.
+
+Your Proxy Server lets the clients use websockets instead of doing
+long-polling, and it maybe provides other services.
+
+The Client connects to the Proxy, but of course the Client
+does not want to hand over its API key to the Proxy. Instead,
+the Proxy starts an oauth flow with the Client.  The Client
+tells Zulip (offline, so to speak) that it trusts the Proxy
+to hold an OAuth token.
+
+Once the Proxy gets its hands on the OAuth token (I forget
+how that works five years later), the Proxy starts talking
+to Zulip using the OAuth token instead of the Client's
+API key.
+
+##### Order of describing things
+
+Note that I am trying to talk about the PR in the same order
+as the diffs show changes, so it's not gonna be completely
+as sequential as the actual "real world" way to think about this.
+
+#### HTTP_BEARER headers
+
+I haven't talked about how the user actually **gets** authenticated
+to Zulip yet, but let's skip ahead.
+
+Once the Proxy (in our example use case) has an oauth token
+for its Client, it talks to Zulip using the oauth token instead
+of the API key.  It sends it as an HTTP header with the key
+of `HTTP_BEARER`.  So this leads to a one-line diff in
+`zerver/lib/rest.py`:
+
+``` diff
+         # most clients (mobile, bots, etc) use HTTP Basic Auth and REST calls, where instead of
+         # username:password, we use email:apiKey
+-        elif request.META.get('HTTP_AUTHORIZATION', None):
++        elif request.META.get('HTTP_AUTHORIZATION') or request.META.get("HTTP_BEARER"):
+```
+
+And then most of the things that we have to do to let
+Zulip accept those inbound requests from the Proxy happen
+in `zerver/decorator.py`.  We can look at the diff in the
+PR for all the details, but here is 50% of the problem solved:
+we just need to validate the oauth key using the library's
+`verify_request(...)` helper:
+
+``` py
+def validate_oauth_key(request: HttpRequest) -> UserProfile:
+    access_token = request.META.get("HTTP_BEARER")
+    request.META["Authorization"] = f"bearer {access_token}"
+
+    (ok, req) = get_oauthlib_core().verify_request(request, [])
+    if not ok:
+        raise JsonableError(_("oauth failed"))
+
+    # convert from AnonymousUser
+    user_profile = UserProfile.objects.get(id=req.user.id)
+    request.user = user_profile
+
+    validate_account_and_subdomain(request, user_profile)
+
+    # Using oauth for webhooks might make sense some day, but we punt for now.
+    if user_profile.is_incoming_webhook:
+        raise JsonableError(_("This API is not available to incoming webhook bots."))
+
+    client_name = "beta oauth"
+    process_client(request, user_profile, client_name=client_name)
+    return user_profile
+```
+
+The rest of the diff is a bit hard to read due to indentation, but
+we are essentially just adding another condition inside of
+`authenticated_rest_api_view`:
+
+``` py
+            elif request.META.get("HTTP_BEARER"):
+                try:
+                    profile = validate_oauth_key(request)
+                except JsonableError as e:
+                    return json_unauthorized(e.msg)
+            else:
+                # our caller should defend against missing headers, not us
+                raise AssertionError("expected some kind of header")
+```
+
+In the comment where it says "our caller should defend", that
+is up in `zerver/lib/rest.py` (see the one-line diff up above).
+
+<hr>
+
 ## A day in the life
 
 I occasionally keep notes on what I do during the day. The
