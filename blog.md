@@ -822,10 +822,15 @@ We just let `pane_manager.remove_after` manage the redraw process
     }
 ```
 
-Righj now the `PaneManager` class just always sticks
+Right now the `PaneManager` class just always sticks
 the panes in a flex div, but of course, as the `TODO`
 above suggests, it would be trivial to provide alternative
 renderings of the panes for a more responsive design.
+
+Here is the code to create the outer div that the panes
+get attached to. (And then up both the object tree and
+the DOM tree, the div here eventually goes into
+`SearchWidget.div` and eventually `Page.container_div`.)
 
 ``` ts
 export class PaneManager {
@@ -893,7 +898,8 @@ to manage click events and to respond to the "next channel"
 and "surf channels" buttons. I will omit those details for
 brevity, but you can read `channel_list.ts` in the repo.
 
-Here is where it populates itself:
+Here is where the `ChannelList` object creates the table
+of channels:
 
 ``` ts
     make_table(): HTMLElement {
@@ -920,8 +926,7 @@ Here is where it populates itself:
     }
 ```
 
-And the `table_widget.ts` module does the drawing.  The
-`table_widget.table` function is pure DOM:
+The `table_widget.table` function is pure DOM:
 
 ``` ts
 import { render_th, render_thead, render_tr } from "./render";
