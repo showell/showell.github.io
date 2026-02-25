@@ -584,10 +584,28 @@ Here is how you expect a plugin to behave:
  20 };
 ```
 
-Every plugin just needs to hand off a `div` to its parent. In our
-case the parent is always a `Page` object.
+Every plugin just needs to hand off a `div` to its parent. The
+grandparent div is the `container_div` in the `Page` object:
 
-And the plugin uses the `PluginHelper` protocol:
+``` ts
+class Page {
+    // ...
+    redraw(plugin_helper: PluginHelper): void {
+        // ...
+
+        const container_div = page_widget.render_container();
+        container_div.append(plugin_helper.plugin.div);
+
+        div.innerHTML = "";
+        div.append(navbar_div);
+        div.append(container_div);
+    }
+
+    // ...
+}
+```
+
+Every plugin uses the `PluginHelper` protocol to talk to its parents:
 
 ``` ts
 export class PluginHelper {
@@ -634,10 +652,35 @@ export class PluginHelper {
 }
 ```
 
-The main plugin, which gets a tiny bit of first-class treatment,
-is my `SearchWidget` component.  Here is an example of `SearchWidget`
-updating unread counts in its tab button. (There may be, and usually
-are, multiple instances of `SearchWidget` running.)
+The `SearchWidget` plugin is the most important plugin written so far,
+as it really governs about 95% of the utility of the app now.  The
+`SearchWidget` plugin lets you navigate through the channel/topic/message
+hierarchy, and it also orchestrates opening a compose box when you either
+want to reply to a message list or add a new topic for a channel.
+
+It gets a tiny bit of first-class treatment.  For example, `Page.start`
+always makes sure we have a tab open with a virgin `SearchWidget`
+instance that is ready to use (and then the user can add more by
+clicking on the "+" button in the navbar):
+
+``` ts
+ 36     start(): void {
+ 37         const plugin_chooser = new PluginChooser();
+ 38         this.add_plugin(plugin_chooser);
+ 39
+ 40         this.add_search_widget();
+ 41         this.update_title();
+ 42     }
+```
+
+We will use it as our example to show how plugins call back to
+the `PluginHelper` object.
+
+Below is the code where a `SearchWidget` instance
+updates the unread counts for its tab button.
+
+(*Just to be clear, there may be, and usually are, multiple
+instances of `SearchWidget` running.*)
 
 ``` ts
     update_label(): void {
