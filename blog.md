@@ -17,9 +17,20 @@ I occasionally keep notes on what I do during the day. The
 process of taking notes sometimes keeps you focused. It also
 lets you measure where the time went.
 
-#### early morning
+#### early, early morning
 
-I spent the morning adding a feature to my Lyn Rummy card game.
+I woke up at 5am, but for the first two hours of the morning,
+I really wasn't super productive.  I was mostly drinking
+coffee, getting caught up on chats, and planning my day.
+
+I don't feel too bad about that, since I was able to still
+hit the ground running at 7am.
+
+#### early morning (7am - 10am)
+
+My only real coding task yesterday was to spend the morning
+adding a feature to my Lyn Rummy card game.
+
 I now keep score during the turn.
 
 ``` diff
@@ -131,7 +142,7 @@ index df4ca74..3c5479c 100644
      }
 ```
 
-That fairly simple diff took me about 90 minutes to knock out,
+That fairly simple diff took me about three hours to knock out,
 mostly because of debugging and testing. It's a little tricky
 during a game to handle scoring logic as you change turns from
 one player to the next. It's not rocket science, but if you do
@@ -148,9 +159,42 @@ score at the beginning of the turn.
 
 I made a couple other small changes in passing.
 
+The three hours did represent clock time, not focused time.
+During that time I was still doing my morning routine, such
+as driving to the kava shop and watching some YouTube.
 
+#### writing (mentoring)
 
+I spent the rest of the day writing.
 
+I first completed my blog entry on "Mentoring Aproova". I
+had no real momentum on that article, so it just kinda fizzled.
+I probably spent about three hours on getting the last couple
+sections written, and most of that was trying to pshyche
+myself up.
+
+#### writing (Angry Cat)
+
+I then decide to blog about the Angry Cat, and that was a
+real "flow" writing session.  But it was a lot of work.
+I wanted lots of screenshots and screencasts, and that whole
+process isn't very automated (or easy to automate as far
+as I know).
+
+I was also pulling lots of code excerpts.
+
+It was kind of a good exercise for me to see which pieces
+of the architecture I wanted to emphasize.  I actually like
+the entire codebase at this point. It would be interesting
+to see what Claude could do with it.
+
+#### summary
+
+For a day in which I wrote almost no code, I till felt
+somewhat productive. I am slowly fleshing out the blog,
+so that feels good. I would give the whole day about a
+B- in terms of how much I enjoyed it, how much energy
+I felt, and the outcome of my work.
 
 *February 25, 2026*
 
