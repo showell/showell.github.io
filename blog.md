@@ -13,7 +13,7 @@ joining [my Zulip realm](https://macandcheese.zulipchat.com/register).
 
 ## Zulip as an OAuth Provider
 
-I am looking at https://github.com/zulip/zulip/pull/16529/changes today,
+I am looking at [#16529](https://github.com/zulip/zulip/pull/16529/changes) today,
 and I am going through it to see what we need to do to dust off
 that PR.
 
@@ -24,12 +24,52 @@ scratch rather than mess around with merge conflicts.
 
 #### django-oauth-toolkit library
 
-Some of the PR is merely pulling in the library. We will
-essentially want to repeat that process.  This affects:
+We use `django-oauth-toolkit` as our oauth library.
+
+Some of the PR is merely pulling in the library as a
+dependency.
+
+We will essentially want to repeat that process.
+Back in 2020 that process led to these changes at
+the top of the PR diff:
 
 * requirements/common.in
-* requirements/dev.txt (generated, I assume?)
+* requirements/dev.txt
 * requirements/prod.txt
+
+It's not **totally** clear how long we will actually
+need the library.  Mostly what it gives us is admin
+screens that we eventually need to re-write anyway.
+
+#### Where do we invoke the library?
+
+Apart from all the admin screens (described later),
+we hardly ever call into the library.
+
+This is where the rubber hits the road:
+
+``` py
+
+    (ok, req) = get_oauthlib_core().verify_request(request, [])
+    if not ok:
+        raise JsonableError(_("oauth failed"))
+```
+
+You can see this in context further down.  Presumably the
+library just knows which request headers to look at. It
+finds the token sent by Proxy (in our example) and just
+makes sure the token hasn't expired or been removed.
+
+We can study the implementation of `verify_request(...)`
+within the actual source of the toolkit library to
+see what it does under the hood.
+
+#### Missing details in the PR
+
+I'm 85% sure that the library needs to set up
+a few Django models to work. It's not clear how
+we ran migrations back in 2020. I vaguely remember
+that we just ran them manually.
 
 #### Admin screens
 
@@ -57,9 +97,12 @@ oauth2_endpoint_views = [
 I forget how these links work exactly, but they basically all
 go through the third party library.
 
-They are kind of like the equivalent of Django admin screens. We
-eventually need to replace them with Zulip versions that are properly
-skinned and integrated into Zulip.
+They are kind of like the equivalent of Django admin screens,
+because they essentially **are** Django admin screens. (I don't
+remember if they are literally built like that or not.)
+
+We eventually need to replace them with Zulip versions that are
+properly skinned and integrated into Zulip.
 
 #### Use case: writing a proxy server
 
@@ -156,6 +199,32 @@ we are essentially just adding another condition inside of
 
 In the comment where it says "our caller should defend", that
 is up in `zerver/lib/rest.py` (see the one-line diff up above).
+
+#### Django templates for admin screens
+
+The diff inside of `zproject/computed_settings.py` sets
+up Django templates for the oauth toolkit to use.
+If we write our own admin screens, then these will go away.
+But for now just pull them in verbatim.
+
+#### Exposing urls
+
+The change to `zproject/urls.py` does nothing more than import
+`oauth2_endpoint_views` and then add those to `urls`:
+
+``` py
+# Experimental oauth provider support.
+urls += [
+    path('o/', include((oauth2_endpoint_views, 'oauth2_provider'),)),
+]
+```
+
+### version.py
+
+The last diff is bumping `PROVISION_VERSION`, and of course
+this will need to change (and certainly is part of why the
+PR has merge conflicts).
+
 
 <hr>
 
