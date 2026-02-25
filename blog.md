@@ -39,22 +39,33 @@ In order to keep things a bit concrete, I am going to talk
 about a specific use case. It's the use case that Rohitt and
 I had when we worked on the OAuth PR.
 
-You have a Proxy Server that Zulip users can connect to
+We had a Proxy Server that Zulip users could connect to
 with their custom clients.
 
-Your Proxy Server lets the clients use websockets instead of doing
-long-polling, and it maybe provides other services.
+Our Proxy let the clients use websockets instead of doing
+long-polling, and it provided some other services.
+
+Let's move to present tense:
 
 The Client connects to the Proxy, but of course the Client
 does not want to hand over its API key to the Proxy. Instead,
-the Proxy starts an oauth flow with the Client.  The Client
-tells Zulip (offline, so to speak) that it trusts the Proxy
-to hold an OAuth token.
+the Proxy starts an oauth flow with the Client.
 
-Once the Proxy gets its hands on the OAuth token (I forget
-how that works five years later), the Proxy starts talking
-to Zulip using the OAuth token instead of the Client's
-API key.
+The Client tells Zulip (offline, so to speak) that it
+trusts the Proxy to hold an OAuth token.
+
+The Client then gives the Proxy its OAuth token (and of
+course that's out of the scope of this PR).
+
+Once the Proxy gets its hands on the OAuth token, the Proxy
+starts talking to Zulip using the OAuth token (instead of the
+Client's API key).
+
+##### Order of describing things
+
+Note that I am trying to talk about the PR in the same order
+as the diffs show changes, so it's not gonna be completely
+as sequential as the actual "real world" way to think about this.
 
 #### django-oauth-toolkit library
 
@@ -89,7 +100,14 @@ This is where the rubber hits the road:
         raise JsonableError(_("oauth failed"))
 ```
 
-You can see this in context further down.  Presumably the
+(We will probably want to extract a one-line function
+to encapsulate that, if only to simplify mocking in
+Python tests.  And we may eventually replace it with
+our own version. Under the hood, the library is just
+managing a collection of tokens, probably backed by
+the database.)
+
+You can see the code in context further down.  Presumably the
 library just knows which request headers to look at. It
 finds the token sent by Proxy (in our example) and just
 makes sure the token hasn't expired or been removed.
@@ -137,12 +155,6 @@ remember if they are literally built like that or not.)
 
 We eventually need to replace them with Zulip versions that are
 properly skinned and integrated into Zulip.
-
-##### Order of describing things
-
-Note that I am trying to talk about the PR in the same order
-as the diffs show changes, so it's not gonna be completely
-as sequential as the actual "real world" way to think about this.
 
 #### HTTP_BEARER headers
 
@@ -236,6 +248,17 @@ The last diff is bumping `PROVISION_VERSION`, and of course
 this will need to change (and certainly is part of why the
 PR has merge conflicts).
 
+### Action items
+
+The next steps are for Apoorva to read this. Depending on
+the questions that come up, we will want to dig into the
+zulip-proxy code just to understand better what the Client
+and Proxy are doing.
+
+And we will want to look at the toolkit's code.
+
+Finally, we want to write a few simple Python tests for
+the `decorator.py` changes.
 
 <hr>
 
