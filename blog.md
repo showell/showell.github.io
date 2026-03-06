@@ -548,17 +548,17 @@ Here is Angry Cat:
 
 ![Angry Cat](mr_angry_cat.png)
 
+And here is the
+[repo](https://github.com/showell/angry-cat).
+
 Apoorva built out a convenience app that made it easy
 to send messages on behalf of Zulip bots.  This app
 had infrastructure to talk to a Zulip server with API
 keys from a TypeScript file. It supported fetching
 bot data and sending simple messages.
 
-It was called zulip-bot-impersonator, and despite my
-app no longer even impersonating bots (although I may
-bring back that feature), the name lives on in the
-[zulip-bot-impersonator GH project](https://github.com/showell/zulip-bot-impersonator)
-on my GH page.
+It was called zulip-bot-impersonator but the new repo
+is angry-cat (under showell).
 
 I took over the code and decided to build a fairly
 general-purpose Zulip client for reading messages.
@@ -650,8 +650,8 @@ tool.
 
 So, basically do the following:
 * go into Linux
-* `git clone git@github.com:showell/zulip-bot-impersonator.git`
-* cd zulip-bot-impersonator
+* `git clone git@github.com:showell/angry-cat.git`
+* cd angry-cat
 * follow the instructions in README.md to configure your site url and API key
 * install npm and vite
 * run `npx vite`
