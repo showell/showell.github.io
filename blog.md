@@ -36,7 +36,7 @@ on the macandcheese realm. (We will eventually make stuff work on
 other realms too, of course.)
 
 I next need to make it so that somebody can effectively watch another
-player play Lyn Rummy in solitaire model.  This means that I should
+player play Lyn Rummy in solitaire mode.  This means that I should
 be able to find the messages that are already being serialized now
 to the Lyn Rummy channel, choose which game I want to watch or review
 (whether in real time or after the fact), and then have Lyn Rummy
