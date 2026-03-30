@@ -11,6 +11,120 @@ joining [my Zulip realm](https://macandcheese.zulipchat.com/register).
 
 <hr>
 
+## Four days of Zig
+
+*March 30, 2026*
+
+I spent four days ramping up on zig.  I basically started from
+zero, unless you count a few random hours leading up to it where
+I read some docs and listened to some podcasts about it.
+
+### Zig lets you do abstractions
+
+Like all low-level languages, Zig requires a little more work to
+do "simple" things, but you can build up abstractions.
+
+Almost every app has data that could be reasonably modeled
+by a relational database.  Even if you are not using an actual
+external database, it's helpful to think in those terms.
+
+An example database concept is that you often have entities
+that form a one-to-many relationship.  Here is how I express that
+in zig:
+
+``` zig
+const std = @import("std");
+
+const Int = u32;
+const Map = std.AutoHashMap;
+const List = std.ArrayList;
+const IntSet = Map(Int, void);
+const Allocator = std.mem.Allocator;
+
+pub const OneToMany = struct {
+    allocator: Allocator,
+    list_of_sets: List(IntSet),
+
+    pub fn update(
+        self: *OneToMany,
+        one_index: Int,
+        many_index: Int,
+    ) !void {
+        const allocator = self.allocator;
+        var list_of_sets = &self.list_of_sets;
+
+        // Note that we expect our `one_index` values to be contiguous
+        // values starting from zero (hence the underlying ArrayList), but
+        // they are allowed to grow.
+        while (one_index >= list_of_sets.items.len) {
+            try list_of_sets.append(allocator, IntSet.init(allocator));
+        }
+
+        var many_index_set = list_of_sets.items[one_index];
+        try many_index_set.put(many_index, {});
+        list_of_sets.items[one_index] = many_index_set;
+    }
+
+    pub fn get_many_indexes(
+        self: OneToMany,
+        allocator: Allocator,
+        one_index: Int,
+    ) !List(Int) {
+        const index_set = self.list_of_sets.items[one_index];
+
+        const len = index_set.count();
+        var indexes = try List(Int).initCapacity(allocator, len);
+
+        var it = index_set.keyIterator();
+
+        while (it.next()) |index_ptr| {
+            try indexes.append(allocator, index_ptr.*);
+        }
+
+        return indexes;
+    }
+
+    pub fn count(self: OneToMany, one_index: Int) Int {
+        return self.list_of_sets.items[one_index].count();
+    }
+
+    pub fn init(allocator: Allocator) OneToMany {
+        return OneToMany{
+            .allocator = allocator,
+            .list_of_sets = .empty,
+        };
+    }
+
+    pub fn deinit(
+        self: *OneToMany,
+    ) void {
+        const allocator = self.allocator;
+        var list_of_sets = self.list_of_sets;
+
+        for (list_of_sets.items) |*index_set| {
+            index_set.deinit();
+        }
+        list_of_sets.deinit(allocator);
+    }
+};
+```
+
+### Memory allocation
+
+It's not that hard to get memory allocation right if you just
+think about the lifetime of objects.
+
+Zig implements a concept called arena allocation, where you can
+have an allocator that lives in the natural "cycle" of an application,
+and you don't have to granularly free any data.  Instead, you just
+allocate data to the the heap as you need it, and when you finish
+the cycle, you just tell the arena allocator to clean up everything.
+
+But I didn't even need to do that.
+
+
+<hr>
+
 ## Friday the 13th: Try my luck!
 
 *March 13, 2026*
