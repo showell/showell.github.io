@@ -15,9 +15,11 @@ joining [my Zulip realm](https://macandcheese.zulipchat.com/register).
 
 *March 30, 2026*
 
-I spent four days ramping up on zig.  I basically started from
+I spent the last four days ramping up on zig.  I basically started from
 zero, unless you count a few random hours leading up to it where
 I read some docs and listened to some podcasts about it.
+
+I like zig.
 
 ### Zig lets you do abstractions
 
@@ -227,6 +229,187 @@ that frees the memory when I am done using the database. And it
 just traverses `db.topic_strings.items` (among other things) to
 free up all the heap memory related to `db.topic_strings`. It's
 as simple as that.
+
+#### Zig performs great
+
+I have a data structure that maps channels to topics to messages
+in a basic data hierarchy.
+
+I loaded up my memory with 10 million messages. Each topic has
+25,000 messages attached to it.
+
+It takes about 12 milliseconds for zig to grab a batch of 25,000
+messages from those 10 million messages and turn them into HTML.
+(It uses the aformentioned `OneToMany` class under the hood.)
+
+I ran my performance test for a billion records, and it took a
+little under an hour and a half.
+
+``` zig
+const std = @import("std");
+const database = @import("./database.zig");
+const html = @import("./html.zig");
+const server_types = @import("./server_types.zig");
+
+const Database = database.Database;
+const ChannelRow = database.ChannelRow;
+const TopicRow = database.TopicRow;
+const MessageRow = database.MessageRow;
+
+const ServerSubscription = server_types.ServerSubscription;
+const ServerMessage = server_types.ServerMessage;
+
+const Allocator = std.mem.Allocator;
+const List = std.ArrayList;
+
+const Int = u32;
+const Str = []const u8;
+
+fn test_html_for_channel(
+    db: Database,
+    allocator: Allocator,
+    channel_index: Int,
+) !void {
+    {
+        const s = try html.topics_html(
+            db,
+            allocator,
+            channel_index,
+        );
+        defer allocator.free(s);
+    }
+
+    var topic_rows = try db.get_topic_rows_for_channel_index_by_name(
+        allocator,
+        channel_index,
+    );
+    defer topic_rows.deinit(allocator);
+
+    for (topic_rows.items) |topic_row| {
+        const s = try html.messages_html(
+            db,
+            allocator,
+            topic_row.address_index,
+        );
+        defer allocator.free(s);
+    }
+}
+
+fn test_html(
+    db: Database,
+    allocator: Allocator,
+) !void {
+    const s = try html.channels_html(db, allocator);
+    defer allocator.free(s);
+
+    var channel_rows = try db.get_channel_rows_by_name(allocator);
+    defer channel_rows.deinit(allocator);
+
+    for (channel_rows.items) |channel_row| {
+        const channel_index = channel_row.index;
+
+        try test_html_for_channel(
+            db,
+            allocator,
+            channel_index,
+        );
+    }
+}
+
+pub fn main() !void {
+    // var gpa = std.heap.DebugAllocator(.{}){};
+    // defer _ = gpa.deinit();
+    // const allocator = gpa.allocator();
+
+    const allocator = std.heap.smp_allocator;
+
+    var db = Database.init(allocator);
+    defer db.deinit();
+
+    const nums: [20]Int = .{ 17, 11, 4, 6, 14, 2, 9, 12, 1, 13, 19, 15, 5, 7, 10, 3, 8, 16, 18, 0 };
+
+    for (nums) |n| {
+        const channel_id = 100 + n;
+        const name = try std.fmt.allocPrint(
+            allocator,
+            "channel-{d}",
+            .{channel_id},
+        );
+        defer allocator.free(name);
+
+        const subscription = ServerSubscription{
+            .stream_id = channel_id,
+            .name = name,
+        };
+        try db.process_server_subscription(subscription);
+    }
+
+    var message_id: Int = 10000;
+
+    for (0..25_000) |_| {
+        for (nums) |n| {
+            const channel_id = 100 + n;
+
+            for (nums) |topic_n| {
+                const subject = try std.fmt.allocPrint(
+                    allocator,
+                    "topic_{d}",
+                    .{1000 + topic_n},
+                );
+                defer allocator.free(subject);
+
+                message_id += 1;
+
+                const content = try std.fmt.allocPrint(
+                    allocator,
+                    "content {d}",
+                    .{message_id},
+                );
+                defer allocator.free(content);
+
+                const message = ServerMessage{
+                    .content = content,
+                    .id = message_id,
+                    .sender_full_name = "Foo Barson",
+                    .sender_id = 1001,
+                    .subject = subject,
+                    .stream_id = channel_id,
+                };
+
+                try db.process_server_message(message);
+            }
+        }
+
+        const count = db.total_message_count();
+        if (count % 10_000 == 0) {
+            std.log.info("{d} messages", .{count});
+        }
+    }
+
+    for (0..100) |i| {
+        try test_html(db, allocator);
+        std.log.debug("output another round of messages {d}", .{i});
+    }
+}
+```
+
+Note this code:
+
+``` zig
+    // var gpa = std.heap.DebugAllocator(.{}){};
+    // defer _ = gpa.deinit();
+    // const allocator = gpa.allocator();
+
+    const allocator = std.heap.smp_allocator;
+```
+
+You have to use the right allocator in your benchmarks.  I comment
+out the `DebugAllocator` for benchmarks, but before I run the benchmarks,
+I use the `DebugAllocator` (plus smaller loops) to verify that I don't
+have leaks.
+
+I let the program run long enough to serizalize a BILLION messages.
+It's all fine.
 
 
 <hr>
