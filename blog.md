@@ -109,6 +109,45 @@ pub const OneToMany = struct {
 };
 ```
 
+I'm not going to go into tremendous detail how this code
+gets used, but it's as simple as this:
+
+* define some structs
+* store them in ArrayList objects and keep track of the integer indexes
+* keep track of one-to-many relationships with the above `OneToMany` mechanism
+* call `get_many_indexes` when your reading code needs to traverse a one-to-many relationship
+
+You don't have any performance disasters where you need to traverse some huge
+data structure to go from a single `address_index` to many `message_index` indexes.
+
+You just do this at write time:
+
+``` zig
+    // ADDRESS -> set of MESSAGE
+    try db.one_to_many_address_to_message.update(
+        address_index,
+        message_index,
+    );
+```
+
+And then do this at read time:
+
+``` zig
+    var indexes = try db.one_to_many_address_to_message.get_many_indexes(
+        allocator,
+        address_index,
+    );
+    defer indexes.deinit(allocator);
+
+    const len = indexes.items.len;
+
+    var rows = try List(MessageRow).initCapacity(allocator, len);
+
+    for (indexes.items) |index| {
+        try rows.append(allocator, db.message_rows.items[index]);
+    }
+```
+
 ### Memory allocation
 
 It's not that hard to get memory allocation right if you just
@@ -121,6 +160,73 @@ allocate data to the the heap as you need it, and when you finish
 the cycle, you just tell the arena allocator to clean up everything.
 
 But I didn't even need to do that.
+
+All you do is just make sure that there's a proper concept of
+ownership that makes sense for the life-cycle of the object.
+
+In my app I inherit some strings that refer to a "topic" in Zulip.
+For the purpose of discussion it doesn't matter that you understand
+what Zulip is (it's an office-chat system) nor what a topic is
+within Zulip (it's just a category for the message).
+
+When topics come in from the outside world, I store them in my
+"database".  And I just store them like this:
+
+``` zig
+    if (db.topic_string_index_map.get(topic_name)) |index| {
+        return index;
+    } else {
+        const new_index = db.topic_strings.items.len;
+
+        {
+            const our_topic_name = try db.allocator.dupe(u8, topic_name);
+            try db.topic_strings.append(db.allocator, our_topic_name);
+            try db.topic_string_index_map.put(our_topic_name, new_index);
+        }
+
+        return new_index;
+    }
+```
+
+Note the call to dupe there.  That makes a copy of the string that
+**my code owns**.  I actually use the string in two places, but I only
+need to de-allocate it once.
+
+And the deallocation code is as simple as this:
+
+``` zig
+    for (db.topic_strings.items) |topic_name| {
+        db.allocator.free(topic_name);
+    }
+```
+
+The above code excecutes when I call `deinit` by the enclosing data
+structure, which I call `Database`.
+
+It's super easy to verify this with test code like this:
+
+```
+test "database" {
+    var gpa = std.heap.DebugAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    var db = Database.init(allocator);
+    defer db.deinit();
+
+    // do a bunch of stuff with Database
+}
+```
+
+If there are any memory leaks, then zig will properly squawk
+at me and tell me what a loser I am if I don't get the memory
+management correct.
+
+Notice the call to `defer db.deinit()` there. That's the code
+that frees the memory when I am done using the database. And it
+just traverses `db.topic_strings.items` (among other things) to
+free up all the heap memory related to `db.topic_strings`. It's
+as simple as that.
 
 
 <hr>
