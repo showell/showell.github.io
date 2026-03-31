@@ -411,6 +411,106 @@ have leaks.
 I let the program run long enough to serizalize a BILLION messages.
 It's all fine.
 
+### Testing
+
+Zig's testing system is easy to use, and it catches memory leaks as well.
+
+Here is an example test that I wrote.
+
+``` zig
+
+test "html" {
+    var gpa = std.heap.DebugAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    var db = Database.init(allocator);
+    defer db.deinit();
+
+    try db.process_server_subscription(ServerSubscription{ .stream_id = 102, .name = "design" });
+    try db.process_server_subscription(ServerSubscription{ .stream_id = 103, .name = "feedback" });
+    try db.process_server_subscription(ServerSubscription{ .stream_id = 101, .name = "engineering" });
+    try db.process_server_subscription(ServerSubscription{ .stream_id = 103, .name = "this-gets-ingored" }); // dup id
+
+    const message1 = ServerMessage{
+        .content = "message1",
+        .id = 201,
+        .sender_full_name = "Foo Barson",
+        .sender_id = 1001,
+        .subject = "design stuff",
+        .stream_id = 102,
+    };
+
+    const message2 = ServerMessage{
+        .content = "message2",
+        .id = 202,
+        .sender_full_name = "Foo Barson",
+        .sender_id = 1001,
+        .subject = "design stuff",
+        .stream_id = 102,
+    };
+
+    const message3 = ServerMessage{
+        .content = "message3",
+        .id = 203,
+        .sender_full_name = "Fred Flintstone",
+        .sender_id = 1002,
+        .subject = "feedback & other stuff",
+        .stream_id = 101,
+    };
+
+    const message4 = ServerMessage{
+        .content = "message4",
+        .id = 204,
+        .sender_full_name = "Fred Flintstone",
+        .sender_id = 1002,
+        .subject = "another design topic",
+        .stream_id = 102,
+    };
+
+    try db.process_server_message(message1);
+    try db.process_server_message(message2);
+    try db.process_server_message(message3);
+    try db.process_server_message(message4);
+
+    std.testing.log_level = .debug;
+    {
+        const html = try channels_html(db, allocator);
+        defer allocator.free(html);
+        std.log.debug("html:\n{s}", .{html});
+    }
+
+    var channel_rows = try db.get_channel_rows_by_name(allocator);
+    defer channel_rows.deinit(allocator);
+
+    for (channel_rows.items) |channel_row| {
+        const channel_index = channel_row.index;
+        {
+            const html = try topics_html(db, allocator, channel_index);
+            defer allocator.free(html);
+            std.log.debug("html:\n{s}", .{html});
+        }
+
+        var topic_rows = try db.get_topic_rows_for_channel_index_by_name(
+            allocator,
+            channel_index,
+        );
+        defer topic_rows.deinit(allocator);
+
+        for (topic_rows.items) |topic_row| {
+            const address_index = topic_row.address_index;
+            {
+                const html = try messages_html(
+                    db,
+                    allocator,
+                    address_index,
+                );
+                defer allocator.free(html);
+                std.log.debug("html:\n{s}", .{html});
+            }
+        }
+    }
+}
 
 <hr>
 
