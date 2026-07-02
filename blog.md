@@ -17,7 +17,7 @@ joining [my Zulip realm](https://macandcheese.zulipchat.com/register).
 
 When you start learning a new programming language, you usually
 just need to put yourself into the mindset of the people who
-created the language.  It's often a single male person who
+created the language.  It's often a single person who
 created the language (or at least is the primary driver):
 
     * Elm: Evan Czaplicki
